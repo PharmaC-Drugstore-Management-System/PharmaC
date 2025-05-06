@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import RevenueTable from "../components/revenue_table.tsx"
+import MedicationDashboard from "../components/medication_dashbaord.tsx"
 
 function App() {
 
@@ -8,6 +9,7 @@ function App() {
       <div >
           
           <RevenueTable/>
+          <MedicationDashboard/>
       </div>
      
     </>
