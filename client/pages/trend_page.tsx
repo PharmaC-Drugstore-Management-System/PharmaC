@@ -12,16 +12,21 @@ export default function TrendPage() {
 
         <div className="flex flex-col justify-center items-center w-full">
           <Header />
+          <h1 className="text-3xl font-bold text-gray-800 my-6 text-left w-full pl-4">
+            Trend
+          </h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-1 text-left w-full pl-4">
+            Month Sales
+          </h1>
+          <h2 className="text-xl font-semibold text-gray-600 mb-4 text-left w-full pl-4">
+            1 January 2023 - 31 January 2023
+          </h2>
 
-          <div className="w-full max-w-3xl mx-auto px-4">
-            <h1 className="text-3xl font-bold text-gray-800 my-6 text-center">
-              Welcome to my app
-            </h1>
-
+          <div className="w-full max-w-3xl  px-4">
             <div className="w-full flex justify-center mb-8">
-              <div className="w-full max-w-md">
+              
                 <MedicationDashboard />
-              </div>
+              
             </div>
             <div className="w-full mb-8">
               <RevenueTable />

@@ -18,7 +18,7 @@ export default function NavbarComponent() {
   return (
     <div className="sticky top-0 left-0 h-screen flex items-center">
       {/* Standalone Vertical Navbar */}
-      
+
       <div
         className="bg-teal-600 flex flex-col items-center rounded-[20px]"
         style={{

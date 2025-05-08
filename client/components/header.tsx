@@ -5,7 +5,6 @@ export default function Header() {
     <>
       <div className="sticky top-0 z-10 w-full bg-white">
       <div className="flex items-center p-4">
-        <div className="w-1 h-8 bg-green-600 mr-2"></div>
         <h1 className="font-bold text-gray-800 text-2xl">PharmaC</h1>
         <div className="ml-auto flex items-center space-x-4">
           <button className="p-2 bg-gray-200 rounded-full shadow-md hover:bg-gray-300 flex items-center">

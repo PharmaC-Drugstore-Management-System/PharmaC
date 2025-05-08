@@ -13,7 +13,7 @@ export default function MedicationDashboard() {
   ];
 
   return (
-         <div className="h-100">
+         <div className="h-120 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -21,17 +21,19 @@ export default function MedicationDashboard() {
                     cx="50%"
                     cy="50%"
                     labelLine={true}
-                    outerRadius={100}
+                    outerRadius={180}
                     fill="#8884d8"
                     dataKey="value"
                     label={({ name, value }) => `${name}: ${value}%`}
+                
                   >
                     {medicationData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => `${value}%`} />
-                  
+                
+
                 </PieChart>
               </ResponsiveContainer>
             </div>
