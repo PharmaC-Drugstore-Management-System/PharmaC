@@ -1,9 +1,12 @@
 import React from "react";
 import MedicationDashboard from "../components/medication_dashbaord";
 import RevenueTable from "../components/revenue_table";
+import Header from "../components/header";
 
 export default function TrendPage() {
   return (
+    <>
+    <Header />
     <div className="flex justify-center items-center w-full">
       <div className="w-full max-w-3xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-gray-800 my-6 text-center">
@@ -20,5 +23,6 @@ export default function TrendPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
