@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Search, Plus, Edit2, ChevronDown } from 'lucide-react';
-// import Navbar from '../component/Navbar';
+import Navbar from '../component/Navbar';
 
 export default function PharmacInventoryPage() {
   const [items] = useState([
@@ -24,8 +24,8 @@ export default function PharmacInventoryPage() {
   return (
     <>
     
-    {/* <Navbar/> */}
-    <div className="bg-gray-100 min-h-screen flex flex-col h-screen w-screen overflow-hidden">
+    <div className="bg-white-100 min-h-screen flex flex-row h-screen w-screen overflow-hidden">
+    <Navbar/>
       <div className="w-full h-full flex flex-col ">
         {/* Header */} 
         <div className="flex items-center p-4 bg-white shadow-sm">

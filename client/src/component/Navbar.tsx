@@ -19,7 +19,7 @@ export default function NavbarComponent() {
   return (
     <div className="h-screen flex items-center">
       {/* Standalone Vertical Navbar */}
-      <div className="bg-teal-600 flex flex-col items-center rounded-[20px] " style={{ width: '60px', height: '90vh', marginLeft: '20px' ,marginRight:'20px'}}>
+      <div className="bg-teal-600 flex flex-col items-center rounded-[20px]" style={{ width: '60px', height: '90vh', marginLeft: '20px' ,marginRight:'20px'}}>
         <div className="flex flex-col items-center justify-between h-full py-8">
           <div className="flex flex-col space-y-12">
             {/* Dashboard Icon */}
