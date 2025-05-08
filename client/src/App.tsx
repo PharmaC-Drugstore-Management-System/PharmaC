@@ -1,19 +1,14 @@
-import { useState } from 'react'
-import RevenueTable from "../components/revenue_table.tsx"
-import MedicationDashboard from "../components/medication_dashbaord.tsx"
+import { useState } from "react";
+import TrendPage from "../pages/trend_page";
 
 function App() {
-
-  return (  
+  return (
     <>
-      <div >
-          
-          <RevenueTable/>
-          <MedicationDashboard/>
+      <div>
+        <TrendPage />
       </div>
-     
     </>
-  )
+  );
 }
 
-export default App
+export default App;
