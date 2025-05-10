@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Search, Plus, Edit2, ChevronDown } from 'lucide-react';
-import Navbar from '../component/Navbar';
+import { Search, Plus, Edit2, ChevronDown} from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Header from '../components/Header';
+import { Link } from 'react-router-dom';
 
 export default function PharmacInventoryPage() {
   const [items] = useState([
@@ -24,19 +26,11 @@ export default function PharmacInventoryPage() {
   return (
     <>
     
-    <div className="bg-white-100 min-h-screen flex flex-row h-screen w-screen overflow-hidden">
+    <div className="bg-white-100 min-h-screen flex flex-row h-screen w-screen">
     <Navbar/>
       <div className="w-full h-full flex flex-col ">
         {/* Header */} 
-        <div className="flex items-center p-4 bg-white shadow-sm">
-          <h1 className="font-bold text-gray-800" style={{fontSize:"32px"}}>PharmaC</h1>
-          <div className="ml-auto flex items-center space-x-a4 mx-5">
-            <button className="p-2 bg-gray-200 rounded-full shadow-md hover:bg-gray-800 flex items-center mx-5 ">
-              <span className="text-wh-500 text-x">🔔</span>
-            </button>
-            <div className="h-10 w-10 bg-gray-300 rounded-full"></div>
-          </div>
-        </div>
+        <Header/>
 
         {/* Main Content */}
         <div className="flex-1 p-6 overflow-hidden flex flex-col">
@@ -64,13 +58,13 @@ export default function PharmacInventoryPage() {
                 placeholder="Search"
                 className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-            </div>
+            </div>  
           </div>
 
           {/* Inventory Table */}
           <div className="bg-white rounded-lg shadow-sm overflow-hidden flex-1 flex flex-col">
             {/* Table Header */}
-            <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-200">
               <div className="font-medium text-gray-700">Name</div>
               <div className="font-medium text-gray-700">Brand</div>
               <div className="font-medium text-gray-700">Price (THB)</div>
@@ -96,11 +90,11 @@ export default function PharmacInventoryPage() {
           </div>
 
           {/* Add Item Button */}
-          <div className="flex justify-start mt-6">
+          <Link className="flex justify-start mt-6"  to="/add-medicine">
             <button className="ml-2 px-2 py-2 bg-green-600 text-white rounded-full shadow-md hover:bg-green-700 flex items-center">
               <Plus className="h-5 w-5" />
             </button>
-          </div>
+          </Link>
         </div>
       </div>
     </div>
