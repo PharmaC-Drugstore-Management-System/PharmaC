@@ -93,8 +93,8 @@ export default function PharmaDashboard() {
 
 
           {/* Stats */}
-          <div className="flex flex-col space-y-5">
-            <div className="bg-white p-2 rounded-lg shadow">
+          <div className="flex flex-col space-y-5.5">
+            <div className="bg-white p-5 rounded-lg shadow">
               <h3 className="text-lg font-semibold">Amount Sales</h3>
               <div className="text-4xl font-bold mt-2 text-center">200</div>
               <div className="flex items-center text-green-500 mt-1">
@@ -103,7 +103,7 @@ export default function PharmaDashboard() {
               </div>
             </div>
 
-            <div className="bg-white p-2 rounded-lg shadow">
+            <div className="bg-white p-5 rounded-lg shadow">
               <h3 className="text-lg font-semibold">Total Sales</h3>
               <div className="text-4xl font-bold mt-2 text-center">70,000</div>
               <div className="flex items-center text-green-500 mt-1">
