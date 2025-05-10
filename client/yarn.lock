@@ -195,6 +195,42 @@
     "@eslint/core" "^0.13.0"
     levn "^0.4.1"
 
+"@floating-ui/core@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.npmjs.org/@floating-ui/core/-/core-1.7.0.tgz"
+  integrity sha512-FRdBLykrPPA6P76GGGqlex/e7fbe0F1ykgxHYNXQsH/iTEtjMj/f9bpY5oQqbjt5VgZvgz/uKXbGuROijh3VLA==
+  dependencies:
+    "@floating-ui/utils" "^0.2.9"
+
+"@floating-ui/dom@^1.0.0":
+  version "1.7.0"
+  resolved "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.7.0.tgz"
+  integrity sha512-lGTor4VlXcesUMh1cupTUTDoCxMb0V6bm3CnxHzQcw8Eaf1jQbgQX4i02fYgT0vJ82tb5MZ4CZk1LRGkktJCzg==
+  dependencies:
+    "@floating-ui/core" "^1.7.0"
+    "@floating-ui/utils" "^0.2.9"
+
+"@floating-ui/react-dom@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.npmjs.org/@floating-ui/react-dom/-/react-dom-2.1.2.tgz"
+  integrity sha512-06okr5cgPzMNBy+Ycse2A6udMi4bqwW/zgBF/rwjcNqWkyr82Mcg8b0vjX8OJpZFy/FKjJmw6wV7t44kK6kW7A==
+  dependencies:
+    "@floating-ui/dom" "^1.0.0"
+
+"@floating-ui/react@^0.27.3":
+  version "0.27.8"
+  resolved "https://registry.npmjs.org/@floating-ui/react/-/react-0.27.8.tgz"
+  integrity sha512-EQJ4Th328y2wyHR3KzOUOoTW2UKjFk53fmyahfwExnFQ8vnsMYqKc+fFPOkeYtj5tcp1DUMiNJ7BFhed7e9ONw==
+  dependencies:
+    "@floating-ui/react-dom" "^2.1.2"
+    "@floating-ui/utils" "^0.2.9"
+    tabbable "^6.0.0"
+
+"@floating-ui/utils@^0.2.9":
+  version "0.2.9"
+  resolved "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.2.9.tgz"
+  integrity sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==
+
 "@humanfs/core@^0.19.1":
   version "0.19.1"
   resolved "https://registry.npmjs.org/@humanfs/core/-/core-0.19.1.tgz"
@@ -616,7 +652,7 @@ chownr@^3.0.0:
   resolved "https://registry.npmjs.org/chownr/-/chownr-3.0.0.tgz"
   integrity sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==
 
-clsx@^2.0.0:
+clsx@^2.0.0, clsx@^2.1.1:
   version "2.1.1"
   resolved "https://registry.npmjs.org/clsx/-/clsx-2.1.1.tgz"
   integrity sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==
@@ -732,6 +768,11 @@ d3-timer@^3.0.1:
   version "3.0.1"
   resolved "https://registry.npmjs.org/d3-timer/-/d3-timer-3.0.1.tgz"
   integrity sha512-ndfJ/JxxMd3nw31uyKoY2naivF+r29V+Lc0svZxe1JvvIRmi8hUsrMvdOwgS1o6uBHmiz91geQ0ylPP0aj1VUA==
+
+date-fns@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.npmjs.org/date-fns/-/date-fns-4.1.0.tgz"
+  integrity sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==
 
 debug@^4.1.0, debug@^4.3.1, debug@^4.3.2, debug@^4.3.4:
   version "4.4.0"
@@ -1378,7 +1419,16 @@ queue-microtask@^1.2.2:
   resolved "https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
 
-"react-dom@^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react-dom@^19.0.0, react-dom@^19.1.0, react-dom@>=16.2.0, react-dom@>=16.6.0, react-dom@>=18:
+react-datepicker@^8.3.0:
+  version "8.3.0"
+  resolved "https://registry.npmjs.org/react-datepicker/-/react-datepicker-8.3.0.tgz"
+  integrity sha512-DhfrIJnTPJTUVRtXU7c7zooug40rD6q+Fc8UTCt19dYEotLpDQgTN98MfocY6Rc4S99oOFFEoxyanOM/TKauuw==
+  dependencies:
+    "@floating-ui/react" "^0.27.3"
+    clsx "^2.1.1"
+    date-fns "^4.1.0"
+
+"react-dom@^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^16.9.0 || ^17 || ^18 || ^19 || ^19.0.0-rc", react-dom@^19.0.0, react-dom@^19.1.0, react-dom@>=16.2.0, react-dom@>=16.6.0, react-dom@>=16.8.0, react-dom@>=17.0.0, react-dom@>=18:
   version "19.1.0"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-19.1.0.tgz"
   integrity sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==
@@ -1447,7 +1497,7 @@ react-webcam@^7.2.0:
   resolved "https://registry.npmjs.org/react-webcam/-/react-webcam-7.2.0.tgz"
   integrity sha512-xkrzYPqa1ag2DP+2Q/kLKBmCIfEx49bVdgCCCcZf88oF+0NPEbkwYk3/s/C7Zy0mhM8k+hpdNkBLzxg8H0aWcg==
 
-"react@^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react@^19.0.0, react@^19.1.0, react@>=16.2.0, react@>=16.6.0, react@>=18:
+"react@^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.9.0 || ^17 || ^18 || ^19 || ^19.0.0-rc", react@^19.0.0, react@^19.1.0, react@>=16.2.0, react@>=16.6.0, react@>=16.8.0, react@>=17.0.0, react@>=18:
   version "19.1.0"
   resolved "https://registry.npmjs.org/react/-/react-19.1.0.tgz"
   integrity sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==
@@ -1565,6 +1615,11 @@ supports-color@^7.1.0:
   integrity sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==
   dependencies:
     has-flag "^4.0.0"
+
+tabbable@^6.0.0:
+  version "6.2.0"
+  resolved "https://registry.npmjs.org/tabbable/-/tabbable-6.2.0.tgz"
+  integrity sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==
 
 tailwindcss@^4.1.6, tailwindcss@4.1.6:
   version "4.1.6"

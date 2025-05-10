@@ -8,13 +8,13 @@ import {
 
 export default function PharmaDashboard() {
   // Sample data for the charts
-  const revenueData = [
-    { name: 'Jan', actual: 26.2, projected: 26.0 },
-    { name: 'Feb', actual: 26.8, projected: 26.5 },
-    { name: 'Mar', actual: 26.5, projected: 27.8 },
-    { name: 'Apr', actual: 26.0, projected: 26.2 },
-    { name: 'May', actual: 27.0, projected: 26.5 },
-    { name: 'Jun', actual: 26.8, projected: 26.0 }
+  const revenueChartData = [
+    { name: 'Jan', actual: 26000, projected: 25000 },
+    { name: 'Feb', actual: 27000, projected: 26500 },
+    { name: 'Mar', actual: 28000, projected: 27500 },
+    { name: 'Apr', actual: 22000, projected: 25500 },
+    { name: 'May', actual: 30000, projected: 28500 },
+    { name: 'Jun', actual: 32000, projected: 29500 }
   ];
   
   const trendData = [
@@ -46,13 +46,17 @@ export default function PharmaDashboard() {
         <div className="flex items-center">
           <div className="w-16 h-16 bg-gray-200 rounded mr-4"></div>
           <div className="flex-1">
-            <div className="text-xl">{item.name}</div>
+            <a href="#" className="text-xl hover:underline">
+              {item.name}
+            </a>
           </div>
-          <div className="text-right mr-4">
+          <div className="w-24 text-center">
             <div>{item.amount}</div>
           </div>
-          <div>
-            <span className={`px-3 py-1 rounded-full text-sm ${isInStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+  
+          {/* Center-align status and value */}
+          <div className="flex justify-center items-center w-32">
+            <span className={`px-4 py-1 rounded-full text-center text-sm ${isInStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               {item.status}
             </span>
           </div>
@@ -60,6 +64,7 @@ export default function PharmaDashboard() {
       </div>
     );
   };
+  
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -73,14 +78,14 @@ export default function PharmaDashboard() {
             <div className="bg-white p-2 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow">
                 <h3 className="text-lg font-semibold mb-4">Revenue</h3>
                 <div className="flex justify-center">
-                <LineChart width={500} height={200} data={revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                    <YAxis domain={[25, 29]} ticks={[25, 26, 27, 28, 29]} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="projected" stroke="#8884d8" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="actual" stroke="#82ca9d" strokeWidth={2} dot={false} />
-                </LineChart>
+                <LineChart width={600} height={250} data={revenueChartData}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Line type="monotone" dataKey="projected" stroke="#8884d8" strokeWidth={2} />
+                            <Line type="monotone" dataKey="actual" stroke="#82ca9d" strokeWidth={2} />
+                          </LineChart>
                 </div>
             </div>
             </Link>
@@ -88,8 +93,8 @@ export default function PharmaDashboard() {
 
 
           {/* Stats */}
-          <div className="flex flex-col space-y-4">
-            <div className="bg-white p-4 rounded-lg shadow">
+          <div className="flex flex-col space-y-5">
+            <div className="bg-white p-2 rounded-lg shadow">
               <h3 className="text-lg font-semibold">Amount Sales</h3>
               <div className="text-4xl font-bold mt-2 text-center">200</div>
               <div className="flex items-center text-green-500 mt-1">
@@ -98,19 +103,15 @@ export default function PharmaDashboard() {
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg shadow">
+            <div className="bg-white p-2 rounded-lg shadow">
               <h3 className="text-lg font-semibold">Total Sales</h3>
-              <div className="text-4xl font-bold mt-2 text-center">20000</div>
+              <div className="text-4xl font-bold mt-2 text-center">70,000</div>
               <div className="flex items-center text-green-500 mt-1">
                 <span>+</span>
                 <span>2.00</span>
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg shadow flex-1">
-              <h3 className="text-lg font-semibold">Total Items in stock</h3>
-              <div className="text-4xl font-bold mt-2 text-center">200</div>
-            </div>
           </div>
         </div>
 
@@ -119,16 +120,16 @@ export default function PharmaDashboard() {
         {/* Profit */}
         <div className="flex flex-col space-y-4">
             <div className="bg-white p-4 rounded-lg shadow">
-                <h3 className="text-lg font-semibold">Profit</h3>
-                <div className="text-4xl font-bold mt-2 text-center">290,000</div>
+                <h3 className="text-lg font-semibold">Total Items in stock</h3>
+                <div className="text-4xl font-bold mt-2 text-center">1,500</div>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow">
+                <h3 className="text-lg font-semibold">Total Items sales</h3>
+                <div className="text-4xl font-bold mt-2 text-center">10,000</div>
             </div>
             <div className="bg-white p-4 rounded-lg shadow">
                 <h3 className="text-lg font-semibold">Profit</h3>
-                <div className="text-4xl font-bold mt-2 text-center">290,000</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-                <h3 className="text-lg font-semibold">Profit</h3>
-                <div className="text-4xl font-bold mt-2 text-center">290,000</div>
+                <div className="text-4xl font-bold mt-2 text-center">50,000</div>
             </div>
         </div>
 
@@ -164,8 +165,8 @@ export default function PharmaDashboard() {
           <div>
             <div className="flex font-semibold py-3">
               <div className="flex-1">Product Name</div>
-              <div className="w-24 text-right mr-4">Amount</div>
-              <div className="w-24">Status</div>
+              <div className="w-24  text-center">Amount</div>
+              <div className="w-32 text-center">Status</div>
             </div>
             {inventoryData.map(item => renderInventoryItem(item))}
           </div>
