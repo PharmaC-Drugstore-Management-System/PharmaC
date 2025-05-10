@@ -10,7 +10,7 @@ import {
 import { useNavigate } from 'react-router-dom'; // <-- Add this line
 
 export default function NavbarComponent() {
-  const [activeTab, setActiveTab] = useState(3); // Set Clock as active by default
+  const [activeTab, setActiveTab] = useState(0); // Set default
   const navigate = useNavigate(); // <-- Add this line
 
   const handleTabClick = (index: number): void => {
