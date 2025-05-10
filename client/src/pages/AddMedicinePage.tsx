@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Barcode, Upload } from 'lucide-react';
+import { Barcode, Upload, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Header from '../components/Header';
 import BarcodeScanner from 'react-qr-barcode-scanner';
@@ -9,7 +9,6 @@ export default function AddMedicinePage() {
     const [data, setData] = useState("Not Found");
     const [showScanner, setShowScanner] = useState(false);
     const [hasScanned, setHasScanned] = useState(false);
-
 
     const handleScan = (err: unknown, result?: Result) => {
         if (result && !hasScanned) {
@@ -94,7 +93,26 @@ export default function AddMedicinePage() {
                             <div className="flex flex-col items-center">
                                 <h2 className="text-lg font-bold text-gray-800 mt-4">Scan Barcode</h2>
 
-                                <div className="mt-6 flex flex-col items-center w-fit p-4 bg-gray-50 rounded-xl shadow-md border border-gray-200">
+                                <div className="relative mt-6 flex flex-col items-center w-fit p-4 bg-gray-50 rounded-xl shadow-md border border-gray-200">
+
+                                    {/* Header bar with X button */}
+                                    {!hasScanned && (
+                                        <div className="w-full flex flex-row justify-end mb-2">
+                                            <button
+                                                onClick={() => {
+                                                    setShowScanner(false);
+                                                    setHasScanned(false);
+                                                    setData("Not Found");
+                                                }}
+                                                className="ml-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1"
+                                                aria-label="Close Scanner"
+                                            >
+                                                <X size={24} />
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Barcode Scanner */}
                                     {!hasScanned && (
                                         <BarcodeScanner
                                             width={400}
@@ -102,6 +120,8 @@ export default function AddMedicinePage() {
                                             onUpdate={handleScan}
                                         />
                                     )}
+
+                                    {/* Scanned Result */}
                                     <p className="mt-2 text-sm">
                                         Scanned Data:{" "}
                                         <span className={`font-bold ${data === "Not Found" ? "text-red-600" : "text-green-600"}`}>
@@ -109,6 +129,7 @@ export default function AddMedicinePage() {
                                         </span>
                                     </p>
 
+                                    {/* Scan Again Button */}
                                     {hasScanned && (
                                         <button
                                             onClick={() => {
@@ -123,7 +144,6 @@ export default function AddMedicinePage() {
                                 </div>
                             </div>
                         )}
-
                     </div>
                 </div>
             </div>
