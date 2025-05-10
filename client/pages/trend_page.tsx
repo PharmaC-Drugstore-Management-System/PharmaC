@@ -22,13 +22,11 @@ export default function TrendPage() {
             1 January 2023 - 31 January 2023
           </h2>
 
-          <div className="w-full max-w-3xl  px-4">
-            <div className="w-full flex justify-center mb-8">
-              
-                <MedicationDashboard />
-              
+          <div className="w-full px-4">
+            <div className="w-full mb-8 ">
+              <MedicationDashboard />
             </div>
-            <div className="w-full mb-8">
+            <div className="w-full">
               <RevenueTable />
             </div>
           </div>

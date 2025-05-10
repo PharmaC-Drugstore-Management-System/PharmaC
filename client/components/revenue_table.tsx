@@ -39,7 +39,7 @@ export default function RevenueTable() {
 
   return (
 
-      <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="w-full max-w-8xl bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800">Revenue</h2>
         </div>
