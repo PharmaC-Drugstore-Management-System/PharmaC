@@ -1,9 +1,10 @@
-import React from "react";
-import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend
+  XAxis, YAxis, CartesianGrid, Tooltip
 } from 'recharts';
+
+
 
 export default function PharmaDashboard() {
   // Sample data for the charts
@@ -68,19 +69,22 @@ export default function PharmaDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Revenue Chart */}
-          <div className="bg-white p-2 rounded-lg shadow lg:col-span-2">
-            <h3 className="text-lg font-semibold mb-4">Revenue</h3>
-            <div className="flex justify-center">
+          <Link to="/RevenueDetail" className="lg:col-span-2">
+            <div className="bg-white p-2 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow">
+                <h3 className="text-lg font-semibold mb-4">Revenue</h3>
+                <div className="flex justify-center">
                 <LineChart width={500} height={200} data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis domain={[25, 29]} ticks={[25, 26, 27, 28, 29]} tickFormatter={formatYAxisTick} axisLine={false} tickLine={false} />
-                <Tooltip />
-                <Line type="monotone" dataKey="projected" stroke="#8884d8" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="actual" stroke="#82ca9d" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                    <YAxis domain={[25, 29]} ticks={[25, 26, 27, 28, 29]} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="projected" stroke="#8884d8" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="actual" stroke="#82ca9d" strokeWidth={2} dot={false} />
                 </LineChart>
+                </div>
             </div>
-            </div>
+            </Link>
+
 
 
           {/* Stats */}

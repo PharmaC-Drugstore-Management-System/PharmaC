@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from './components/Navbar.tsx';
 import Header from './components/Header.tsx';
 import Dashboard from './pages/Dashboard.tsx';
+import RevenueDetail from "./pages/RevenueDetail.tsx";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <div className="flex-1 overflow-y-auto p-4">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/RevenueDetail" element={<RevenueDetail />} />
             </Routes>
           </div>
         </div>
