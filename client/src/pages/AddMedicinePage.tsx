@@ -1,23 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Barcode, Upload, X } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import Header from '../components/Header';
 import BarcodeScanner from 'react-qr-barcode-scanner';
-import type { Result } from '@zxing/library'; // Import correct type
+import type { Result } from '@zxing/library';
+import Navbar from '../component/Navbar';
+import Header from '../component/Header';
 
 export default function AddMedicinePage() {
     const [data, setData] = useState("Not Found");
     const [showScanner, setShowScanner] = useState(false);
     const [hasScanned, setHasScanned] = useState(false);
+    const [brand, setBrand] = useState(""); // Auto-filled brand
 
     const handleScan = (err: unknown, result?: Result) => {
         if (result && !hasScanned) {
-            setData(result.getText());
-            setHasScanned(true); // Stop further scanning
+            const code = result.getText();
+            setData(code);
+            setHasScanned(true);
         } else if (!result && !hasScanned) {
             setData("Not Found");
         }
     };
+
+    // Fetch brand info when a code is scanned
+ useEffect(() => {
+        if (data !== "Not Found" && hasScanned) {
+            fetch(`https://api.barcodelookup.com/v3/products?barcode=${data}&key=YOUR_API_KEY`)
+                .then((res) => res.json())
+                .then((res) => {
+                    if (res.status === 1 && res.products && res.products.length > 0) {
+                        const product = res.products[0];
+                        const brandName = product.manufacturer?.split(",")[0]?.trim() || "Unknown Brand";
+                        setBrand(brandName);
+                    } else {
+                        setBrand("Unknown Brand");
+                    }
+                })
+                .catch(() => setBrand("Unknown Brand"));
+        }
+    }, [data, hasScanned]);
 
     return (
         <>
@@ -25,7 +45,6 @@ export default function AddMedicinePage() {
                 <Navbar />
                 <div className="w-full h-full flex flex-col">
                     <Header />
-
                     <div className="min-h-screen flex flex-col p-6">
                         <h1 className="text-3xl font-bold mb-8">Add Medication</h1>
 
@@ -45,6 +64,8 @@ export default function AddMedicinePage() {
                                         <input
                                             type="text"
                                             placeholder="Brand..."
+                                            value={brand}
+                                            onChange={(e) => setBrand(e.target.value)}
                                             className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                                         />
                                         <input
@@ -92,7 +113,6 @@ export default function AddMedicinePage() {
                         {showScanner && (
                             <div className="flex flex-col items-center">
                                 <h2 className="text-lg font-bold text-gray-800 mt-4">Scan Barcode</h2>
-
                                 <div className="relative mt-6 flex flex-col items-center w-fit p-4 bg-gray-50 rounded-xl shadow-md border border-gray-200">
 
                                     {/* Header bar with X button */}
@@ -103,6 +123,7 @@ export default function AddMedicinePage() {
                                                     setShowScanner(false);
                                                     setHasScanned(false);
                                                     setData("Not Found");
+                                                    setBrand("");
                                                 }}
                                                 className="ml-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1"
                                                 aria-label="Close Scanner"
@@ -135,6 +156,7 @@ export default function AddMedicinePage() {
                                             onClick={() => {
                                                 setHasScanned(false);
                                                 setData("Not Found");
+                                                setBrand("");
                                             }}
                                             className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                                         >
