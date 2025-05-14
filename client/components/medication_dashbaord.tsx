@@ -15,7 +15,7 @@ export default function MedicationDashboard() {
   return (
          <div className="h-120 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <PieChart>  
                   <Pie
                     data={medicationData}
                     cx="50%"
