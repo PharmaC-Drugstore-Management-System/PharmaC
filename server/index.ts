@@ -1,5 +1,7 @@
+// index.ts
+
 import express from "express";
-import { getUsers, getUserById } from "./controllers/user.controller";
+import userRoutes from "./routes/user.route";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -11,11 +13,8 @@ app.get("/", (req, res) => {
   res.send("Welcome to the PharmaC API");
 });
 
-// Route to get all users
-app.get("/users", getUsers);
-
-// Route to get a user by ID
-app.get("/users/:id", getUserById);
+// Use the user routes
+app.use("/users", userRoutes);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
