@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Search, Plus, Edit2, ChevronDown} from 'lucide-react';
-import Navbar from '../components/Navbar';
-import Header from '../components/Header';
 import { Link } from 'react-router-dom';
 
 export default function PharmacInventoryPage() {
@@ -25,12 +23,6 @@ export default function PharmacInventoryPage() {
 
   return (
     <>
-    
-    <div className="bg-white-100 min-h-screen flex flex-row h-screen w-screen">
-    <Navbar/>
-      <div className="w-full h-full flex flex-col ">
-        {/* Header */} 
-        <Header/>
 
         {/* Main Content */}
         <div className="flex-1 p-6 overflow-hidden flex flex-col">
@@ -96,8 +88,6 @@ export default function PharmacInventoryPage() {
             </button>
           </Link>
         </div>
-      </div>
-    </div>
     </>
   );
 }
