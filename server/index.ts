@@ -1,5 +1,3 @@
-// index.ts
-
 import express from "express";
 import userRoutes from "./routes/user.route";
 
