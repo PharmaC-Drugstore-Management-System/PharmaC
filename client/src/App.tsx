@@ -8,6 +8,7 @@ import PharmacInventoryPage from "./pages/PharmacInventoryPage.tsx";
 import SettingsPage from "./pages/settingPage.tsx";
 import AccountPage from "./pages/accountPage.tsx";
 import ThemePage from "./pages/ThemePage.tsx";
+import EditRolePage from "./pages/editRolePage.tsx";
 // import Dashboard from './pages/Dashboard.tsx';
 
 function AppContent() {
@@ -15,7 +16,8 @@ function AppContent() {
   const isSettingsPage = location.pathname === '/settings';
   const isAccountPage = location.pathname === '/accountSetting';
   const isThemePage = location.pathname === '/pageSetting';
-  const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage;
+  const isEditRolePage = location.pathname === '/editrole';
+  const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage || isEditRolePage;
 
   return (
     <div className="flex h-screen">
@@ -40,6 +42,7 @@ function AppContent() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/accountSetting" element={<AccountPage />} />
             <Route path="/pageSetting" element={< ThemePage/>} />
+            <Route path="/editrole" element={< EditRolePage/>} />
             {/* <Route path="/medicine-details" element={<MedicineDetailPage />} /> */}
           </Routes>
         </div>

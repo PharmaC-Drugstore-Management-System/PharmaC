@@ -7,7 +7,7 @@ export default function SettingsPage() {
   const settingsItems = [
     { label: 'Account', href: '/accountSetting' },
     { label: 'Page Setting', href: '/pageSetting' },
-    { label: 'Edit role', href: '#' },
+    { label: 'Edit role', href: '/editrole' },
     { label: 'Term & Condition', href: '#' },
     { label: 'Contact us', href: '#' }
   ];
