@@ -1,48 +1,53 @@
 @import "tailwindcss";
 
-body {
-  background-color: #FAF9F8;
-}
-
 @page {
-  size: A4;
+  size: A3 portrait !important;
   margin: 0;
 }
 
 @media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    accent-color: exact !important;
+  }
+
   body {
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   body * {
     visibility: hidden;
   }
 
-  .no-print {
-    display: none !important;
-  }
-
+  
   .printable-content,
   .printable-content * {
     visibility: visible;
   }
 
   .printable-content {
-    position: absolute;
-    top: 0;
-    left: 18px;
-    transform: scale(0.5);
-    transform-origin: top left;
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    /* Shrink the logical layout space to match the scaled size */
-    max-height: calc(297mm / 0.64);
-    max-width: calc(210mm / 0.64);
+    position: absolute;
+    top: 0%;
+    left: 0%;
+
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
   }
 
-
-
-  
+  .print-footer {
+    position: static;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+  .no-print {
+    display: none !important;
+  }
 }
