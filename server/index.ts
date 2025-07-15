@@ -1,13 +1,15 @@
-import { pool } from './db';
+import dotenv from 'dotenv';
+dotenv.config(); // ✅ load .env before anything else
 
-const server = Bun.serve({
-  port: 3000,
-  async fetch(req) {
-    const result = await pool.query('SELECT * FROM medicines');
-    return new Response(JSON.stringify(result.rows), {
-      headers: { 'Content-Type': 'application/json' },
-    });
-  },
+import app from './src/app'; // ⛔️ don't include `.js` or `.ts` — let TS/Node resolve it
+
+import apiRouter from './src/routes/userRoutes';
+
+const PORT = process.env.PORT || 3000;
+
+app.use('/', apiRouter);
+
+app.listen(PORT, () => {
+  console.log(`✅ Server is running on PORT ${PORT}`);
+  console.log(`🔗 Access at http://localhost:${PORT}`);
 });
-
-console.log(`Listening on http://localhost:${server.port} ...`);
