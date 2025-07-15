@@ -1,0 +1,55 @@
+import { UserModel } from "../../models/user";
+import { Role } from "../types/role.enum";
+
+export const users: UserModel[] = [
+  new UserModel({
+    id: 10001,
+    name: "Tanon Peerakul",
+    email: "tanon.p@pharmac.co",
+    taxId: "3100701234567",
+    gender: "Male",
+    phone: "0891234567",
+    birthdate: "1992-07-15",
+    role: Role.OWNER,
+  }),
+  new UserModel({
+    id: 10002,
+    name: "Siriya S.",
+    email: "siriya@pharmac.co",
+    taxId: "3100807654321",
+    gender: "Female",
+    phone: "0899876543",
+    birthdate: "1993-04-20",
+    role: Role.PHARMACIST,
+  }),
+  new UserModel({
+    id: 10003,
+    name: "Nattapong K.",
+    email: "nattapong.k@pharmac.co",
+    taxId: "3100901122334",
+    gender: "Male",
+    phone: "0812345678",
+    birthdate: "1990-12-05",
+    role: Role.EMPLOYEE,
+  }),
+  new UserModel({
+    id: 10004,
+    name: "Kanokwan L.",
+    email: "kanokwan.l@pharmac.co",
+    taxId: "3101002233445",
+    gender: "Female",
+    phone: "0823456789",
+    birthdate: "1988-03-22",
+    role: Role.PHARMACIST,
+  }),
+  new UserModel({
+    id: 10005,
+    name: "Chaiwat M.",
+    email: "chaiwat.m@pharmac.co",
+    taxId: "3101103344556",
+    gender: "Male",
+    phone: "0834567890",
+    birthdate: "1985-09-10",
+    role: Role.EMPLOYEE,
+  }),
+];
