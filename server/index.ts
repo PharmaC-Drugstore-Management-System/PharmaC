@@ -1,19 +1,15 @@
-import express from "express";
-import userRoutes from "./routes/user.route";
+import dotenv from 'dotenv';
+dotenv.config(); // ✅ load .env before anything else
 
-const app = express();
-const port = process.env.PORT || 3000;
+import app from './src/app'; // ⛔️ don't include `.js` or `.ts` — let TS/Node resolve it
 
-app.use(express.json());
+import apiRouter from './src/routes/userRoutes';
 
-// Define the root route
-app.get("/", (req, res) => {
-  res.send("Welcome to the PharmaC API");
-});
+const PORT = process.env.PORT || 3000;
 
-// Use the user routes
-app.use("/users", userRoutes);
+app.use('/', apiRouter);
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`✅ Server is running on PORT ${PORT}`);
+  console.log(`🔗 Access at http://localhost:${PORT}`);
 });
