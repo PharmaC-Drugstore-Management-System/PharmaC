@@ -193,8 +193,10 @@ model pharmacist {
 
 model product {
   product_id             Int                     @id @default(autoincrement()) @map("product_pk")
+  
   product_name           String?                 @db.VarChar(255)
   brand                  String?                 @db.VarChar
+  expiredDate            DateTime?               @db.Date
   price                  Float?                  @db.Real
   product_type_id_fk     Int?
   unit_id_fk             Int?

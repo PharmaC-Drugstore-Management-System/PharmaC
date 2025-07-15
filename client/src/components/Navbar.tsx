@@ -20,9 +20,9 @@ export default function NavbarComponent() {
       case 0:
         navigate('/'); break;
       case 1:
-        navigate('/inbox'); break;
+        navigate('/inventory'); break;
       case 2:
-        navigate('/analytics'); break;
+        navigate('/trend'); break;
       case 3:
         navigate('/clock'); break;
       case 4:

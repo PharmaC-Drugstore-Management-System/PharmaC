@@ -9,6 +9,11 @@ import SettingsPage from "./pages/settingPage.tsx";
 import AccountPage from "./pages/accountPage.tsx";
 import ThemePage from "./pages/ThemePage.tsx";
 import EditRolePage from "./pages/editRolePage.tsx";
+import PODoc from "./pages/PODoc.tsx"
+import POForm from "./pages/POForm.tsx"
+import POEdit from "./pages/POEdit.tsx"
+import RegisterPage from "./pages/registerPage.tsx";
+import LoginPage from "./pages/loginPage.tsx";
 // import Dashboard from './pages/Dashboard.tsx';
 
 function AppContent() {
@@ -17,7 +22,9 @@ function AppContent() {
   const isAccountPage = location.pathname === '/accountSetting';
   const isThemePage = location.pathname === '/pageSetting';
   const isEditRolePage = location.pathname === '/editrole';
-  const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage || isEditRolePage;
+  const isRegisterPage = location.pathname === '/register'
+  const isLoginPage = location.pathname === '/login'
+  const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage || isEditRolePage || isRegisterPage || isLoginPage;
 
   return (
     <div className="flex h-screen">
@@ -43,7 +50,11 @@ function AppContent() {
             <Route path="/accountSetting" element={<AccountPage />} />
             <Route path="/pageSetting" element={< ThemePage/>} />
             <Route path="/editrole" element={< EditRolePage/>} />
-            {/* <Route path="/medicine-details" element={<MedicineDetailPage />} /> */}
+            <Route path="/podoc" element={< PODoc/>} />
+            <Route path="/poedit" element={< POEdit/>} />
+            <Route path="/poform" element={< POForm/>} />
+            <Route path="/register" element={< RegisterPage/>} />
+            <Route path="/login" element={< LoginPage/>} />
           </Routes>
         </div>
       </div>

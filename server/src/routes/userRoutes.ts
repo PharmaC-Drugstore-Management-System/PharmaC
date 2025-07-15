@@ -11,5 +11,8 @@ router.use('/acc',accountRoute)
 import roleRoute from './role.routes.ts'
 router.use('/role', roleRoute)
 
+import inventoryRoute from './medicine.routes.ts'
+router.use('/inventory',inventoryRoute)
+
 
 export default router;
