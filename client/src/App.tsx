@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import Navbar from './components/Navbar.tsx';
-import Header from './components/Header';
+import Navbar from '../components/Navbar';
+import Header from '../components/Header';
 // import PharmacInventoryPage from "./pages/PharmacInventoryPage.tsx";
 import AddMedicinePage from "./pages/AddMedicinePage.tsx";
 import MedicineDetailPage from "./pages/MedicineDetailPage.tsx";
@@ -14,7 +14,12 @@ import POForm from "./pages/POForm.tsx"
 import POEdit from "./pages/POEdit.tsx"
 import RegisterPage from "./pages/registerPage.tsx";
 import LoginPage from "./pages/loginPage.tsx";
-// import Dashboard from './pages/Dashboard.tsx';
+import MainMenu from './pages/index.tsx';
+import StatisticPage from "./pages/StatisticPage.tsx";
+import ExpiryMonitor from "./pages/expiryMonitorPage.tsx";
+import DocumentRecord from "./pages/DocRecordPage.tsx";
+import OrderRecord from "./pages/orderRecordPage.tsx";
+import MembershipRanking from "./pages/memberRankingPage.tsx";
 
 function AppContent() {
   const location = useLocation();
@@ -43,7 +48,7 @@ function AppContent() {
         {/* Page content */}
         <div className={`flex-1 overflow-y-auto ${!hideNavAndHeader ? 'p-6' : ''}`}>
           <Routes>
-            <Route path="/" element={<MedicineDetailPage />} />
+            <Route path="/" element={<MainMenu />} />
             <Route path="/add-medicine" element={<AddMedicinePage />} />
             <Route path="/inventory" element={<PharmacInventoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
@@ -55,6 +60,11 @@ function AppContent() {
             <Route path="/poform" element={< POForm/>} />
             <Route path="/register" element={< RegisterPage/>} />
             <Route path="/login" element={< LoginPage/>} />
+            <Route path="/statistic" element={<StatisticPage />} />
+            <Route path="/expiry-monitor" element={<ExpiryMonitor />} />
+            <Route path="/doc-record" element={<DocumentRecord/>}/>
+            <Route path="/order-record" element={<OrderRecord/>}/>
+            <Route path="/membership-ranking" element={<MembershipRanking/>}/>
           </Routes>
         </div>
       </div>

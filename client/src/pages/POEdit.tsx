@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Edit3, Minus, Bell, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const PurchaseOrder = () => {
   const [isEditMode, setIsEditMode] = useState(false);
@@ -37,6 +38,8 @@ const PurchaseOrder = () => {
       image: "💉",
     },
   ]);
+
+  const navigate = useNavigate();
 
   const removeItem = (id: string) => {
     setOrderItems(orderItems.filter((item) => item.id !== id));
@@ -84,6 +87,7 @@ const PurchaseOrder = () => {
 
   const createQuotation = () => {
     alert("Quotation created successfully!");
+    navigate('/poform')
   };
 
   return (

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, User, Calendar, Upload, Image, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const SupplierDetailsForm = () => {
   const [supplierDetails, setSupplierDetails] = useState<{
@@ -45,10 +46,12 @@ const SupplierDetailsForm = () => {
     reader.readAsDataURL(file);
   }
 };
+  const navigate = useNavigate();
 
   const handleSaveAndContinue = () => {
     alert('Supplier details saved successfully!');
     console.log('Supplier Details:', supplierDetails);
+    navigate('/podoc');
   };
 
   return (

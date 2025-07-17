@@ -5,7 +5,9 @@ import {
   BarChart3,
   Clock,
   FileText,
-  Settings
+  Settings,
+  ClipboardCheck,
+  Trophy
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // <-- Add this line
 
@@ -20,23 +22,28 @@ export default function NavbarComponent() {
       case 0:
         navigate('/'); break;
       case 1:
-        navigate('/inbox'); break;
+        navigate('/inventory'); break;
       case 2:
-        navigate('/analytics'); break;
+        navigate('/statistic'); break;
       case 3:
-        navigate('/clock'); break;
+        navigate('/expiry-monitor'); break;
       case 4:
-        navigate('/documents'); break;
+        navigate('/doc-record'); break;
       case 5:
+        navigate('/order-record'); break;
+      case 6:
+        navigate('/membership-ranking'); break;
+      case 7:
         navigate('/settings'); break;
     }
   };
 
-  return (
+   return (
     <div className="h-screen flex items-center">
-      <div className="bg-teal-600 flex flex-col items-center rounded-[20px]" style={{ width: '60px', height: '90vh', marginLeft: '20px', marginRight: '20px' }}>
+      <div className="bg-teal-600 flex flex-col items-center rounded-[20px]" style={{ width: '60px', height: '80vh', marginLeft: '20px', marginRight: '20px' }}>
         <div className="flex flex-col items-center justify-between h-full py-8">
-          <div className="flex flex-col space-y-12">
+          {/* Changed from space-y-12 to space-y-6 for smaller gaps */}
+          <div className="flex flex-col space-y-6">
             {/* Dashboard Icon */}
             <div 
               className={`flex items-center justify-center w-10 h-10 ${activeTab === 0 ? 'bg-white rounded-full' : ''} cursor-pointer`}
@@ -76,14 +83,30 @@ export default function NavbarComponent() {
             >
               <FileText size={20} color={activeTab === 4 ? "#0D9488" : "white"}/>
             </div>
-          </div>
 
-          {/* Settings Icon */}
-          <div 
-            className={`flex items-center justify-center w-10 h-10 ${activeTab === 5 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-            onClick={() => handleTabClick(5)}
-          >
-            <Settings size={20} color={activeTab === 5 ? "#0D9488" : "white"} />
+            {/* Order Record */}
+            <div 
+              className={`flex items-center justify-center w-10 h-10 ${activeTab === 5 ? 'bg-white rounded-full' : ''} cursor-pointer`}
+              onClick={() => handleTabClick(5)}
+            >
+              <ClipboardCheck size={20} color={activeTab === 5 ? "#0D9488" : "white"} />
+            </div>
+
+            {/* Membership's rank */}
+            <div 
+              className={`flex items-center justify-center w-10 h-10 ${activeTab === 6 ? 'bg-white rounded-full' : ''} cursor-pointer`}
+              onClick={() => handleTabClick(6)}
+            >
+              <Trophy size={20} color={activeTab === 6 ? "#0D9488" : "white"} />
+            </div>
+
+            {/* Settings Icon */}
+            <div 
+              className={`flex items-center justify-center w-10 h-10 ${activeTab === 7 ? 'bg-white rounded-full' : ''} cursor-pointer`}
+              onClick={() => handleTabClick(7)}
+            >
+              <Settings size={20} color={activeTab === 7 ? "#0D9488" : "white"} />
+            </div>
           </div>
         </div>
       </div>
