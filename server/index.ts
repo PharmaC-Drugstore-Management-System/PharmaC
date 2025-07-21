@@ -3,7 +3,7 @@ dotenv.config(); // ✅ load .env before anything else
 
 import app from './src/app'; // ⛔️ don't include `.js` or `.ts` — let TS/Node resolve it
 
-import apiRouter from './src/routes/userRoutes';
+import apiRouter from './src/routes/index.routes';
 
 const PORT = process.env.PORT || 3000;
 

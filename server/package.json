@@ -22,5 +22,10 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0"
+  },
+  "scripts": {
+    "dev": "nodemon --watch src --ext ts --exec bun run build && bun run start",
+    "build": "bun run tsc",
+    "start": "bun run index.ts"
   }
 }
