@@ -82,7 +82,13 @@ export default function MembershipRanking() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Memberships</h1>
+        
+        <div className="flex items-center mb-6">
+          <div className="w-1 h-8 bg-green-600 mr-2"></div>
+          <h2 className="text-xl font-bold" style={{ color: "black" }}>
+            Member Ranking
+          </h2>
+        </div>
           <p className="text-gray-600 mt-1">Member ranking by points</p>
         </div>
 

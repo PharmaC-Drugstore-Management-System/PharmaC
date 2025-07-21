@@ -89,6 +89,7 @@ const renderRevenueRow = (item: any) => {
   return (
     <div key={item.id} className="border-t border-gray-200 py-3">
       <div className="flex items-center text-sm">
+        
         {/* Rank */}
         <div className="w-24 text-center">
           <span
@@ -148,8 +149,16 @@ export default function RevenueDetail() {
 
   return (
     <div className="p-4">
+        {/* Inventory Title */}
+        <div className="flex items-center mb-6">
+          <div className="w-1 h-8 bg-green-600 mr-2"></div>
+          <h2 className="text-xl font-bold" style={{ color: "black" }}>
+            Statistics
+          </h2>
+        </div>
       {/* TREND CHART */}
-      <div className="bg-white p-2 rounded-lg shadow lg:col-span-1">
+      <div className="bg-white p-2 rounded-lg shadow lg:col-span-1 border border-gray-200 mb-4">
+        
         <h3 className="text-lg font-semibold mb-2">Trend</h3>
         {/* Stylized Date Range Picker */}
         <div className="flex justify-between items-center mb-4">
@@ -181,7 +190,7 @@ export default function RevenueDetail() {
             />
           </div>
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center ">
           <PieChart width={500} height={300}>
             <Pie
               data={trendData}
@@ -207,8 +216,8 @@ export default function RevenueDetail() {
         </div>
       </div>
       {/* Revenue Chart */}
-      <div className="bg-white p-4 rounded-lg shadow mb-4">
-        <h3 className="text-lg font-semibold mb-4">Revenue</h3>
+      <div className="bg-white p-4 rounded-lg shadow mb-4 border border-gray-200">
+        <h3 className="text-lg font-semibold mb-4 ">Revenue</h3>
 
         {/* Stylized Date Range Picker */}
         <div className="flex justify-between items-center mb-4">

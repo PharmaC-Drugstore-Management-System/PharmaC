@@ -72,8 +72,17 @@ export default function PharmaDashboard() {
 
   return (
     <div className="flex h-screen bg-gray-50">
+      
       {/* Main Content */}
+      
       <div className="flex-1 p-4 overflow-y-auto">
+          {/* Inventory Title */}
+        <div className="flex items-center mb-6">
+          <div className="w-1 h-8 bg-green-600 mr-2"></div>
+          <h2 className="text-xl font-bold" style={{ color: "black" }}>
+            Main Menu
+          </h2>
+        </div>
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Revenue Chart */}

@@ -75,18 +75,22 @@ export default function OrderRecord() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Order Recorded</h2>
+            {/* Inventory Title */}
+        <div className="flex items-center mb-6">
+          <div className="w-1 h-8 bg-green-600 mr-2"></div>
+          <h2 className="text-xl font-bold" style={{ color: "black" }}>
+            Order Records
+          </h2>
+        </div>
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <Calendar className="w-4 h-4" />
             <span>{dateRange}</span>
-            <button className="ml-2 p-1 hover:bg-gray-100 rounded">
-              <Calendar className="w-4 h-4" />
-            </button>
+         
           </div>
         </div>
 
         {/* Summary Cards */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 mb-3">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center">
               <div className="flex-shrink-0">

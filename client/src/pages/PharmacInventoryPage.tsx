@@ -1,22 +1,33 @@
 import { useState } from "react";
-import { Search, Plus, Edit2, ChevronDown, X, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import {
+  Search,
+  Plus,
+  Edit2,
+  ChevronDown,
+  X,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  ChevronRight,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function PharmacInventoryPage() {
+  const navigate = useNavigate();
   const [items, setItems] = useState([
     {
       id: 1,
-      name: "Item 1",
-      brand: "Pfizer",
+      name: "Para",
+      brand: "Siam",
       price: 39,
-      expiredDate: "10/09/2029",
+      expiredDate: "2025-12-17T00:00:00Z",
       lotId: "000001",
       amount: 10,
     },
     {
       id: 2,
-      name: "Item 2",
-      brand: "-",
+      name: "Vitamin C",
+      brand: "Siam",
       price: 0,
       expiredDate: "-",
       lotId: "-",
@@ -24,8 +35,8 @@ export default function PharmacInventoryPage() {
     },
     {
       id: 3,
-      name: "Item 3",
-      brand: "-",
+      name: "POP",
+      brand: "Siam",
       price: 0,
       expiredDate: "-",
       lotId: "-",
@@ -33,54 +44,23 @@ export default function PharmacInventoryPage() {
     },
     {
       id: 4,
-      name: "Item 4",
+      name: "Aspirin",
       brand: "-",
-      price: 0,
+      price: 300,
       expiredDate: "-",
       lotId: "-",
-      amount: 0,
+      amount: 50,
     },
     {
       id: 5,
-      name: "Item 5",
-      brand: "Moderna",
+      name: "Moderna",
+      brand: "Argentina",
       price: 45,
-      expiredDate: "05/12/2028",
+      expiredDate: "2025-08-17T00:00:00Z",
       lotId: "000002",
-      amount: 8,
-    },
-    {
-      id: 6,
-      name: "Item 6",
-      brand: "Johnson & Johnson",
-      price: 28,
-      expiredDate: "01/15/2030",
-      lotId: "000003",
-      amount: 12,
-    },
-    {
-      id: 7,
-      name: "Item 7",
-      brand: "AstraZeneca",
-      price: 32,
-      expiredDate: "07/22/2029",
-      lotId: "000004",
-      amount: 5,
-    },
-    {
-      id: 8,
-      name: "Item 8",
-      brand: "Merck",
-      price: 41,
-      expiredDate: "03/18/2030",
-      lotId: "000005",
-      amount: 7,
+      amount: 100,
     },
   ]);
-  const totalValue = items.reduce(
-    (sum, item) => sum + Number(item.price) * Number(item.amount),
-    0
-  );
 
   const [editMode, setEditMode] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
@@ -108,6 +88,42 @@ export default function PharmacInventoryPage() {
     }
   };
 
+  const getAmountStatus = (amount: any) => {
+    if (amount < 50) return "text-red-600";
+    if (amount < 100) return "text-yellow-600";
+    return "text-green-600";
+  };
+
+  const lowStockItems = items.filter((item) => item.amount <= 10);
+
+  // For filtering
+  const isExpiringSoon = (dateStr: string): boolean => {
+    if (!dateStr || dateStr === "-") return false;
+
+    const expireDate = new Date(dateStr);
+    const today = new Date();
+    expireDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const diffDays =
+      (expireDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+    return diffDays >= 0 && diffDays <= 180;
+  };
+
+  // For styling
+  const getExpirationClass = (dateStr: string): string => {
+    if (!dateStr || dateStr === "-") return "";
+    const expireDate = new Date(dateStr);
+    const today = new Date();
+    expireDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return "";
+  };
+
+  const expireSoonItems = items.filter((item) =>
+    isExpiringSoon(item.expiredDate)
+  );
+
   return (
     <>
       <div className="flex-1 p-6 overflow-hidden flex flex-col">
@@ -120,13 +136,12 @@ export default function PharmacInventoryPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className=" grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <div className="ml-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Total Medicines */}
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between max-h-[100px] w-full">
+            <div className="flex items-center w-full">
+              <CheckCircle className="w-8 h-8 text-green-600 flex-shrink-0" />
+              <div className="ml-4 flex-1">
                 <p className="text-sm font-medium text-gray-500">
                   Total Medicines
                 </p>
@@ -136,31 +151,79 @@ export default function PharmacInventoryPage() {
               </div>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+
+          {/* Low Stock */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between max-h-[100px]">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
+              <AlertTriangle className="w-8 h-8 text-red-600" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500">Low Stock</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  ฿{totalValue.toFixed(2)}
+                  {lowStockItems.length}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+
+          {/* Expire Soon */}
+          <div
+            onClick={() => navigate("/expiry-monitor")}
+            className={`p-6 rounded-lg shadow-md border cursor-pointer transition-all duration-300 transform max-h-[100px] ${
+              expireSoonItems.length > 0
+                ? "bg-gradient-to-r from-orange-500 to-red-500 border-orange-200 hover:shadow-lg hover:scale-[1.02]"
+                : "bg-white border-gray-200 hover:shadow-md"
+            }`}
+          >
+            <div className="flex justify-between items-start">
+              {/* Left side: Icon + text */}
+              <div className="flex items-center">
+                <Clock
+                  className={`w-10 h-10 ${
+                    expireSoonItems.length > 0
+                      ? "text-white animate-pulse"
+                      : "text-gray-400"
+                  }`}
+                />
+                <div className="ml-4">
+                  <p
+                    className={`text-sm font-medium ${
+                      expireSoonItems.length > 0
+                        ? "text-orange-100"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    Expire Soon
+                  </p>
+                  <p
+                    className={`text-3xl font-bold ${
+                      expireSoonItems.length > 0
+                        ? "text-white"
+                        : "text-gray-900"
+                    }`}
+                  >
+                    {expireSoonItems.length}
+                  </p>
+                </div>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">
-                  Expire Soon
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {items.length}
-                </p>
+
+              {/* Right side: Status & action */}
+              <div className="text-right mt-5">
+                {expireSoonItems.length > 0 ? (
+                  <>
+                    <div className="text-sm font-medium text-white flex items-center justify-end">
+                      Click to Manage
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-xs text-gray-400 mb-1">All good</div>
+                    <div className="text-sm font-medium text-gray-600 flex items-center justify-end">
+                      View
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -205,7 +268,7 @@ export default function PharmacInventoryPage() {
             </div>
             <div className="font-medium text-gray-700">Brand</div>
             <div className="font-medium text-gray-700">Price (THB)</div>
-            <div className="font-semibold">Amount</div>
+            <div className="font-semibold">Stock</div>
             <div className="font-medium text-gray-700">Expired date</div>
             <div className="font-medium text-gray-700 flex items-center">
               <span>Lot id</span>
@@ -266,7 +329,7 @@ export default function PharmacInventoryPage() {
                         onChange={(e) =>
                           handleInputChange(item.id, "brand", e.target.value)
                         }
-                        className="border p-1 rounded"
+                        className="border p-1 rounded "
                       />
                       <input
                         type="number"
@@ -301,7 +364,16 @@ export default function PharmacInventoryPage() {
                     <>
                       <div className="text-gray-700">{item.brand}</div>
                       <div className="text-gray-700">{item.price}</div>
-                      <div className="text-gray-700">{item.expiredDate}</div>
+                      <div
+                        className={`font-semibold ${getAmountStatus(
+                          item.amount
+                        )}`}
+                      >
+                        {item.amount}
+                      </div>
+                      <div className={getExpirationClass(item.expiredDate)}>
+                        {item.expiredDate}
+                      </div>
                       <div className="text-gray-700">{item.lotId}</div>
                     </>
                   )}

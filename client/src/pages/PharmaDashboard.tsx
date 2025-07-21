@@ -34,11 +34,11 @@ export default function PharmaDashboard() {
   
   const COLORS = ['#79e2f2', '#7ab8f2', '#4d82bf', '#38618c', '#213559'];
 
-  const formatYAxisTick = (value) => {
+  const formatYAxisTick = (value:any) => {
     return value;
   };
   
-  const renderInventoryItem = (item) => {
+  const renderInventoryItem = (item:any) => {
     const isInStock = item.status === "In Stock";
     
     return (
@@ -147,7 +147,7 @@ export default function PharmaDashboard() {
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({name, percent}) => `${name} ${(Number(percent) * 100).toFixed(0)}%`}
                     >
                     {trendData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

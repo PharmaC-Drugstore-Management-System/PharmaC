@@ -46,7 +46,13 @@ export default function ExpiryMonitor() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">Expiry Monitor</h2>
+          {/* Inventory Title */}
+        <div className="flex items-center mb-6">
+          <div className="w-1 h-8 bg-green-600 mr-2"></div>
+          <h2 className="text-xl font-bold" style={{ color: "black" }}>
+            Expiry Monitor
+          </h2>
+        </div>
 
         {/* Earliest to Expire Section */}
         <div className="mb-8">
