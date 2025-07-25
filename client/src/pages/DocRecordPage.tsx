@@ -1,8 +1,8 @@
 export default function DocumentRecord() {
   const documents = [
-    { name: "PO #1", image: "/thumbnails/report1.png" },
-    { name: "PO #2", image: "/thumbnails/report2.png" },
-    { name: "PO #3", image: "/thumbnails/report3.png" },
+    { name: "PO #1", image: "assets/medicine.png" },
+    { name: "PO #2", image: "../assets/medicine.png" },
+    { name: "PO #3", image: "../assets/medicine.png" },
   ];
 
   return (
