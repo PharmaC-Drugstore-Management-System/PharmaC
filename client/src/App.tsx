@@ -3,7 +3,7 @@ import Navbar from './components/Navbar.tsx';
 import Header from './components/Header';
 // import PharmacInventoryPage from "./pages/PharmacInventoryPage.tsx";
 import AddMedicinePage from "./pages/AddMedicinePage.tsx";
-import MedicineDetailPage from "./pages/MedicineDetailPage.tsx";
+// import MedicineDetailPage from "./pages/MedicineDetailPage.tsx";
 import PharmacInventoryPage from "./pages/PharmacInventoryPage.tsx";
 import SettingsPage from "./pages/settingPage.tsx";
 import AccountPage from "./pages/accountPage.tsx";
