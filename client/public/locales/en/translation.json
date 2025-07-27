@@ -1,0 +1,18 @@
+{
+  "dashboard": "Dashboard",
+  "inventory": "Inventory",
+  "settings": "Settings",
+  "revenue": "Revenue",
+  "amount_sales": "Amount Sales",
+  "total_sales": "Total Sales",
+  "total_items_in_stock": "Total Items in stock",
+  "total_items_sales": "Total Items sales",
+  "profit": "Profit",
+  "trend": "Trend",
+  "inventory_shortage": "Inventory Shortage",
+  "product_name": "Product Name",
+  "amount": "Amount",
+  "status": "Status",
+  "in_stock": "In Stock",
+  "out_of_stock": "Out of Stock"
+}
