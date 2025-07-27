@@ -1,10 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from './components/Navbar.tsx';
-<<<<<<< Updated upstream
-import Header from './components/Header.tsx';
-import Dashboard from './pages/Dashboard.tsx';
-import RevenueDetail from "./pages/RevenueDetail.tsx";
-=======
 import Header from './components/Header';
 // import PharmacInventoryPage from "./pages/PharmacInventoryPage.tsx";
 import AddMedicinePage from "./pages/AddMedicinePage.tsx";
@@ -19,7 +14,6 @@ import POForm from "./pages/POForm.tsx"
 import POEdit from "./pages/POEdit.tsx"
 import RegisterPage from "./pages/registerPage.tsx";
 import LoginPage from "./pages/loginPage.tsx";
-import Dashboard from "./pages/PharmaDashboard.tsx"
 // import Dashboard from './pages/Dashboard.tsx';
 
 function AppContent() {
@@ -49,7 +43,7 @@ function AppContent() {
         {/* Page content */}
         <div className={`flex-1 overflow-y-auto ${!hideNavAndHeader ? 'p-6' : ''}`}>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<MedicineDetailPage />} />
             <Route path="/add-medicine" element={<AddMedicinePage />} />
             <Route path="/inventory" element={<PharmacInventoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
@@ -67,31 +61,11 @@ function AppContent() {
     </div>
   );
 }
->>>>>>> Stashed changes
 
 function App() {
   return (
     <Router>
-      <div className="flex h-screen">
-        {/* Sidebar */}
-        <Navbar />
-
-        {/* Main content */}
-        <div className="flex flex-col flex-1 overflow-hidden">
-          {/* Fixed Header */}
-          <div className="sticky top-0 z-10">
-            <Header />
-          </div>
-
-          {/* Page content */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/RevenueDetail" element={<RevenueDetail />} />
-            </Routes>
-          </div>
-        </div>
-      </div>
+      <AppContent />
     </Router>
   );
 }

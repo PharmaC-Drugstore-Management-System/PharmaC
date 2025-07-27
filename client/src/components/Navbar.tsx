@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   LayoutGrid,
   Inbox,
@@ -10,7 +10,7 @@ import {
 import { useNavigate } from 'react-router-dom'; // <-- Add this line
 
 export default function NavbarComponent() {
-  const [activeTab, setActiveTab] = useState(0); // Set default
+  const [activeTab, setActiveTab] = useState(3); // Set Clock as active by default
   const navigate = useNavigate(); // <-- Add this line
 
   const handleTabClick = (index: number): void => {
@@ -20,9 +20,9 @@ export default function NavbarComponent() {
       case 0:
         navigate('/'); break;
       case 1:
-        navigate('/inbox'); break;
+        navigate('/inventory'); break;
       case 2:
-        navigate('/analytics'); break;
+        navigate('/trend'); break;
       case 3:
         navigate('/clock'); break;
       case 4:
