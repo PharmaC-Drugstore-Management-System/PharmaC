@@ -1,18 +1,22 @@
 import React, { useState } from "react";
-import { FaBell } from "react-icons/fa"; // Importing the Bell Icon from Font Awesome
+import { FaBell } from "react-icons/fa";
+
+type Notification = {
+  id: number;
+  message: string;
+};
 
 export default function Header() {
-  const [notifications, setNotifications] = useState([]); // Store notifications
-  const [showNotifications, setShowNotifications] = useState(false); // State to manage notification visibility
+  const [notifications, setNotifications] = useState<Notification[]>([]); 
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  // Add a new notification (for demonstration purposes)
   const handleNotificationClick = () => {
-    const newNotification = {
+    const newNotification: Notification = {
       id: Date.now(),
       message: "New notification received!",
     };
-    setNotifications([newNotification, ...notifications].slice(0, 10)); // Limit to 5 notifications
-    setShowNotifications((prev) => !prev); // Toggle notification visibility
+    setNotifications([newNotification, ...notifications].slice(0, 10));
+    setShowNotifications((prev) => !prev);
   };
 
   return (
@@ -21,7 +25,6 @@ export default function Header() {
         <div className="flex items-center p-4">
           <h1 className="font-bold text-gray-800 text-2xl">PharmaC</h1>
           <div className="ml-auto flex items-center space-x-4">
-            {/* Bell Icon button */}
             <button
               onClick={handleNotificationClick}
               className="p-2 bg-gray-200 rounded-full shadow-md hover:bg-gray-300 flex items-center"
@@ -33,26 +36,27 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Notification List */}
       {showNotifications && notifications.length > 0 && (
         <div
           className="absolute top-12 right-4 bg-white p-4 rounded-lg shadow-lg w-72 max-h-80 overflow-y-auto z-20"
-          style={{ top: "50px" }} // Position the notification box below the bell icon
+          style={{ top: "50px" }}
         >
           <h3 className="font-semibold text-lg mb-4">Notifications</h3>
           <div className="overflow-y-auto max-h-64">
-            {/* Map through notifications and display them */}
             {notifications.map((notification, index) => (
               <div
                 key={notification.id}
-                className={`p-3 ${index !== notifications.length - 1 ? "border-b border-gray-300" : ""} bg-white`}
+                className={`p-3 ${
+                  index !== notifications.length - 1
+                    ? "border-b border-gray-300"
+                    : ""
+                } bg-white`}
               >
                 <p>{notification.message}</p>
               </div>
             ))}
           </div>
 
-          {/* Fixed "See All" Button at the Bottom */}
           <div className="absolute bottom-0 left-0 w-full p-2">
             <button className="w-full bg-white py-2 rounded-full shadow hover:bg-gray-200">
               See All

@@ -14,6 +14,7 @@ import POForm from "./pages/POForm.tsx"
 import POEdit from "./pages/POEdit.tsx"
 import RegisterPage from "./pages/registerPage.tsx";
 import LoginPage from "./pages/loginPage.tsx";
+import Dashboard from "./pages/Dashboard.tsx"
 // import Dashboard from './pages/Dashboard.tsx';
 
 function AppContent() {
@@ -43,7 +44,7 @@ function AppContent() {
         {/* Page content */}
         <div className={`flex-1 overflow-y-auto ${!hideNavAndHeader ? 'p-6' : ''}`}>
           <Routes>
-            <Route path="/" element={<MedicineDetailPage />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/add-medicine" element={<AddMedicinePage />} />
             <Route path="/inventory" element={<PharmacInventoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
