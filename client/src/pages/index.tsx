@@ -71,12 +71,9 @@ export default function PharmaDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      
-      {/* Main Content */}
-      
+    <div className="flex bg-gray-50">
       <div className="flex-1 p-4 overflow-y-auto">
-          {/* Inventory Title */}
+        {/* Inventory Title */}
         <div className="flex items-center mb-6">
           <div className="w-1 h-8 bg-green-600 mr-2"></div>
           <h2 className="text-xl font-bold" style={{ color: "black" }}>
