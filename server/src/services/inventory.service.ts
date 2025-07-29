@@ -5,7 +5,11 @@ const inventory_service = {
     product_name: string,
     brand: string,
     price: number,
-    exDate: Date
+    exDate: Date,
+    product_type_id: number,
+    unit_id: number,
+    iscontrolled_id: number,
+    amount:number
   ) => {
     try {
       const add = await prisma.product.create({
@@ -13,7 +17,11 @@ const inventory_service = {
           product_name: product_name,
           brand: brand,
           price: price,
+          product_type_id: product_type_id,
+          unit_id: unit_id,
+          iscontrolled_id: iscontrolled_id,
           expiredDate: exDate,
+          amount: amount
         },
       });
       return add;
@@ -25,7 +33,13 @@ const inventory_service = {
 
   get_service: async () => {
     try {
-      const get = await prisma.product.findMany();
+      const get = await prisma.product.findMany({
+        include:{
+          product_types: true,
+          unit: true,
+          is_controlled_medicine: true
+        }
+      });  
       return get;
     } catch (error: any) {
       console.error("Error in inventory_service.get_service():", error.message);
