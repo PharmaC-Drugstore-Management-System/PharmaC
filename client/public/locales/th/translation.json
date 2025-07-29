@@ -8,11 +8,11 @@
   "total_items_in_stock": "จำนวนสินค้าคงคลัง",
   "total_items_sales": "ยอดขายสินค้า",
   "profit": "กำไร",
-  "trend": "แนวโน้ม",
+  "trend": "เทรนด์",
   "inventory_shortage": "สินค้าขาดแคลน",
   "product_name": "ชื่อสินค้า",
   "amount": "จำนวน",
   "status": "สถานะ",
-  "in_stock": "สินค้าในคลัง",
+  "in_stock": "มีสินค้าในคลัง",
   "out_of_stock": "สินค้าหมด"
 }
