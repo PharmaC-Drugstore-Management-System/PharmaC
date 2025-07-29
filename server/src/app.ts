@@ -1,16 +1,18 @@
 import express from 'express';
 import cors from 'cors';
-import bcrypt from 'bcrypt'
+
+import apiRouter from './routes/index.routes'; // ✅ import routes
 
 const app = express();
 
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Health check route
-app.get('/', (_req, res) => {
+// ✅ ใส่ routes ตรงนี้!
+app.use('/', apiRouter);
+
+// Health check
+app.get('/health', (_req, res) => {
   res.status(200).json({ message: 'Server is healthy' });
 });
 

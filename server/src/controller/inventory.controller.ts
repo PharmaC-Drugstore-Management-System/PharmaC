@@ -13,6 +13,19 @@ const controller = {
         } catch (error) {
             
         }
+    },
+    get: async (req:any, res:any) => {
+        try{
+            const response = await inventory_service.get_service();
+            if(response.length === 0){
+                return res.status(404).json({message:'No data found'})
+            }
+            return res.status(200).json({message:'Get all medicine',data:response})
+        }
+        catch(error){
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            return res.status(500).json({message:'Internal server error', error: errorMessage});
+        }
     }
 }
 export default controller

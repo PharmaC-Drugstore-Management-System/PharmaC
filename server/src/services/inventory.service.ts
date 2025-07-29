@@ -1,3 +1,4 @@
+import { get } from "http";
 import prisma from "../utils/prisma.utils";
 const inventory_service = {
   add_service: async (
@@ -15,11 +16,22 @@ const inventory_service = {
           expiredDate: exDate,
         },
       });
-      return add
-    } catch (error : any) {
+      return add;
+    } catch (error: any) {
       console.error("Error in inventory_service.regis():", error.message);
       throw error;
     }
   },
+
+  get_service: async () => {
+    try {
+      const get = await prisma.product.findMany();
+      return get;
+    } catch (error: any) {
+      console.error("Error in inventory_service.get_service():", error.message);
+      throw error;
+    }
+  },
 };
+
 export default inventory_service;

@@ -1,13 +1,9 @@
 import dotenv from 'dotenv';
-dotenv.config(); // ✅ load .env before anything else
+dotenv.config();
 
-import app from './src/app'; // ⛔️ don't include `.js` or `.ts` — let TS/Node resolve it
-
-import apiRouter from './src/routes/index.routes';
+import app from './src/app'; 
 
 const PORT = process.env.PORT || 3000;
-
-app.use('/', apiRouter);
 
 app.listen(PORT, () => {
   console.log(`✅ Server is running on PORT ${PORT}`);

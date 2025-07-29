@@ -14,6 +14,18 @@ router.use('/role', roleRoute)
 import inventoryRoute from './medicine.routes.ts'
 router.use('/inventory',inventoryRoute)
 
+import lotRoute from './lot.routes.ts'
+router.use('/lot', lotRoute)
+
+import unitRoute from './unit.routes.ts'
+router.use('/unit', unitRoute)
+
+import iscontrolledRoute from './iscontrolled.routes.ts'
+router.use('/iscontrolled', iscontrolledRoute)
+
+import typeRoute from './type.routes.ts'
+router.use('/type', typeRoute)
+
 import forecastRoute from './forecast.routes.ts'
 router.use('/arima',forecastRoute)
 
