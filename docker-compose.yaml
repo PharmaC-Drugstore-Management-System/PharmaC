@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db:
+    build: .
+    container_name: letterland-postgres
+    ports: "5432:5432"
+  networks: letterland-net
+  volumes: pgdata:/var/lib/postgresql/data
+  environment:
+  POSTGRES_USER: admin
+  POSTGRES_PASSWORD: securepassword
+  POSTGRES_DB: letterland_db
+
+networks:
+  letterland-net:
+
+volumes:
+  pgdata:

@@ -33,16 +33,16 @@ export default function RegisterPage() {
 
     return (
         <div>
-            <div className=" px-6 py-4 ">
+            <div className="bg-[#FAF9F8] px-6 py-4 ">
                 <h1 className="text-xl font-semibold text-gray-800">PharmaC</h1>
             </div>
 
-            <div className="min-h-screen flex items-center justify-center p-4 ">
+            <div className=" bg-[#FAF9F8] min-h-screen flex items-center justify-center p-4  ">
                 {/* Form Container */}
                 <div className="p-6 sm:p-8 ">
                     <div className="grid grid-cols-1 lg:grid-cols-2  ">
                         {/* Left Column - General Information */}
-                        <div className="bg-[#faf9f8] rounded-3xl rounded-bl-none rounded-br-none sm:rounded-3xl sm:rounded-tr-none sm:rounded-br-none  p-6 shadow-xl">
+                        <div className="bg-[#FAF9F8] rounded-3xl rounded-bl-none rounded-br-none sm:rounded-3xl sm:rounded-tr-none sm:rounded-br-none  p-6 shadow-xl border border-gray-200">
                             <h2 className="text-lg font-semibold text-gray-800 mb-6 text-center">
                                 General Information
                             </h2>
@@ -129,7 +129,7 @@ export default function RegisterPage() {
                         </div>
 
                         {/* Right Column - Contact Details */}
-                        <div className="bg-[#d6ccc2] rounded-3xl rounded-tl-none rounded-tr-none sm:rounded-3xl sm:rounded-tl-none sm:rounded-bl-none p-6 shadow-xl">
+                        <div className="bg-[#d6ccc2] rounded-3xl rounded-tl-none rounded-tr-none sm:rounded-3xl sm:rounded-tl-none sm:rounded-bl-none p-6 shadow-xl border border-gray-200  ">
                             <h2 className="text-lg font-semibold text-gray-800 mb-6 text-center">
                                 Contact Details
                             </h2>
