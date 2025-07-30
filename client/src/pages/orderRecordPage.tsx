@@ -251,6 +251,5 @@ export default function OrderRecord() {
 
         
       </div>
-    </div>
-  );
+);
 }
