@@ -35,8 +35,8 @@ export default function DocumentRecord() {
 
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4 text-green-800">Document Recorded</h1>
+    <div >
+      <h1 className="text-2xl font-bold mb-4 text-green-800 p-4">Document Recorded</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {documents.map((doc, index) => (
           <div

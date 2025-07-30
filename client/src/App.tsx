@@ -32,7 +32,7 @@ function AppContent() {
   const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage || isEditRolePage || isRegisterPage || isLoginPage;
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-[#FAF9F8]">
       {/* Conditionally render Navbar */}
       {!hideNavAndHeader && <Navbar />}
       
