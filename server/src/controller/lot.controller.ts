@@ -20,5 +20,13 @@ const controller = {
             return res.status(500).json({message: 'Internal server error', error: errorMessage});
         }
     },
+    get : async (req : any, res : any) => {
+        try {
+            const response = await lot_service.get()
+            return res.status(200).json({message:'Get successfully',data:response})
+        } catch (error) {
+            
+        }
+    }
 }
 export default controller

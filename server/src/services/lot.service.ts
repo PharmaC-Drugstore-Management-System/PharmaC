@@ -3,8 +3,6 @@ import prisma from "../utils/prisma.utils";
 const lot_service = {
   create: async (data: any) => {
     try {
-
-        console.log("เข้าปะวะ")
         const lot = await prisma.lot.create({
           data: {
             name: data.name,
@@ -20,6 +18,21 @@ const lot_service = {
       throw error;
     }
   },
+  get : async () =>{
+    try {
+      const lot = await prisma.lot.findMany({
+        include:{
+          product : true,
+           stock_lot_stock_idTostock: true,
+        }
+      })
+      return lot
+    } catch (error: any) {
+      console.error("Error in lot_service", error.message);
+      throw error;
+    }
+  }
+
 };
 
 export default lot_service;

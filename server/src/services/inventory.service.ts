@@ -1,4 +1,3 @@
-import { get } from "http";
 import prisma from "../utils/prisma.utils";
 const inventory_service = {
   add_service: async (
