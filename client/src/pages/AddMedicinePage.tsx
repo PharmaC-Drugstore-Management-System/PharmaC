@@ -9,19 +9,81 @@ export default function AddMedicinePage() {
   const [hasScanned, setHasScanned] = useState(false);
   const [brand, setBrand] = useState("");
   const [products, setProducts] = useState<any[]>([]);
+  const [productTypes, setProductTypes] = useState<any[]>([]);
+  const [unit, setUnit] = useState<any[]>([]);
+
+  const [formData, setFormData] = useState({
+    productName: "",
+    brand: "",
+    price: "",
+    productType: "",
+    unit: "",
+    isControlled: false,
+    expiryDate: "",
+    amount: "",
+  });
 
   const getProduct = async () => {
     try {
       const response = await fetch(
         "http://localhost:5000/inventory/get-medicine"
       );
-
       const result = await response.json();
       if (result.data) {
         setProducts(result.data);
       }
     } catch (error) {
       console.error("Error fetching product:", error);
+    }
+  };
+
+  const getProductType = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/type/get-type");
+      const result = await response.json();
+      if (result.data) {
+        setProductTypes(result.data);
+      }
+    } catch (error) {
+      console.error("Error fetching product types:", error);
+    }
+  };
+
+  const getUnit = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/unit/get-unit");
+      const result = await response.json();
+      if (result.data) {
+        setUnit(result.data);
+      }
+    } catch (error) {
+      console.error("Error fetching units:", error);
+    }
+  };
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(
+        "http://localhost:5000/inventory/add-medicine",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+      const result = await response.json();
+      if (result.success) {
+        alert("Medicine added successfully!");
+        // Optionally reset form or redirect
+      } else {
+        alert("Failed to add medicine.");
+      }
+    } catch (error) {
+      console.error("Error adding medicine:", error);
+      alert("An error occurred while adding medicine.");
     }
   };
 
@@ -35,11 +97,12 @@ export default function AddMedicinePage() {
     }
   };
 
-  // Mocked brand info when a code is scanned
   useEffect(() => {
     getProduct();
+    getProductType();
+    getUnit();
     if (data !== "Not Found" && hasScanned) {
-      setBrand(data); // Just display the scanned barcode as the brand
+      setBrand(data);
     }
   }, [data, hasScanned]);
 
@@ -56,77 +119,131 @@ export default function AddMedicinePage() {
             </div>
             <p className="text-teal-600">Upload image</p>
           </div>
-
-          <ul className="space-y-2">
-            {products.map((p) => (
-              <li key={p.product_id} className="border p-3 rounded shadow-sm">
-                <p>
-                  <strong>Product ID:</strong> {p.product_id}
-                </p>
-                <p>
-                  <strong>Name:</strong> {p.product_name}
-                </p>
-                <p>
-                  <strong>Brand:</strong> {p.brand}
-                </p>
-                <p>
-                  <strong>Price:</strong> {p.price}
-                </p>
-                {/* แสดงฟิลด์อื่น ๆ ตามต้องการ */}
-              </li>
-            ))}
-          </ul>
-
           {/* Form Section */}
+
           <div className="w-full md:w-2/3">
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Product Name..."
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Brand..."
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Price..."
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Product Type..."
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Unit..."
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <input
-                  type="text"
-                  placeholder="is controlled..."
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Expiry Date..."
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Amount..."
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Product Name..."
+                    value={formData.productName}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        productName: e.target.value,
+                      })
+                    }
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Brand..."
+                    value={formData.brand}
+                    onChange={(e) =>
+                      setFormData({ ...formData, brand: e.target.value })
+                    }
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Price..."
+                    value={formData.price}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <select
+                    value={formData.productType}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        productType: e.target.value,
+                      })
+                    }
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="">Select Product Type</option>
+                    {productTypes
+                      .filter((p) => p.product_types !== null)
+                      .map((p) => (
+                        <option
+                          key={p.product_types_id}
+                          value={p.product_types_id}
+                        >
+                          {p.product_types_name}
+                        </option>
+                      ))}
+                  </select>
 
-                <button className="w-full p-3 bg-green-800 text-white rounded-lg hover:bg-green-900 transition">
-                  Submit
-                </button>
+                  <select
+                    value={formData.unit}
+                    onChange={(e) =>
+                      setFormData({ ...formData, unit: e.target.value })
+                    }
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="">Select Unit</option>
+                    {unit
+                      .filter((p) => p.unit !== null)
+                      .map((p) => (
+                        <option key={p.unit_id} value={p.unit_id}>
+                          {p.unit_name}
+                        </option>
+                      ))}
+                  </select>
+
+                  <select
+                    name="isControlled"
+                    value={formData.isControlled ? "true" : "false"}
+                    onChange={(e) =>
+                      setFormData({ ...formData, unit: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white"
+                  >
+                    <option value="" disabled hidden>
+                      Select if Controlled
+                    </option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+
+                  {/* <input
+                    type="checkbox"
+                    placeholder="is controlled..."
+                    value={formData.isControlled}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        isControlled: e.target.value,
+                      })
+                    }
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  /> */}
+                  <input
+                    type="date"
+                    placeholder="Expiry Date..."
+                    value={formData.expiryDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, expiryDate: e.target.value })
+                    }
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Amount..."
+                    value={formData.amount}
+                    onChange={(e) =>
+                      setFormData({ ...formData, amount: e.target.value })
+                    }
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <button className="w-full p-3 bg-green-800 text-white rounded-lg hover:bg-green-900 transition">
+                    Submit
+                  </button>
+                </form>
               </div>
             </div>
           </div>
