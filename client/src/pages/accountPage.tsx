@@ -1,38 +1,167 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+interface AuthMeResponse {
+    user: {
+        id: number;
+    };
+}
+
+interface AccountDetailResponse {
+    data: {
+        firstname: string;
+        lastname: string;
+        email: string;
+        tax_id: string;
+        gender?: string;
+        phonenumber: string;
+        birthdate: string;
+    };
+}
+
 export default function AccountPage() {
-     const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const [isEditing, setIsEditing] = useState(false);
-    
-    const [name, setName] = useState('Ratchanon Promsombut');
-    const [userInfo, setUserInfo] = useState([
-        { label: 'Email', value: 'tanon.p@pharmac.co' },
-        { label: 'Tax ID', value: '3100701234567' },
-        { label: 'Gender', value: 'Male' },
-        { label: 'Phone', value: '0891234567' },
-        { label: 'Birthdate', value: '1992-07-15' }
-    ]);
-    const [imageUrl, setImageUrl] = useState('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face');
+    const [firstname, setFirstname] = useState('');
+    const [employeeid, setEmployeeId] = useState<number | null>(null);
+    const [lastname, setLastname] = useState('');
 
-    const handleInputChange = (index , newValue) => {
+    const [userInfo, setUserInfo] = useState([
+        { label: 'Email', value: '' },
+        { label: 'Tax ID', value: '' },
+        { label: 'Gender', value: '' },
+        { label: 'Phone', value: '' },
+        { label: 'Birthdate', value: '' }
+    ]);
+
+    const [imageUrl, setImageUrl] = useState(
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'
+    );
+
+    const handleInputChange = (index: number, newValue: string) => {
         const newUserInfo = [...userInfo];
         newUserInfo[index].value = newValue;
         setUserInfo(newUserInfo);
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setImageUrl(reader.result);
+                if (typeof reader.result === 'string') {
+                    setImageUrl(reader.result);
+                }
             };
             reader.readAsDataURL(file);
         }
     };
+
+    const checkme = async () => {
+        try {
+            const authme = await fetch('http://localhost:5000/api/me', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const data: AuthMeResponse = await authme.json();
+
+            if (authme.status === 401) {
+                navigate('/login');
+                return;
+            }
+
+            console.log('Authme data:', data);
+            setEmployeeId(data.user.id);
+        } catch (error) {
+            console.log('Error', error);
+        }
+    };
+
+    const loadData = async () => {
+        if (employeeid === null) return;
+
+        try {
+            const res = await fetch('http://localhost:5000/acc/account-detail', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    employee_id: employeeid,
+                }),
+            });
+            const load: AccountDetailResponse = await res.json();
+
+            setFirstname(load.data.firstname || '');
+            setLastname(load.data.lastname || '');
+
+            setUserInfo([
+                { label: 'Email', value: load.data.email },
+                { label: 'Tax ID', value: load.data.tax_id },
+                { label: 'Gender', value: load.data.gender || 'N/A' },
+                { label: 'Phone', value: load.data.phonenumber },
+                {
+                    label: 'Birthdate',
+                    value: new Date(load.data.birthdate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                    }),
+                },
+            ]);
+        } catch (error) {
+            console.log('Error', error);
+        }
+    };
+
+    const editAccount = async () => {
+        try {
+            const body = {
+                employee_id: Number(employeeid),
+                firstname: firstname,
+                lastname: lastname,
+                email: userInfo[0].value,
+                tax_id: userInfo[1].value,
+                gender: userInfo[2].value,
+                phonenumber: userInfo[3].value,
+                birthdate: userInfo[4].value,
+            };
+            console.log(body);
+
+            const edit = await fetch('http://localhost:5000/acc/edit-account', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(body),
+            });
+
+            console.log('Successful');
+            const result = await edit.json();
+            console.log(result);
+        } catch (error) {
+            console.log('Error', error);
+        }
+    };
+
+    const handleEdit = async () => {
+        await editAccount();
+    };
+
+    useEffect(() => {
+        checkme();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (employeeid !== null) {
+            loadData();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [employeeid]);
 
     return (
         <div className="min-h-screen bg-white p-4">
@@ -78,25 +207,32 @@ export default function AccountPage() {
                             </div>
 
                             {isEditing ? (
-                                <input
-                                    type="text"
-                                    className="text-xl font-semibold text-gray-900 mb-2 text-center border rounded px-2 py-1"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                />
+                                <div className="flex flex-col sm:flex-row sm:space-x-2 text-center sm:text-left">
+                                    <input
+                                        type="text"
+                                        className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0 border rounded px-2 py-1"
+                                        value={firstname}
+                                        onChange={(e) => setFirstname(e.target.value)}
+                                        placeholder="First name"
+                                    />
+                                    <input
+                                        type="text"
+                                        className="text-xl font-semibold text-gray-900 mb-2 border rounded px-2 py-1"
+                                        value={lastname}
+                                        onChange={(e) => setLastname(e.target.value)}
+                                        placeholder="Last name"
+                                    />
+                                </div>
                             ) : (
-                                <h3 className="text-xl font-semibold text-gray-900 mb-2">{name}</h3>
+                                <h3 className="text-xl font-semibold text-gray-900 mb-2">{`${firstname} ${lastname}`}</h3>
                             )}
-
                             <p className="text-lg text-gray-500">#10001</p>
                         </div>
 
                         {/* Right side - User Information */}
                         <div className="flex-1 lg:w-2/3">
                             <div className="bg-white lg:flex">
-                                {/* Vertical divider line for desktop */}
                                 <div className="hidden lg:block w-px bg-gray-200 mr-8"></div>
-
                                 <div className="space-y-6 flex-1">
                                     {userInfo.map((item, index) => (
                                         <div key={index} className="flex flex-col sm:flex-row sm:items-center py-2">
@@ -128,13 +264,16 @@ export default function AccountPage() {
                 <div className="flex justify-center mt-8 w-full px-4">
                     <button
                         className="bg-green-700 hover:bg-green-800 text-white w-1/3 sm:px-60 py-4 rounded-lg text-lg font-medium transition-colors duration-200 text-center"
-                        onClick={() => setIsEditing(!isEditing)}
+                        onClick={() => {
+                            if (isEditing) {
+                                handleEdit();
+                            }
+                            setIsEditing(!isEditing);
+                        }}
                     >
                         {isEditing ? 'Save' : 'Edit'}
                     </button>
                 </div>
-
-
             </div>
         </div>
     );

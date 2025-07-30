@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip
 } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 
 export default function PharmaDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const revenueChartData = [
     { name: 'Jan', actual: 26000, projected: 25000 },
@@ -33,8 +36,38 @@ export default function PharmaDashboard() {
   ];
 
   const COLORS = ['#79e2f2', '#7ab8f2', '#4d82bf', '#38618c', '#213559'];
+  const checkme = async () => {
+    try {
+      const authme = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate('/login');
+        return;
+      }
 
-  const renderInventoryItem = (item) => {
+      console.log('Authme data:', data);
+    } catch (error) {
+      console.log('Error', error)
+
+    }
+  }
+
+
+  useEffect(() => {
+    checkme()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  type InventoryItem = {
+    id: number;
+    name: string;
+    amount: string;
+    status: string;
+  };
+  const renderInventoryItem = (item: InventoryItem) => {
     const isInStock = item.status === t('in_stock');
 
     return (
@@ -128,12 +161,13 @@ export default function PharmaDashboard() {
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                 >
-                  {trendData.map((entry, index) => (
+                  {trendData.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
+
                 <Tooltip />
               </PieChart>
             </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -9,11 +9,11 @@ import {
   PieChart,
   Pie,
   Cell,
-  Tooltip as RechartsTooltip,
 } from "recharts";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaFire, FaRegCalendarAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const revenueDetailData = [
   {
@@ -54,14 +54,6 @@ const revenueDetailData = [
   },
 ];
 
-// Sort products by totalSale to calculate rank
-const rankedData = [...revenueDetailData]
-  .sort((a, b) => b.totalSale - a.totalSale)
-  .map((item, index) => ({
-    ...item,
-    rank: index + 1,
-  }));
-
 const revenueChartData = [
   { name: "Jan", actual: 26000, projected: 25000 },
   { name: "Feb", actual: 27000, projected: 26500 },
@@ -80,7 +72,19 @@ const trendData = [
 ];
 
 const COLORS = ["#79e2f2", "#7ab8f2", "#4d82bf", "#38618c", "#213559"];
-const renderRevenueRow = (item: any) => {
+
+interface RevenueItem {
+  id: number;
+  name: string;
+  productId: string;
+  price: number;
+  amount: number;
+  totalSale: number;
+  status: string;
+  rank: number;
+}
+
+const renderRevenueRow = (item: RevenueItem) => {
   const rankColor =
     item.rank <= 3
       ? "bg-orange-100 text-orange-800"
@@ -89,7 +93,6 @@ const renderRevenueRow = (item: any) => {
   return (
     <div key={item.id} className="border-t border-gray-200 py-3">
       <div className="flex items-center text-sm">
-        
         {/* Rank */}
         <div className="w-24 text-center">
           <span
@@ -147,20 +150,48 @@ export default function RevenueDetail() {
   ]);
   const [startDate, endDate] = dateRange;
 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkme = async () => {
+      try {
+        const authme = await fetch("http://localhost:5000/api/me", {
+          method: "GET",
+          credentials: "include",
+        });
+        const data = await authme.json();
+        if (authme.status === 401) {
+          navigate("/login");
+          return;
+        }
+
+        console.log("Authme data:", data);
+      } catch (error) {
+        console.log("Error", error);
+      }
+    };
+    checkme();
+  }, [navigate]);
+
+  // Sort and rank data inside component to reflect latest if needed
+  const rankedData: RevenueItem[] = [...revenueDetailData]
+    .sort((a, b) => b.totalSale - a.totalSale)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+
   return (
     <div className="p-4">
-        {/* Inventory Title */}
-        <div className="flex items-center mb-6">
-          <div className="w-1 h-8 bg-green-600 mr-2"></div>
-          <h2 className="text-xl font-bold" style={{ color: "black" }}>
-            Statistics
-          </h2>
-        </div>
+      {/* Inventory Title */}
+      <div className="flex items-center mb-6">
+        <div className="w-1 h-8 bg-green-600 mr-2"></div>
+        <h2 className="text-xl font-bold" style={{ color: "black" }}>
+          Statistics
+        </h2>
+      </div>
+
       {/* TREND CHART */}
       <div className="bg-white p-2 rounded-lg shadow lg:col-span-1 border border-gray-200 mb-4">
-        
         <h3 className="text-lg font-semibold mb-2">Trend</h3>
-        {/* Stylized Date Range Picker */}
+        {/* Date Range Picker */}
         <div className="flex justify-between items-center mb-4">
           <div className="inline-flex items-center px-4 py-2 bg-white shadow rounded-full border border-gray-200">
             <span className="text-sm mr-2">
@@ -204,22 +235,19 @@ export default function RevenueDetail() {
                 `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
               }
             >
-              {trendData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
+              {trendData.map((_, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
           </PieChart>
         </div>
       </div>
+
       {/* Revenue Chart */}
       <div className="bg-white p-4 rounded-lg shadow mb-4 border border-gray-200">
         <h3 className="text-lg font-semibold mb-4 ">Revenue</h3>
-
-        {/* Stylized Date Range Picker */}
+        {/* Date Range Picker */}
         <div className="flex justify-between items-center mb-4">
           <div className="inline-flex items-center px-4 py-2 bg-white shadow rounded-full border border-gray-200">
             <span className="text-sm mr-2">
@@ -249,7 +277,6 @@ export default function RevenueDetail() {
             />
           </div>
         </div>
-
         <div className="flex justify-center">
           <LineChart width={600} height={250} data={revenueChartData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -272,7 +299,7 @@ export default function RevenueDetail() {
         </div>
       </div>
 
-      {/*   Stock shortage based on trend */}
+      {/* Stock shortage based on trend */}
       <div className="bg-white p-4 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">
           Stock shortage based on trend

@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   LineChart,
   Line,
@@ -13,6 +15,7 @@ import {
 
 export default function PharmaDashboard() {
   // Sample data for the charts
+  const navigate = useNavigate();
   const revenueChartData = [
     { name: "Jan", actual: 26000, projected: 25000 },
     { name: "Feb", actual: 27000, projected: 26500 },
@@ -39,7 +42,39 @@ export default function PharmaDashboard() {
 
   const COLORS = ["#79e2f2", "#7ab8f2", "#4d82bf", "#38618c", "#213559"];
 
-  const renderInventoryItem = (item: any) => {
+  const checkme = async () => {
+    try {
+      const authme = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Authme data:', data);
+    } catch (error) {
+      console.log('Error', error)
+
+    }
+  }
+
+
+  useEffect(() => {
+    checkme()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  type InventoryItem = {
+    id: number;
+    name: string;
+    amount: string;
+    status: string;
+  };
+
+  const renderInventoryItem = ((item: InventoryItem) => {
     const isInStock = item.status === "In Stock";
 
     return (
@@ -56,11 +91,10 @@ export default function PharmaDashboard() {
           </div>
           <div className="flex justify-center items-center w-32">
             <span
-              className={`px-4 py-1 rounded-full text-center text-sm ${
-                isInStock
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
+              className={`px-4 py-1 rounded-full text-center text-sm ${isInStock
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+                }`}
             >
               {item.status}
             </span>
@@ -68,15 +102,15 @@ export default function PharmaDashboard() {
         </div>
       </div>
     );
-  };
+  });
 
   return (
     <div className="flex h-screen bg-gray-50">
-      
+
       {/* Main Content */}
-      
+
       <div className="flex-1 p-4 overflow-y-auto">
-          {/* Inventory Title */}
+        {/* Inventory Title */}
         <div className="flex items-center mb-6">
           <div className="w-1 h-8 bg-green-600 mr-2"></div>
           <h2 className="text-xl font-bold" style={{ color: "black" }}>
@@ -131,13 +165,14 @@ export default function PharmaDashboard() {
                     `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                   }
                 >
-                  {trendData.map((entry, index) => (
+                  {trendData.map((_entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>
+
                 <Tooltip />
               </PieChart>
             </div>

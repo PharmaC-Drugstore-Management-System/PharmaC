@@ -1,22 +1,57 @@
 import { useState } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
-import medicineImage from "../assets/medicine.png"; // Adjust the path as necessary
+import medicineImage from "../assets/medicine.png";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-    console.log("Login attempt:", { email, password, rememberMe });
+  const login = async () => {
+    try {
+      const log = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      });
+
+      if (!log.ok) {
+        const err = await log.json();
+        console.error("Login failed:", err);
+        return;
+      }
+
+      const res = await log.json();
+      console.log('Login successful:', res);
+      navigate("/");
+
+    } catch (error) {
+      console.log('Fetch error:', error);
+    }
   };
 
+
+
+  const handleSubmit = (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    console.log("Login attempt:", { email, password, rememberMe });
+
+    login()
+
+  };
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col lg:flex-row">
       {/* Left Panel - Login Form */}
-      <div className="w-full lg:w-1/2 bg-[#FAF9F8] flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0"  style={{ fontFamily: "'Assistant', sans-serif" }}>
+      <div className="w-full lg:w-1/2 bg-[#FAF9F8] flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0" style={{ fontFamily: "'Assistant', sans-serif" }}>
         <div className="w-full max-w-sm sm:max-w-md">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
@@ -122,11 +157,11 @@ export default function LoginPage() {
           <h2 className="font-tenor text-2xl sm:text-3xl lg:text-4xl  text-gray-800 mb-4 px-4" style={{ fontFamily: '"Tenor Sans", sans-serif' }}>
             Streamlined Operations,
             <br />
-             One Login Away
-           
+            One Login Away
+
           </h2>
         </div>
- 
+
         <div className="relative mt-16 sm:mt-50 z-10">
           <div className="flex items-center justify-center">
             <img

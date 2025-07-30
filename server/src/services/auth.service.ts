@@ -5,18 +5,32 @@ const auth_service = {
   register: async (data: any) => {
     try {
       const hashedPassword = await bcrypt.hash(data.password, 10);
+      const check = await prisma.employee.findMany({
+        where: {
+          email: data.email,
+        },
+      });
+      if (check.length > 0) {
+        throw new Error("Email already exists");
+      }
+
       const reg = await prisma.employee.create({
         data: {
-          employee_id: data.employee_id,
           tax_id: data.tax_id,
-          name: data.name,
+          firstname: data.firstname,
+          lastname: data.lastname,
           email: data.email,
           password: hashedPassword,
           phonenumber: data.phonenumber,
           gender: data.gender,
+          role_id: data.role_id,
+          storecode: data.storecode,
+          additional_info: data.additional_info,
+          zipcode: data.zipcode,
+          country: data.country,
+          province: data.province,
           birthdate: new Date(data.birthdate),
           address: data.address,
-          role_id_fk: data.role_id_fk,
         },
       });
       return reg;
@@ -39,7 +53,7 @@ const auth_service = {
       if (!isMatch) {
         throw new Error("Password is invalid!");
       }
-      return isMatch;
+      return user;
     } catch (error: any) {
       console.error("Error in login service:", error.message);
       throw error;

@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  
 }
 
 datasource db {
@@ -54,7 +55,7 @@ model document {
 
 model employee {
   employee_id       Int                 @id @default(autoincrement())
-  tax_id            Int?
+  tax_id            String?             @db.VarChar(30)
   firstname         String?             @db.VarChar(30)
   email             String              @unique @db.VarChar(30)
   password          String?             @db.VarChar(255)

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Plus, Edit3, Minus, Bell, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Edit3, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const PurchaseOrder = () => {
@@ -89,6 +89,30 @@ const PurchaseOrder = () => {
     alert("Quotation created successfully!");
     navigate('/poform')
   };
+    const checkme = async () => {
+      try {
+        const authme = await fetch('http://localhost:5000/api/me', {
+          method: 'GET',
+          credentials: 'include'
+        })
+        const data = await authme.json();
+        if (authme.status === 401) {
+          navigate('/login');
+          return;
+        }
+  
+        console.log('Authme data:', data);
+      } catch (error) {
+        console.log('Error', error)
+  
+      }
+    }
+  
+  
+    useEffect(() => {
+      checkme()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
   return (
     <div className="min-h-screen ">

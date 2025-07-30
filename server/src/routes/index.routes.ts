@@ -2,8 +2,9 @@ import express from 'express'
 
 const router = express.Router();
 
-import authUser from './auth.routes.ts'
-router.use('/auth',authUser)
+import authRoute from './auth.routes.ts'
+router.use('/api',authRoute)
+
 
 import accountRoute  from './account.routes.ts'
 router.use('/acc',accountRoute)

@@ -1,35 +1,101 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function RegisterPage() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
-        position: "",
-        storeCode: "",
-        street: "",
-        additionalInfo: "",
-        zipCode: "",
-        province: "",
-        country: "",
-        countryCode: "",
-        phoneNumber: "",
+        tax_id: "",
+        firstname: "",
+        lastname: "",
         email: "",
+        password: "",
+        phonenumber: "",
+        gender: "",
+        role_id: 3, // Employee role default
+        storecode: "",
+        additional_info: "",
+        zipcode: "",
+        country: "",
+        province: "",
+        birthdate: "",
+        address: "",
         acceptTerms: false,
     });
 
-    const handleInputChange = (e: any) => {
-        const { name, value, type, checked } = e.target;
+    const [passwordError, setPasswordError] = useState("");
+
+    const validatePassword = (password: string) => {
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        return strongPasswordRegex.test(password);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type, checked } = e.target as HTMLInputElement;
         setFormData((prev) => ({
             ...prev,
             [name]: type === "checkbox" ? checked : value,
         }));
+
+        if (name === "password") {
+            if (!validatePassword(value)) {
+                setPasswordError(
+                    "Password must be at least 8 characters long and include uppercase letters, lowercase letters, numbers, and special characters"
+                );
+            } else {
+                setPasswordError("");
+            }
+        }
     };
 
-    const handleSubmit = (e: any) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!validatePassword(formData.password)) {
+            setPasswordError(
+                "Password must be at least 8 characters long and include uppercase letters, lowercase letters, numbers, and special characters"
+            );
+            return;
+        }
+
+        if (!formData.acceptTerms) {
+            alert("กรุณายอมรับเงื่อนไขก่อนสมัคร");
+            return;
+        }
+
         console.log("Registration data:", formData);
+
+        await register();
     };
+
+    const register = async () => {
+        try {
+            const payload = {
+                ...formData,
+                role_id: Number(formData.role_id),
+            };
+
+            const response = await fetch("http://localhost:5000/api/register", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(payload),
+            });
+            console.log(response);
+            if (response.ok) {
+                navigate("/");
+            }
+
+        } catch (error) {
+            alert("เกิดข้อผิดพลาดในการสมัครสมาชิก");
+            console.error(error);
+        }
+    };
+
+    
+
 
     return (
         <div>
@@ -37,12 +103,12 @@ export default function RegisterPage() {
                 <h1 className="text-xl font-semibold text-gray-800">PharmaC</h1>
             </div>
 
-            <div className=" bg-[#FAF9F8] min-h-screen flex items-center justify-center p-4  ">
+            <div className="bg-[#FAF9F8] min-h-screen flex items-center justify-center p-4">
                 {/* Form Container */}
-                <div className="p-6 sm:p-8 ">
-                    <div className="grid grid-cols-1 lg:grid-cols-2  ">
+                <form onSubmit={handleSubmit} className="p-6 sm:p-8 w-full max-w-5xl">
+                    <div className="grid grid-cols-1 lg:grid-cols-2">
                         {/* Left Column - General Information */}
-                        <div className="bg-[#FAF9F8] rounded-3xl rounded-bl-none rounded-br-none sm:rounded-3xl sm:rounded-tr-none sm:rounded-br-none  p-6 shadow-xl border border-gray-200">
+                        <div className="bg-[#FAF9F8] rounded-3xl rounded-bl-none rounded-br-none sm:rounded-3xl sm:rounded-tr-none sm:rounded-br-none p-6 shadow-xl border border-gray-200">
                             <h2 className="text-lg font-semibold text-gray-800 mb-6 text-center">
                                 General Information
                             </h2>
@@ -56,9 +122,9 @@ export default function RegisterPage() {
                                         </label>
                                         <input
                                             type="text"
-                                            name="firstName"
+                                            name="firstname"
                                             placeholder="Your first name...."
-                                            value={formData.firstName}
+                                            value={formData.firstname}
                                             onChange={handleInputChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
                                             required
@@ -70,14 +136,34 @@ export default function RegisterPage() {
                                         </label>
                                         <input
                                             type="text"
-                                            name="lastName"
+                                            name="lastname"
                                             placeholder="Your last name...."
-                                            value={formData.lastName}
+                                            value={formData.lastname}
                                             onChange={handleInputChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
                                             required
                                         />
                                     </div>
+                                </div>
+
+                                {/* Password */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        placeholder="Password"
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white ${passwordError ? "border-red-500" : "border-gray-300"
+                                            }`}
+                                        required
+                                    />
+                                    {passwordError && (
+                                        <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                                    )}
                                 </div>
 
                                 {/* Position */}
@@ -87,28 +173,76 @@ export default function RegisterPage() {
                                     </label>
                                     <div className="relative">
                                         <select
-                                            name="position"
-                                            value={formData.position}
+                                            name="role_id"
+                                            value={formData.role_id}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white "
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white"
                                             required
                                         >
                                             <option value="" disabled hidden>
                                                 Select your position
                                             </option>
-                                            <option value="pharmacist">Pharmacist</option>
-                                            <option value="pharmacy-technician">
-                                                Pharmacy Technician
+                                            <option value={1}>Admin</option>
+                                            <option value={2}>Owner</option>
+                                            <option value={3}>Employee</option>
+                                            <option value={4}>Phamarcist</option>
+                                            <option value={5}>Owner/Phamarcist</option>
+                                            <option value={6}>Employee/Phamarcist</option>
+                                        </select>
+
+                                        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Gender
+                                    </label>
+                                    <div className="relative">
+                                        <select
+                                            name="gender"
+                                            value={formData.gender}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white"
+                                            required
+                                        >
+                                            <option value="" disabled hidden>
+                                                Select your position
                                             </option>
-                                            <option value="pharmacy-assistant">
-                                                Pharmacy Assistant
-                                            </option>
-                                            <option value="manager">Manager</option>
-                                            <option value="owner">Owner</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
                                         </select>
                                         <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                                     </div>
                                 </div>
+                                {/* Birthdate */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Birthdate
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="birthdate"
+                                        value={formData.birthdate ? formData.birthdate.split('T')[0] : ''}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                                        required
+                                    />
+                                </div>
+                                {/* Tax id */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Tax id
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="tax_id"
+                                        value={formData.tax_id}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                                        required
+                                    />
+                                </div>
+
 
                                 {/* Store Code */}
                                 <div>
@@ -117,9 +251,9 @@ export default function RegisterPage() {
                                     </label>
                                     <input
                                         type="text"
-                                        name="storeCode"
+                                        name="storecode"
                                         placeholder="Your Store code..."
-                                        value={formData.storeCode}
+                                        value={formData.storecode}
                                         onChange={handleInputChange}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
                                         required
@@ -129,7 +263,7 @@ export default function RegisterPage() {
                         </div>
 
                         {/* Right Column - Contact Details */}
-                        <div className="bg-[#d6ccc2] rounded-3xl rounded-tl-none rounded-tr-none sm:rounded-3xl sm:rounded-tl-none sm:rounded-bl-none p-6 shadow-xl border border-gray-200  ">
+                        <div className="bg-[#d6ccc2] rounded-3xl rounded-tl-none rounded-tr-none sm:rounded-3xl sm:rounded-tl-none sm:rounded-bl-none p-6 shadow-xl border border-gray-200">
                             <h2 className="text-lg font-semibold text-gray-800 mb-6 text-center">
                                 Contact Details
                             </h2>
@@ -142,9 +276,9 @@ export default function RegisterPage() {
                                     </label>
                                     <input
                                         type="text"
-                                        name="street"
+                                        name="address"
                                         placeholder="Your Street & No..."
-                                        value={formData.street}
+                                        value={formData.address}
                                         onChange={handleInputChange}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
                                         required
@@ -158,9 +292,9 @@ export default function RegisterPage() {
                                     </label>
                                     <input
                                         type="text"
-                                        name="additionalInfo"
+                                        name="additional_info"
                                         placeholder="Any additional information..."
-                                        value={formData.additionalInfo}
+                                        value={formData.additional_info}
                                         onChange={handleInputChange}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
                                     />
@@ -173,13 +307,12 @@ export default function RegisterPage() {
                                             Zip Code
                                         </label>
                                         <input
-                                            type="text"
-                                            name="zipCode"
+                                            type="number"
+                                            name="zipcode"
                                             placeholder="Your Zip Code..."
-                                            value={formData.zipCode}
+                                            value={formData.zipcode}
                                             onChange={handleInputChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
-                                            required
                                         />
                                     </div>
                                     <div>
@@ -193,7 +326,6 @@ export default function RegisterPage() {
                                             value={formData.province}
                                             onChange={handleInputChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
-                                            required
                                         />
                                     </div>
                                 </div>
@@ -214,24 +346,21 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                {/* Code + Phone Number */}
-
-
+                                {/* Phone Number */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Phone Number
                                     </label>
                                     <input
-                                        type="tel"
-                                        name="phoneNumber"
+                                        type="number"
+                                        name="phonenumber"
                                         placeholder="Your Phone Number..."
-                                        value={formData.phoneNumber}
+                                        value={formData.phonenumber}
                                         onChange={handleInputChange}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
                                         required
                                     />
                                 </div>
-
 
                                 {/* Email */}
                                 <div>
@@ -273,8 +402,8 @@ export default function RegisterPage() {
 
                                 {/* Register Button */}
                                 <button
-                                    onClick={handleSubmit}
-                                    disabled={!formData.acceptTerms}
+                                    type="submit"
+                                    disabled={!formData.acceptTerms || passwordError !== ""}
                                     className="w-full bg-green-700 text-white py-3 rounded-md font-semibold hover:bg-green-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
                                 >
                                     Register
@@ -282,7 +411,7 @@ export default function RegisterPage() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     );

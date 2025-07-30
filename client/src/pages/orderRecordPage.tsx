@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Calendar, Edit, Package, User,  Clock, CheckCircle, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Calendar, Edit, Package, User, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function OrderRecord() {
   const [orders] = useState([
@@ -44,7 +45,7 @@ export default function OrderRecord() {
   const [currentPage, setCurrentPage] = useState(1);
   const [dateRange, setDateRange] = useState('1 May 2025 - 31 May 2025');
 
-  const getStatusColor = (status: any) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'Completed':
         return 'bg-green-100 text-green-800';
@@ -57,7 +58,7 @@ export default function OrderRecord() {
     }
   };
 
-  const getStatusIcon = (status: any) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Completed':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
@@ -67,6 +68,32 @@ export default function OrderRecord() {
         return <Clock className="w-4 h-4 text-yellow-600" />;
     }
   };
+  const navigate = useNavigate();
+  const checkme = async () => {
+    try {
+      const authme = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Authme data:', data);
+    } catch (error) {
+      console.log('Error', error)
+
+    }
+  }
+
+
+  useEffect(() => {
+    checkme()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -75,17 +102,17 @@ export default function OrderRecord() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-            {/* Inventory Title */}
-        <div className="flex items-center mb-6">
-          <div className="w-1 h-8 bg-green-600 mr-2"></div>
-          <h2 className="text-xl font-bold" style={{ color: "black" }}>
-            Order Records
-          </h2>
-        </div>
+          {/* Inventory Title */}
+          <div className="flex items-center mb-6">
+            <div className="w-1 h-8 bg-green-600 mr-2"></div>
+            <h2 className="text-xl font-bold" style={{ color: "black" }}>
+              Order Records
+            </h2>
+          </div>
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <Calendar className="w-4 h-4" />
             <span>{dateRange}</span>
-         
+
           </div>
         </div>
 
@@ -104,7 +131,7 @@ export default function OrderRecord() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -118,7 +145,7 @@ export default function OrderRecord() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -156,7 +183,7 @@ export default function OrderRecord() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {orders.map((order, index) => (
+                {orders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -197,7 +224,7 @@ export default function OrderRecord() {
         {/* Pagination */}
         <div className="mt-6 flex items-center justify-center">
           <nav className="flex items-center space-x-2">
-            <button 
+            <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
             >
@@ -206,14 +233,14 @@ export default function OrderRecord() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            
+
             <div className="flex items-center space-x-1">
               <button className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">
                 01
               </button>
             </div>
-            
-            <button 
+
+            <button
               onClick={() => setCurrentPage(prev => prev + 1)}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
             >
@@ -225,7 +252,7 @@ export default function OrderRecord() {
           </nav>
         </div>
 
-        
+
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { ChevronLeft, Pencil, X, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function SettingsPage() {
@@ -46,6 +46,30 @@ export default function SettingsPage() {
     console.log('Saving...', items);
     setEdit(false);
   };
+  const checkme = async () => {
+    try {
+      const authme = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Authme data:', data);
+    } catch (error) {
+      console.log('Error', error)
+
+    }
+  }
+
+
+  useEffect(() => {
+    checkme()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="min-h-screen bg-white p-4">

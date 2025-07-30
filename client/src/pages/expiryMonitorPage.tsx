@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Calendar, Bell } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 
 
 export default function ExpiryMonitor() {
+  const navigate = useNavigate();
   const [startDate, setStartDate] = useState('2025-05-01');
   const [filterStartDate, setFilterStartDate] = useState('2025-09-01');
   const [filterEndDate, setFilterEndDate] = useState('2025-12-31');
@@ -36,17 +38,40 @@ export default function ExpiryMonitor() {
     }
   ];
 
-  
+  const checkme = async () => {
+    try {
+      const authme = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Authme data:', data);
+    } catch (error) {
+      console.log('Error', error)
+
+    }
+  }
+
+
+  useEffect(() => {
+    checkme()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
 
 
   return (
     <div className="min-h-screen bg-gray-50">
-     
+
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Inventory Title */}
+        {/* Inventory Title */}
         <div className="flex items-center mb-6">
           <div className="w-1 h-8 bg-green-600 mr-2"></div>
           <h2 className="text-xl font-bold" style={{ color: "black" }}>
@@ -79,7 +104,7 @@ export default function ExpiryMonitor() {
               <div className="w-16 text-center">Total</div>
               <div className="w-20 text-center">Lot id</div>
             </div>
-           
+
           </div>
         </div>
 
@@ -109,7 +134,7 @@ export default function ExpiryMonitor() {
               <div className="w-16 text-center">Total</div>
               <div className="w-20 text-center">Lot id</div>
             </div>
-          
+
           </div>
         </div>
       </div>

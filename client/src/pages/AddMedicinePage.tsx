@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Barcode, Upload, X } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 import BarcodeScanner from 'react-qr-barcode-scanner';
 import type { Result } from '@zxing/library';
 
 export default function AddMedicinePage() {
+    const navigate = useNavigate();
     const [data, setData] = useState("Not Found");
     const [showScanner, setShowScanner] = useState(false);
     const [hasScanned, setHasScanned] = useState(false);
     const [brand, setBrand] = useState(""); // Auto-filled brand
 
-    const handleScan = (err: unknown, result?: Result) => {
+    const handleScan = (_err: unknown, result?: Result) => {
         if (result && !hasScanned) {
             const code = result.getText();
             setData(code);
@@ -19,10 +21,34 @@ export default function AddMedicinePage() {
         }
     };
 
-    // Mocked brand info when a code is scanned
+    const checkme = async () => {
+        try {
+            const authme = await fetch('http://localhost:5000/api/me', {
+                method: 'GET',
+                credentials: 'include'
+            })
+            const data = await authme.json();
+            if (authme.status === 401) {
+                navigate('/login');
+                return;
+            }
+
+            console.log('Authme data:', data);
+        } catch (error) {
+            console.log('Error', error)
+
+        }
+    }
+
+
+    useEffect(() => {
+        checkme()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     useEffect(() => {
         if (data !== "Not Found" && hasScanned) {
-            setBrand(data); // Just display the scanned barcode as the brand
+            setBrand(data); 
         }
     }, [data, hasScanned]);
 

@@ -5,4 +5,5 @@ const router = Router();
 router.post('/add-medicine', controller.add);
 
 
+
 export default router;

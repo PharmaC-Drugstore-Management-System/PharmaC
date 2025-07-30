@@ -30,7 +30,8 @@ const controller = {
       const {
         employee_id,
         tax_id,
-        name,
+        firstname,
+        lastname,
         email,
         phonenumber,
         gender,
@@ -41,7 +42,8 @@ const controller = {
       const response = await account_service.edit({
         employee_id : employee_id,
         tax_id : tax_id,
-        name : name,
+        firstname : firstname,
+        lastname: lastname,
         email : email,
         phonenumber : phonenumber,
         gender : gender ,

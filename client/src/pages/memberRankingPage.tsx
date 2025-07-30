@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Trophy,
   Medal,
@@ -9,6 +9,7 @@ import {
   Award,
   User,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function MembershipRanking() {
   const [members] = useState([
@@ -38,7 +39,7 @@ export default function MembershipRanking() {
     },
   ]);
 
-  const getRankIcon = (rank: any) => {
+  const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
         return <Crown className="w-5 h-5 text-yellow-500" />;
@@ -51,7 +52,7 @@ export default function MembershipRanking() {
     }
   };
 
-  const getRankColor = (rank: any) => {
+  const getRankColor = (rank: number) => {
     switch (rank) {
       case 1:
         return "bg-gradient-to-r from-yellow-400 to-yellow-500";
@@ -64,7 +65,7 @@ export default function MembershipRanking() {
     }
   };
 
-  const getScoreColor = (rank: any) => {
+  const getScoreColor = (rank: number) => {
     switch (rank) {
       case 1:
         return "text-yellow-700 font-bold";
@@ -76,19 +77,45 @@ export default function MembershipRanking() {
         return "text-blue-700 font-medium";
     }
   };
+  const navigate = useNavigate();
+  const checkme = async () => {
+    try {
+      const authme = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Authme data:', data);
+    } catch (error) {
+      console.log('Error', error)
+
+    }
+  }
+
+
+  useEffect(() => {
+    checkme()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-        
-        <div className="flex items-center mb-6">
-          <div className="w-1 h-8 bg-green-600 mr-2"></div>
-          <h2 className="text-xl font-bold" style={{ color: "black" }}>
-            Member Ranking
-          </h2>
-        </div>
+
+          <div className="flex items-center mb-6">
+            <div className="w-1 h-8 bg-green-600 mr-2"></div>
+            <h2 className="text-xl font-bold" style={{ color: "black" }}>
+              Member Ranking
+            </h2>
+          </div>
           <p className="text-gray-600 mt-1">Member ranking by points</p>
         </div>
 
@@ -138,7 +165,7 @@ export default function MembershipRanking() {
                 <p className="text-2xl font-bold text-gray-900">
                   {Math.round(
                     members.reduce((sum, m) => sum + m.score, 0) /
-                      members.length
+                    members.length
                   )}
                 </p>
               </div>
@@ -176,12 +203,11 @@ export default function MembershipRanking() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {members.map((member, index) => (
+                {members.map((member) => (
                   <tr
                     key={member.id}
-                    className={`hover:bg-gray-50 transition-colors ${
-                      member.rank === 1 ? "bg-yellow-50" : ""
-                    }`}
+                    className={`hover:bg-gray-50 transition-colors ${member.rank === 1 ? "bg-yellow-50" : ""
+                      }`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
@@ -202,9 +228,8 @@ export default function MembershipRanking() {
                         </div>
                         <div className="ml-3">
                           <div
-                            className={`text-sm font-medium text-gray-900 ${
-                              member.rank === 1 ? "text-yellow-800" : ""
-                            }`}
+                            className={`text-sm font-medium text-gray-900 ${member.rank === 1 ? "text-yellow-800" : ""
+                              }`}
                           >
                             {member.name}
                           </div>
@@ -224,11 +249,10 @@ export default function MembershipRanking() {
                           {member.score}
                         </span>
                         <Star
-                          className={`w-4 h-4 ${
-                            member.rank === 1
+                          className={`w-4 h-4 ${member.rank === 1
                               ? "text-yellow-500"
                               : "text-gray-400"
-                          }`}
+                            }`}
                         />
                       </div>
                     </td>

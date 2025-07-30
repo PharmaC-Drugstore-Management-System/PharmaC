@@ -1,9 +1,38 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 export default function DocumentRecord() {
+  const navigate = useNavigate();
   const documents = [
     { name: "PO #1", image: "assets/medicine.png" },
     { name: "PO #2", image: "../assets/medicine.png" },
     { name: "PO #3", image: "../assets/medicine.png" },
   ];
+
+  const checkme = async () => {
+    try {
+      const authme = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Authme data:', data);
+    } catch (error) {
+      console.log('Error', error)
+
+    }
+  }
+
+
+  useEffect(() => {
+    checkme()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
 
   return (
     <div className="p-6">

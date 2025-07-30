@@ -21,7 +21,8 @@ const account_service = {
           employee_id: data.employee_id,
         },
         data: {
-          name: data.name,
+          firstname: data.firstname,
+          lastname:data.lastname,
           email: data.email,
           tax_id: data.tax_id,
           phonenumber: data.phonenumber,

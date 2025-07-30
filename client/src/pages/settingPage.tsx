@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,13 +11,37 @@ export default function SettingsPage() {
     { label: 'Term & Condition', href: '#' },
     { label: 'Contact us', href: '#' }
   ];
+  const checkme = async () => {
+    try {
+      const authme = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Authme data:', data);
+    } catch (error) {
+      console.log('Error', error)
+
+    }
+  }
+
+
+  useEffect(() => {
+    checkme()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="min-h-screen bg-white p-4">
       <div className="w-full">
         {/* Header */}
         <div className="flex items-center p-6 ">
-          <button className="flex items-center justify-center w-12 h-12 bg-teal-600 rounded-full mr-4"   onClick={() => navigate('/')}>
+          <button className="flex items-center justify-center w-12 h-12 bg-teal-600 rounded-full mr-4" onClick={() => navigate('/')}>
             <ChevronLeft className="w-6 h-6 text-white" />
           </button>
           <div>

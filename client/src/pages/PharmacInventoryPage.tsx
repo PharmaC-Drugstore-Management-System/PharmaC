@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   Plus,
@@ -123,6 +123,31 @@ export default function PharmacInventoryPage() {
   const expireSoonItems = items.filter((item) =>
     isExpiringSoon(item.expiredDate)
   );
+
+    const checkme = async () => {
+      try {
+        const authme = await fetch('http://localhost:5000/api/me', {
+          method: 'GET',
+          credentials: 'include'
+        })
+        const data = await authme.json();
+        if (authme.status === 401) {
+          navigate('/login');
+          return;
+        }
+  
+        console.log('Authme data:', data);
+      } catch (error) {
+        console.log('Error', error)
+  
+      }
+    }
+  
+  
+    useEffect(() => {
+      checkme()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
   return (
     <>
