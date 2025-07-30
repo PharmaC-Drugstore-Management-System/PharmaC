@@ -1,74 +1,37 @@
-import { useState, useEffect } from 'react';
-import { Barcode, Upload, X } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
-import BarcodeScanner from 'react-qr-barcode-scanner';
-import type { Result } from '@zxing/library';
-
-export default function AddMedicinePage() {
-    const navigate = useNavigate();
-    const [data, setData] = useState("Not Found");
-    const [showScanner, setShowScanner] = useState(false);
-    const [hasScanned, setHasScanned] = useState(false);
-    const [brand, setBrand] = useState(""); // Auto-filled brand
-
-    const handleScan = (_err: unknown, result?: Result) => {
-        if (result && !hasScanned) {
-            const code = result.getText();
-            setData(code);
-            setHasScanned(true);
-        } else if (!result && !hasScanned) {
-            setData("Not Found");
-        }
-    };
-
-    const checkme = async () => {
-        try {
-            const authme = await fetch('http://localhost:5000/api/me', {
-                method: 'GET',
-                credentials: 'include'
-            })
-            const data = await authme.json();
-            if (authme.status === 401) {
-                navigate('/login');
-                return;
-            }
-
-            console.log('Authme data:', data);
-        } catch (error) {
-            console.log('Error', error)
-
-        }
-    }
-
-
-    useEffect(() => {
-        checkme()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-
-    useEffect(() => {
-        if (data !== "Not Found" && hasScanned) {
-            setBrand(data); 
-        }
-    }, [data, hasScanned]);
 import { useState, useEffect } from "react";
 import { Barcode, Upload, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import BarcodeScanner from "react-qr-barcode-scanner";
 import type { Result } from "@zxing/library";
 
 export default function AddMedicinePage() {
+  const navigate = useNavigate();
   const [data, setData] = useState("Not Found");
   const [showScanner, setShowScanner] = useState(false);
   const [hasScanned, setHasScanned] = useState(false);
-  const [brand, setBrand] = useState("");
+  const [brand, setBrand] = useState(""); // Auto-filled brand
   const [products, setProducts] = useState<any[]>([]);
+
+  const checkme = async () => {
+    try {
+      const authme = await fetch("http://localhost:5000/api/me", {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate("/login");
+        return;
+      }
+      console.log("Authme data:", data);
+    } catch (error) {
+      console.log("Error", error);
+    }
+  };
 
   const getProduct = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/inventory/get-medicine"
-      );
-
+      const response = await fetch("http://localhost:5000/inventory/get-medicine");
       const result = await response.json();
       if (result.data) {
         setProducts(result.data);
@@ -78,7 +41,7 @@ export default function AddMedicinePage() {
     }
   };
 
-  const handleScan = (err: unknown, result?: Result) => {
+  const handleScan = (_err: unknown, result?: Result) => {
     if (result && !hasScanned) {
       const code = result.getText();
       setData(code);
@@ -88,11 +51,15 @@ export default function AddMedicinePage() {
     }
   };
 
-  // Mocked brand info when a code is scanned
   useEffect(() => {
+    checkme();
     getProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (data !== "Not Found" && hasScanned) {
-      setBrand(data); // Just display the scanned barcode as the brand
+      setBrand(data); // Simulate auto-fill
     }
   }, [data, hasScanned]);
 
@@ -113,19 +80,10 @@ export default function AddMedicinePage() {
           <ul className="space-y-2">
             {products.map((p) => (
               <li key={p.product_id} className="border p-3 rounded shadow-sm">
-                <p>
-                  <strong>Product ID:</strong> {p.product_id}
-                </p>
-                <p>
-                  <strong>Name:</strong> {p.product_name}
-                </p>
-                <p>
-                  <strong>Brand:</strong> {p.brand}
-                </p>
-                <p>
-                  <strong>Price:</strong> {p.price}
-                </p>
-                {/* แสดงฟิลด์อื่น ๆ ตามต้องการ */}
+                <p><strong>Product ID:</strong> {p.product_id}</p>
+                <p><strong>Name:</strong> {p.product_name}</p>
+                <p><strong>Brand:</strong> {p.brand}</p>
+                <p><strong>Price:</strong> {p.price}</p>
               </li>
             ))}
           </ul>
@@ -163,7 +121,7 @@ export default function AddMedicinePage() {
                 />
                 <input
                   type="text"
-                  placeholder="is controlled..."
+                  placeholder="Is controlled..."
                   className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
                 <input
@@ -205,7 +163,6 @@ export default function AddMedicinePage() {
               Scan Barcode
             </h2>
             <div className="relative mt-6 flex flex-col items-center w-fit p-4 bg-gray-50 rounded-xl shadow-md border border-gray-200">
-              {/* Header bar with X button */}
               {!hasScanned && (
                 <div className="w-full flex flex-row justify-end mb-2">
                   <button
@@ -223,7 +180,6 @@ export default function AddMedicinePage() {
                 </div>
               )}
 
-              {/* Barcode Scanner */}
               {!hasScanned && (
                 <BarcodeScanner
                   width={400}
@@ -232,7 +188,6 @@ export default function AddMedicinePage() {
                 />
               )}
 
-              {/* Scanned Result */}
               <p className="mt-2 text-sm">
                 Scanned Data:{" "}
                 <span
@@ -244,7 +199,6 @@ export default function AddMedicinePage() {
                 </span>
               </p>
 
-              {/* Scan Again Button */}
               {hasScanned && (
                 <button
                   onClick={() => {
