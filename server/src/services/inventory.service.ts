@@ -36,7 +36,8 @@ const inventory_service = {
         include:{
           product_types: true,
           unit: true,
-          is_controlled_medicine: true
+          is_controlled_medicine: true,
+          lot:true
         }
       });  
       return get;

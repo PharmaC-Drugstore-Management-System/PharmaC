@@ -189,7 +189,7 @@ export default function RevenueDetail() {
       </div>
 
       {/* TREND CHART */}
-      <div className="bg-white p-2 rounded-lg shadow lg:col-span-1 border border-gray-200 mb-4">
+      <div className="bg-white p-2 rounded-lg shadow lg:col-span-1 border border-gray-200 mb-4 p-4">
         <h3 className="text-lg font-semibold mb-2">Trend</h3>
         {/* Date Range Picker */}
         <div className="flex justify-between items-center mb-4">

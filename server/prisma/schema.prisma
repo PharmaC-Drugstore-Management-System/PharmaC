@@ -207,6 +207,7 @@ model product {
   iscontrolled_id        Int?
   expiredDate            DateTime?               @db.Date
   amount                 Float?                  @db.Real
+  lot_id                 Int?
   cart                   cart[]
   cost                   cost[]
   forecasted_product     forecasted_product[]
