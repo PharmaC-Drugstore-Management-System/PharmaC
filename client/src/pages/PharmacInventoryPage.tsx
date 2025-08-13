@@ -41,9 +41,10 @@ export default function PharmacInventoryPage() {
         brand: item.brand,
         price: item.price,
         expiredDate: item.expiredDate || "-",
-        lotId: item.lotId || "-",
+        lotId: item.lot.map((lot: any) => lot.lot_id) || "-",
         amount: item.amount ?? 0,
       }));
+      console.log("Formatted Items:", formattedItems);
       setItems(formattedItems);
     } catch (error) {
       console.log("Error", error);
