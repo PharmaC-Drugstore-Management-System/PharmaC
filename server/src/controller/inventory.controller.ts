@@ -37,7 +37,13 @@ const controller = {
       return res
         .status(200)
         .json({ message: "Added medicine into inventroy", data: response });
-    } catch (error) {}
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return res
+        .status(500)
+        .json({ message: "Internal server error", error: errorMessage });
+    }
   },
   get: async (req: any, res: any) => {
     try {
@@ -47,7 +53,7 @@ const controller = {
       }
       return res
         .status(200)
-        .json({ message: "Get all medicine", data: response });
+        .json({ message: "Get all Product", data: response });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
