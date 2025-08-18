@@ -3,40 +3,36 @@ import inventory_service from "../services/inventory.service.ts";
 const controller = {
   add: async (req: any, res: any) => {
     try {
-      const {
-        product_name,
-        brand,
-        price,
-        expiredDate,
-        product_type_id,
-        unit_id,
-        iscontrolled_id,
-        amount,
-      } = req.body;
+    const {
+      product_name,
+      brand,
+      friendlyid,
+      barcode,
+      iscontrolled,
+      producttype,
+      unit,
+    } = req.body;
 
-      const exDate = new Date(expiredDate);
 
       if (
         !product_name ||
         !brand ||
-        !price ||
-        !exDate ||
-        !product_type_id ||
-        !unit_id ||
-        !iscontrolled_id ||
-        !amount
+        !friendlyid ||
+        !barcode ||
+        !iscontrolled ||
+        !producttype ||
+        !unit
       ) {
         return res.status(404).json({ message: "404 Not found data" });
       }
       const response = await inventory_service.add_service(
         product_name,
         brand,
-        price,
-        exDate,
-        product_type_id,
-        unit_id,
-        iscontrolled_id,
-        amount
+        friendlyid,
+        barcode,
+        iscontrolled,
+        producttype,
+        unit
       );
       return res
         .status(200)

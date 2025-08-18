@@ -13,7 +13,7 @@ const role_service = {
 
       const edit = await prisma.employee.update({
         where: { employee_id },
-        data: { role_id_fk },
+        data: { role_id: role_id_fk },
       });
       if(!edit){
         throw new Error('Cannot edit role in role service')

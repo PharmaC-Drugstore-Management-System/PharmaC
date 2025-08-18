@@ -17,12 +17,11 @@ export default function AddMedicinePage() {
   const [formData, setFormData] = useState({
     productName: "",
     brand: "",
-    price: "",
     productType: "",
     unit: "",
     isControlled: false,
-    expiryDate: "",
-    amount: "",
+    friendlyId: "",
+    barcode: ""
   });
 
   const checkme = async () => {
@@ -166,15 +165,7 @@ export default function AddMedicinePage() {
                     }
                     className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
-                  <input
-                    type="number"
-                    placeholder="Price..."
-                    value={formData.price}
-                    onChange={(e) =>
-                      setFormData({ ...formData, price: e.target.value })
-                    }
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
+                
                   <select
                     value={formData.productType}
                     onChange={(e) =>
@@ -229,37 +220,20 @@ export default function AddMedicinePage() {
                     <option value="true">Yes</option>
                     <option value="false">No</option>
                   </select>
-
-                  {/* <input
-                    type="checkbox"
-                    placeholder="is controlled..."
-                    value={formData.isControlled}
+                  <input
+                    type="text"
+                    placeholder="Lot Id..."
+                    value={formData.friendlyId}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        isControlled: e.target.value,
+                        friendlyId: e.target.value,
                       })
                     }
                     className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  /> */}
-                  <input
-                    type="date"
-                    placeholder="Expiry Date..."
-                    value={formData.expiryDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, expiryDate: e.target.value })
-                    }
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
-                  <input
-                    type="number"
-                    placeholder="Amount..."
-                    value={formData.amount}
-                    onChange={(e) =>
-                      setFormData({ ...formData, amount: e.target.value })
-                    }
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
+
+                
                   <button className="w-full p-3 bg-green-800 text-white rounded-lg hover:bg-green-900 transition">
                     Submit
                   </button>
