@@ -1,73 +1,76 @@
 import { useEffect, useState } from "react";
-import { Plus, Edit3, Minus } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+type OrderItem = {
+  id: number;
+  name: string;
+  brand: string;
+  amount: number;
+  unit: string;
+  price: number;
+  image: string;
+};
+
 const PurchaseOrder = () => {
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [orderItems, setOrderItems] = useState([
-    {
-      id: "P-702",
-      name: "APRACUR 4'S",
-      amount: 300,
-      unit: "pcs",
-      price: 25000,
-      image: "💊",
-    },
-    {
-      id: "P-5878",
-      name: "CEMOL 500mg ฟ้า-ขาว 1000's",
-      amount: 15,
-      unit: "pcs",
-      price: 1500,
-      image: "🏥",
-    },
-    {
-      id: "P-6779",
-      name: "A-MOL Para 250mg/5ml 60ml",
-      amount: 150,
-      unit: "pcs",
-      price: 1200,
-      image: "🧪",
-    },
-    {
-      id: "P-5648",
-      name: "BAKAMOL 10's",
-      amount: 100,
-      unit: "pcs",
-      price: 500,
-      image: "💉",
-    },
-  ]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const navigate = useNavigate();
 
-  const removeItem = (id: string) => {
-    setOrderItems(orderItems.filter((item) => item.id !== id));
+  const loadData = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/inventory/get-medicine", {
+        method: "GET",
+        credentials: "include",
+      });
+      const result = await res.json();
+      const formattedItems = result.data.map((item: any): OrderItem => ({
+        id: item.product_id,
+        name: item.product_name || "Unknown Product",
+        brand: item.brand || "Unknown Brand",
+        price: item.price ?? 1,
+        amount: item.amount ?? 1,
+        unit: "pcs", // Default unit, you can modify this based on your data
+        image: "💊", // Default image, you can modify this based on your data
+      }));
+      console.log("Formatted Items:", formattedItems);
+      setOrderItems(formattedItems);
+    } catch (error) {
+      console.log("Error", error);
+    }
   };
 
-  const updateQuantity = (id: string, newAmount: number) => {
+  const handleItemSelection = (id: number) => {
+    const newSelectedItems = new Set(selectedItems);
+    if (newSelectedItems.has(id)) {
+      newSelectedItems.delete(id);
+    } else {
+      newSelectedItems.add(id);
+    }
+    setSelectedItems(newSelectedItems);
+    
+    // Clear error message when items are selected
+    if (newSelectedItems.size > 0) {
+      setErrorMessage("");
+    }
+  };
+
+  const updateQuantity = (id: number, newAmount: number) => {
+    // Only allow updates if the item is selected
+    if (!selectedItems.has(id)) return;
+    
     setOrderItems(
       orderItems.map((item) =>
-        item.id === id ? { ...item, amount: Math.max(0, newAmount) } : item
+        item.id === id ? { ...item, amount: Math.max(1, newAmount) } : item
       )
     );
   };
 
-  const addNewItem = () => {
-    const newItem = {
-      id: `P-${Math.floor(Math.random() * 9999)}`,
-      name: "New Product",
-      amount: 1,
-      unit: "pcs",
-      price: 0,
-      image: "📦",
-    };
-    setOrderItems([...orderItems, newItem]);
-  };
-
   const getTotalValue = () => {
     return orderItems.reduce(
-      (total, item) => total + item.amount * item.price,
+      (total, item) => total + item.amount * (item.price ?? 0),
       0
     );
   };
@@ -76,9 +79,9 @@ const PurchaseOrder = () => {
     const orderText = orderItems
       .map(
         (item) =>
-          `${item.name} (${item.id}) - ${item.amount} ${
+          `${item.name || "Unknown Product"} (${item.id}) - ${item.amount} ${
             item.unit
-          } @ ${item.price.toLocaleString()} THB`
+          } @ ${(item.price ?? 0).toLocaleString()} THB`
       )
       .join("\n");
     navigator.clipboard.writeText(orderText);
@@ -86,8 +89,15 @@ const PurchaseOrder = () => {
   };
 
   const createQuotation = () => {
-    alert("Quotation created successfully!");
-    navigate('/poform')
+    if (selectedItems.size === 0) {
+      setErrorMessage("Please select at least one item to create a quotation.");
+      return;
+    }
+    setErrorMessage("");
+    // Get selected items data
+    const selectedOrderItems = orderItems.filter(item => selectedItems.has(item.id));
+    console.log("Selected items for PO:", selectedOrderItems);
+    navigate('/poform');
   };
     const checkme = async () => {
       try {
@@ -109,12 +119,11 @@ const PurchaseOrder = () => {
     }
   
   
-    useEffect(() => {
-      checkme()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-
-  return (
+  useEffect(() => {
+    loadData();
+    checkme();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);  return (
     <div className="min-h-screen ">
       {/* Main Content */}
 
@@ -127,29 +136,15 @@ const PurchaseOrder = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-semibold text-gray-800">Order</h3>
-            <button
-              onClick={() => setIsEditMode(!isEditMode)}
-              className={`p-2 rounded-lg transition-colors ${
-                isEditMode
-                  ? "bg-teal-100 text-teal-600"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              <Edit3 className="w-5 h-5" />
-            </button>
           </div>
 
           {/* Order Table Header */}
-          <div
-            className={`grid ${
-              isEditMode ? "grid-cols-6" : "grid-cols-5"
-            } gap-4 pb-4 border-b border-gray-200 text-sm font-medium text-gray-600`}
-          >
+          <div className="grid grid-cols-6 gap-4 pb-4 border-b border-gray-200 text-sm font-medium text-gray-600">
+            <div>Select</div>
             <div className="col-span-2">Product Name</div>
             <div>Product ID</div>
             <div>Amount</div>
             <div>Price (THB)</div>
-            {isEditMode && <div></div>}
           </div>
 
           {/* Order Items */}
@@ -157,66 +152,66 @@ const PurchaseOrder = () => {
             {orderItems.map((item) => (
               <div
                 key={item.id}
-                className={`grid ${
-                  isEditMode ? "grid-cols-6" : "grid-cols-5"
-                } gap-4 items-center py-3 border-b border-gray-100`}
+                className="grid grid-cols-6 gap-4 items-center py-3 border-b border-gray-100"
               >
+                <div>
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.has(item.id)}
+                    onChange={() => handleItemSelection(item.id)}
+                    className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
+                  />
+                </div>
                 <div className="col-span-2 flex items-center space-x-3">
                   <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
                     {item.image}
                   </div>
-                  <span className="font-medium text-gray-800">{item.name}</span>
+                  <div>
+                    <span className="font-medium text-gray-800">{item.name}</span>
+                    <div className="text-sm text-gray-500">{item.brand}</div>
+                  </div>
                 </div>
                 <div className="text-gray-600">{item.id}</div>
                 <div className="flex items-center space-x-2">
-                  {isEditMode && (
-                    <button
-                      onClick={() => updateQuantity(item.id, item.amount - 1)}
-                      className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                  )}
-                  <span className="mx-2 min-w-12 text-center">
-                    {item.amount} {item.unit}
-                  </span>
-                  {isEditMode && (
-                    <button
-                      onClick={() => updateQuantity(item.id, item.amount + 1)}
-                      className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  )}
+                    {selectedItems.has(item.id) && (
+                      <button
+                        onClick={() => updateQuantity(item.id, Math.max(1, item.amount - 1))}
+                        className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                    )}
+                    {selectedItems.has(item.id) ? (
+                      <input
+                        type="number"
+                        min={1}
+                        value={item.amount}
+                        onChange={e => {
+                          const value = Number(e.target.value);
+                          updateQuantity(item.id, isNaN(value) || value < 1 ? 1 : value);
+                        }}
+                        className="mx-2 min-w-12 text-center border rounded px-2 py-1 w-20"
+                      />
+                    ) : (
+                      <span className="mx-2 min-w-12 text-center">
+                        {item.amount} {item.unit}
+                      </span>
+                    )}
+                    {selectedItems.has(item.id) && (
+                      <button
+                        onClick={() => updateQuantity(item.id, item.amount + 1)}
+                        className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    )}
                 </div>
                 <div className="font-semibold">
-                  {item.price.toLocaleString()}
+                  {(item.price ?? 0).toLocaleString()}
                 </div>
-                {isEditMode && (
-                  <div>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center"
-                    >
-                      <Minus className="w-4 h-4 text-red-600" />
-                    </button>
-                  </div>
-                )}
               </div>
             ))}
           </div>
-
-          {/* Add New Item Button */}
-          {isEditMode && (
-            <div className="mt-6">
-              <button
-                onClick={addNewItem}
-                className="w-12 h-12 rounded-full bg-teal-600 hover:bg-teal-700 flex items-center justify-center text-white shadow-lg transition-colors"
-              >
-                <Plus className="w-6 h-6" />
-              </button>
-            </div>
-          )}
 
           {/* Total Summary */}
           <div className="mt-8 pt-6 border-t border-gray-200">
@@ -233,10 +228,19 @@ const PurchaseOrder = () => {
         <div className="mt-8 space-y-3">
           <button
             onClick={createQuotation}
-            className="w-full bg-green-800 hover:bg-green-900 text-white py-4 rounded-lg font-medium transition-colors"
+            className={`w-full py-4 rounded-lg font-medium transition-colors ${
+              selectedItems.size === 0
+                ? "bg-gray-400 text-gray-600 cursor-not-allowed opacity-60"
+                : "bg-green-800 hover:bg-green-900 text-white"
+            }`}
           >
             Create Quotation
           </button>
+          {errorMessage && (
+            <p className="text-red-600 text-sm text-center mt-2">
+              {errorMessage}
+            </p>
+          )}
           <button
             onClick={copyOrderText}
             className="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 py-4 rounded-lg font-medium transition-colors"

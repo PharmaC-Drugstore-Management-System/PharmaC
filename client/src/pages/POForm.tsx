@@ -49,7 +49,6 @@ const SupplierDetailsForm = () => {
   const navigate = useNavigate();
 
   const handleSaveAndContinue = () => {
-    alert('Supplier details saved successfully!');
     console.log('Supplier Details:', supplierDetails);
     navigate('/podoc');
   };
