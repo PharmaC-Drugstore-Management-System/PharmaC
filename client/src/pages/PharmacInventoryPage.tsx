@@ -124,30 +124,28 @@ export default function PharmacInventoryPage() {
     isExpiringSoon(item.expiredDate)
   );
 
-    const checkme = async () => {
-      try {
-        const authme = await fetch('http://localhost:5000/api/me', {
-          method: 'GET',
-          credentials: 'include'
-        })
-        const data = await authme.json();
-        if (authme.status === 401) {
-          navigate('/login');
-          return;
-        }
-  
-        console.log('Authme data:', data);
-      } catch (error) {
-        console.log('Error', error)
-  
+  const checkme = async () => {
+    try {
+      const authme = await fetch("http://localhost:5000/api/me", {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await authme.json();
+      if (authme.status === 401) {
+        navigate("/login");
+        return;
       }
+
+      console.log("Authme data:", data);
+    } catch (error) {
+      console.log("Error", error);
     }
-  
-  
-    useEffect(() => {
-      checkme()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+  };
+
+  useEffect(() => {
+    checkme();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -195,8 +193,8 @@ export default function PharmacInventoryPage() {
             onClick={() => navigate("/expiry-monitor")}
             className={`p-6 rounded-lg shadow-md border cursor-pointer transition-all duration-300 transform max-h-[100px] ${
               expireSoonItems.length > 0
-                ? "bg-gradient-to-r from-orange-500 to-red-500 border-orange-200 hover:shadow-lg hover:scale-[1.02]"
-                : "bg-white border-gray-200 hover:shadow-md"
+                ? "bg-gradient-to-r from-orange-500 to-red-500 border-orange-200 hover:shadow-lg hover:scale-[1.02] opacity-80"
+                : "bg-white border-gray-200 hover:shadow-md opacity-40"
             }`}
           >
             <div className="flex justify-between items-start">
@@ -287,24 +285,23 @@ export default function PharmacInventoryPage() {
             </div>
           </div>
           {/* Table Header */}
-          <div className="grid grid-cols-6 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-200">
-            <div className="font-medium text-gray-700 flex items-center">
-              <span>Name</span>
+          <div className="relative">
+            <div className="grid grid-cols-4 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-200">
+              <div className="font-medium text-gray-700 flex items-center">
+                <span>Name</span>
+              </div>
+              <div className="font-medium text-gray-700">Brand</div>
+              <div className="font-medium text-gray-700">Price (THB)</div>
+              <div className="font-semibold">Stock</div>
             </div>
-            <div className="font-medium text-gray-700">Brand</div>
-            <div className="font-medium text-gray-700">Price (THB)</div>
-            <div className="font-semibold">Stock</div>
-            <div className="font-medium text-gray-700">Expired date</div>
-            <div className="font-medium text-gray-700 flex items-center">
-              <span>Lot id</span>
-              <Edit2
-                onClick={() => {
-                  setEditMode(!editMode);
-                  setSelectedItemId(null);
-                }}
-                className="h-5 w-5 ml-auto text-gray-500 cursor-pointer transition-transform duration-300 hover:scale-125"
-              />
-            </div>
+            <Edit2
+              onClick={() => {
+                setEditMode(!editMode);
+                setSelectedItemId(null);
+              }}
+              className="h-5 w-5 text-gray-500 cursor-pointer transition-transform duration-300 hover:scale-125 absolute top-1/2 right-6 -translate-y-1/2"
+              style={{ zIndex: 10 }}
+            />
           </div>
 
           {/* Table Body */}
@@ -317,7 +314,7 @@ export default function PharmacInventoryPage() {
               return (
                 <div
                   key={item.id}
-                  className={`grid grid-cols-6 gap-4 px-6 py-4 hover:bg-gray-50 transition-all duration-300 ${
+                  className={`grid grid-cols-4 gap-4 px-6 py-4 hover:bg-gray-50 transition-all duration-300 ${
                     isDimmed ? "opacity-50" : "opacity-100"
                   }`}
                 >
@@ -396,10 +393,6 @@ export default function PharmacInventoryPage() {
                       >
                         {item.amount}
                       </div>
-                      <div className={getExpirationClass(item.expiredDate)}>
-                        {item.expiredDate}
-                      </div>
-                      <div className="text-gray-700">{item.lotId}</div>
                     </>
                   )}
                 </div>

@@ -110,12 +110,6 @@ model is_allowed {
   role          role?       @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "isallowed_role_fk")
 }
 
-model is_controlled_medicine {
-  is_controlled_medicine_id Int       @id @default(autoincrement())
-  is_controlled             Boolean?
-  product                   product[]
-}
-
 model is_pharmacist {
   is_pharmacist_id Int         @id @default(autoincrement())
   employee_id      Int?
@@ -131,7 +125,7 @@ model lot {
   lot_id                     Int        @id @default(autoincrement())
   stock_id                   Int?
   product_id                 Int?
-  name                       String?    @db.VarChar(20)
+  lot_no                     String?    @db.VarChar(20)
   amount                     Int?
   added_date                 DateTime?  @db.Date
   expired_date               DateTime?  @db.Date
@@ -198,31 +192,20 @@ model pharmacist {
 }
 
 model product {
-  product_id             Int                     @id @default(autoincrement())
-  product_name           String?                 @db.VarChar(255)
-  brand                  String?                 @db.VarChar
-  price                  Float?                  @db.Real
-  product_type_id        Int?
-  unit_id                Int?
-  iscontrolled_id        Int?
-  expiredDate            DateTime?               @db.Date
-  amount                 Float?                  @db.Real
-  cart                   cart[]
-  cost                   cost[]
-  forecasted_product     forecasted_product[]
-  lot                    lot[]
-  is_controlled_medicine is_controlled_medicine? @relation(fields: [iscontrolled_id], references: [is_controlled_medicine_id], onDelete: NoAction, onUpdate: NoAction, map: "product_is_controlled_medicine_fk")
-  product_types          product_types?          @relation(fields: [product_type_id], references: [product_types_id], onDelete: NoAction, onUpdate: NoAction, map: "product_product_types_fk")
-  unit                   unit?                   @relation(fields: [unit_id], references: [unit_id], onDelete: NoAction, onUpdate: NoAction, map: "product_unit_fk")
-  revenue                revenue[]
-  stock                  stock[]
-  trend                  trend[]
-}
-
-model product_types {
-  product_types_id   Int       @id @default(autoincrement())
-  product_types_name String?   @db.VarChar(50)
-  product            product[]
+  product_id         Int                  @id @default(autoincrement())
+  product_name       String?              @db.VarChar(255)
+  brand              String?              @db.VarChar
+  friendlyid         String?              @db.VarChar(250)
+  barcode            String?              @db.VarChar(250)
+  iscontrolled       Boolean?
+  producttype        String?              @db.VarChar(255)
+  unit               String?              @db.VarChar(255)
+  cart               cart[]
+  cost               cost[]
+  forecasted_product forecasted_product[]
+  lot                lot[]
+  revenue            revenue[]
+  stock              stock[]
   trend              trend[]
 }
 
@@ -329,20 +312,12 @@ model time_period {
 }
 
 model trend {
-  trend_id           Int            @id @default(autoincrement())
-  product_id_fk      Int?
-  metric_id_fk       Int?
-  product_type_id_fk Int?
-  time_id_fk         Int?
-  percentage_change  Decimal?       @db.Decimal(5, 2)
-  metrics            metrics?       @relation(fields: [metric_id_fk], references: [metrics_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_metrics_fk")
-  product            product?       @relation(fields: [product_id_fk], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_product_fk")
-  product_types      product_types? @relation(fields: [product_type_id_fk], references: [product_types_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_product_types_fk")
-  time_period        time_period?   @relation(fields: [time_id_fk], references: [time_period_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_time_period_fk")
-}
-
-model unit {
-  unit_id   Int       @id @default(autoincrement())
-  unit_name String?   @db.VarChar(10)
-  product   product[]
+  trend_id          Int          @id @default(autoincrement())
+  product_id_fk     Int?
+  metric_id_fk      Int?
+  time_id_fk        Int?
+  percentage_change Decimal?     @db.Decimal(5, 2)
+  metrics           metrics?     @relation(fields: [metric_id_fk], references: [metrics_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_metrics_fk")
+  product           product?     @relation(fields: [product_id_fk], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_product_fk")
+  time_period       time_period? @relation(fields: [time_id_fk], references: [time_period_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_time_period_fk")
 }
