@@ -76,7 +76,7 @@ const purchaseService = {
           description: description || "",
           issue_date: issueDate ? new Date(issueDate) : new Date(), // Convert string to Date
           pdf_file: pdfBuffer,
-          pdf_filename: `A${String(nextDocNumber).padStart(6, '0')}.pdf`,
+          pdf_filename: `PO-A${String(nextDocNumber).padStart(6, '0')}.pdf`,
           pdf_mime: "application/pdf",
         },
       });
