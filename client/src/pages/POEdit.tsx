@@ -97,7 +97,7 @@ const PurchaseOrder = () => {
     // Get selected items data
     const selectedOrderItems = orderItems.filter(item => selectedItems.has(item.id));
     console.log("Selected items for PO:", selectedOrderItems);
-    navigate('/poform');
+    navigate('/poform',{state:{ selectedOrderItems }});
   };
     const checkme = async () => {
       try {
@@ -106,7 +106,7 @@ const PurchaseOrder = () => {
           credentials: 'include'
         })
         const data = await authme.json();
-        if (authme.status === 401) {
+        if (authme.status === 401 || authme.status === 403) {
           navigate('/login');
           return;
         }

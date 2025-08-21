@@ -1,8 +1,13 @@
-import { useEffect, useState } from 'react';
-import { Calendar, Upload, Image, Settings } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Upload, Image } from 'lucide-react';
+import { useNavigate} from 'react-router-dom';
+import { useLocation } from 'react-router-dom'
 
 const SupplierDetailsForm = () => {
+  const location = useLocation();
+  const [username, setUsername] = useState('');
+  console.log("Username: ",username)
+
   const [supplierDetails, setSupplierDetails] = useState<{
     contactName: string;
     supplier: string;
@@ -13,14 +18,14 @@ const SupplierDetailsForm = () => {
     businessLogo: string | ArrayBuffer | null;
     comments: string;
   }>({
-    contactName: 'Sangthong Jintadee',
-    supplier: 'SPR-207: SIAM PHARMACEUTICAL CO.,LTD.',
-    taxId: '2958102865201',
-    address: '123/45 ถนนพันทบุรี แขวงมาบงงพดิญุธร กรุงเทพมหานคร 10140',
-    issueDate: '12/09/68',
-    preparedBy: 'Laothong Zhongguo',
+    contactName: '',
+    supplier: '',
+    taxId: '',
+    address: '',
+    issueDate: '',
+    preparedBy: `${username}`,
     businessLogo: null,
-    comments: 'Special Instructions............'
+    comments: ''
   });
 
   const handleInputChange = (field: string, value: string | null) => {
@@ -30,12 +35,24 @@ const SupplierDetailsForm = () => {
     }));
   };
 
-  const handleLogoUpload = (event: { target: { files: any[]; }; }) => {
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // basic validation: only allow png/jpeg and limit to 2MB
+      const allowed = ['image/png', 'image/jpeg'];
+      const maxBytes = 2 * 1024 * 1024; // 2MB
+      if (!allowed.includes(file.type)) {
+        console.warn('Unsupported file type');
+        return;
+      }
+      if (file.size > maxBytes) {
+        console.warn('File too large');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
-        const result = e.target?.result;
+        const result = e.target?.result as string | null;
         if (result) {
           setSupplierDetails(prev => ({
             ...prev,
@@ -47,10 +64,50 @@ const SupplierDetailsForm = () => {
     }
   };
   const navigate = useNavigate();
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validate = {
+    contactName: (supplierDetails.contactName || '').toString().trim().length > 0,
+    supplier: (supplierDetails.supplier || '').toString().trim().length > 0,
+    taxId: (supplierDetails.taxId || '').toString().trim().length === 13,
+    address: (supplierDetails.address || '').toString().trim().length > 0,
+    issueDate: (supplierDetails.issueDate || '').toString().trim().length > 0,
+    preparedBy: (supplierDetails.preparedBy || '').toString().trim().length > 0,
+  };
+
+  const isFormValid = Object.values(validate).every(Boolean);
+
+  const markTouchedAll = () => {
+    setTouched({
+      contactName: true,
+      supplier: true,
+      taxId: true,
+      address: true,
+      issueDate: true,
+      preparedBy: true,
+    });
+  };
 
   const handleSaveAndContinue = () => {
-    console.log('Supplier Details:', supplierDetails);
-    navigate('/podoc');
+    // validate before continuing
+    if (!isFormValid) {
+      // mark all fields touched to show errors
+      markTouchedAll();
+      return;
+    }
+    const payload = { items: location.state?.selectedOrderItems || [], supplierDetails, total: 0 };
+    payload.total = payload.items.reduce((s:any,it:any)=> s + ((it.price||it.unitPrice||0) * (it.amount||it.quantity||0)), 0);
+
+    // persist locally so PODoc can show immediately
+    try {
+      sessionStorage.setItem('podoc_payload', JSON.stringify(payload));
+    } catch (e) {
+      console.warn('Failed to save podoc payload to sessionStorage', e);
+    }
+
+  // navigate directly to PODoc (remove server PDF save)
+  navigate('/podoc', { state: { selectedItems: payload.items, supplierDetails: payload.supplierDetails } });
+
   };
 
   const checkme = async () => {
@@ -60,7 +117,13 @@ const SupplierDetailsForm = () => {
         credentials: 'include'
       })
       const data = await authme.json();
-      if (authme.status === 401) {
+      const fullName = data.user.firstname + " " + data.user.lastname;
+      setUsername(fullName);
+      setSupplierDetails(prev => ({
+        ...prev,
+        preparedBy: prev.preparedBy && prev.preparedBy.trim() !== '' ? prev.preparedBy : fullName
+      }));
+      if (authme.status === 401 || authme.status === 403) {
         navigate('/login');
         return;
       }
@@ -104,8 +167,12 @@ const SupplierDetailsForm = () => {
                       type="text"
                       value={supplierDetails.contactName}
                       onChange={(e) => handleInputChange('contactName', e.target.value)}
+                      onBlur={() => setTouched(prev => ({ ...prev, contactName: true }))}
                       className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
                     />
+                    {touched.contactName && !validate.contactName ? (
+                      <div className="text-red-500 text-xs mt-1">Contact Name is required</div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -120,8 +187,12 @@ const SupplierDetailsForm = () => {
                       type="text"
                       value={supplierDetails.supplier}
                       onChange={(e) => handleInputChange('supplier', e.target.value)}
+                      onBlur={() => setTouched(prev => ({ ...prev, supplier: true }))}
                       className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
                     />
+                    {touched.supplier && !validate.supplier ? (
+                      <div className="text-red-500 text-xs mt-1">Supplier is required</div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -134,10 +205,31 @@ const SupplierDetailsForm = () => {
                     <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
                     <input
                       type="text"
+                      inputMode="numeric"
+                      pattern="\d*"
                       value={supplierDetails.taxId}
-                      onChange={(e) => handleInputChange('taxId', e.target.value)}
+                      maxLength={13}
+                      onKeyDown={(e: any) => {
+                        const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Delete', 'Tab'];
+                        if (allowedKeys.includes(e.key)) return;
+                        if (e.key.length === 1 && /\D/.test(e.key)) e.preventDefault();
+                      }}
+                      onChange={(e: any) => {
+                        const digits = (e.target.value || '').toString().replace(/\D/g, '').slice(0, 13);
+                        handleInputChange('taxId', digits);
+                      }}
+                      onPaste={(e: any) => {
+                        e.preventDefault();
+                        const paste = (e.clipboardData || (window as any).clipboardData)?.getData('text') || '';
+                        const digits = (paste || '').toString().replace(/\D/g, '').slice(0, 13);
+                        handleInputChange('taxId', digits);
+                      }}
+                      onBlur={() => setTouched(prev => ({ ...prev, taxId: true }))}
                       className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
                     />
+                    {touched.taxId && !validate.taxId ? (
+                      <div className="text-red-500 text-xs mt-1">Tax ID must be 13 digits</div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -151,9 +243,13 @@ const SupplierDetailsForm = () => {
                     <textarea
                       value={supplierDetails.address}
                       onChange={(e) => handleInputChange('address', e.target.value)}
+                      onBlur={() => setTouched(prev => ({ ...prev, address: true }))}
                       rows={3}
                       className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800 resize-none"
                     />
+                    {touched.address && !validate.address ? (
+                      <div className="text-red-500 text-xs mt-1">Address is required</div>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -172,12 +268,15 @@ const SupplierDetailsForm = () => {
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-300"></div>
                     <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
                     <input
-                      type="text"
+                      type="date"
                       value={supplierDetails.issueDate}
                       onChange={(e) => handleInputChange('issueDate', e.target.value)}
+                      onBlur={() => setTouched(prev => ({ ...prev, issueDate: true }))}
                       className="w-full px-0 py-2 pr-8 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
                     />
-                    <Calendar className="absolute right-0 top-2.5 w-5 h-5 text-gray-400" />
+                    {touched.issueDate && !validate.issueDate ? (
+                      <div className="text-red-500 text-xs mt-1">Issue Date is required</div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -192,8 +291,12 @@ const SupplierDetailsForm = () => {
                       type="text"
                       value={supplierDetails.preparedBy}
                       onChange={(e) => handleInputChange('preparedBy', e.target.value)}
+                      onBlur={() => setTouched(prev => ({ ...prev, preparedBy: true }))}
                       className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
                     />
+                    {touched.preparedBy && !validate.preparedBy ? (
+                      <div className="text-red-500 text-xs mt-1">Prepared By is required</div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -206,12 +309,14 @@ const SupplierDetailsForm = () => {
                     <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 mb-2">
                       {supplierDetails.businessLogo ? (
-                        <div className="space-y-3">
-                          <img
-                            // src={supplierDetails.businessLogo} 
-                            alt="Business Logo"
-                            className="mx-auto max-h-20 object-contain"
-                          />
+                            <div className="space-y-3">
+                          {typeof supplierDetails.businessLogo === 'string' ? (
+                            <img
+                              src={supplierDetails.businessLogo}
+                              alt="Business Logo"
+                              className="mx-auto max-h-20 object-contain"
+                            />
+                          ) : null}
                           <button
                             onClick={() => handleInputChange('businessLogo', null)}
                             className="text-red-500 text-sm hover:text-red-700"
@@ -231,7 +336,7 @@ const SupplierDetailsForm = () => {
                               <input
                                 type="file"
                                 accept="image/png,image/jpeg"
-                                // onChange={handleLogoUpload}
+                                onChange={handleLogoUpload}
                                 className="hidden"
                               />
                             </label>
@@ -265,7 +370,8 @@ const SupplierDetailsForm = () => {
           <div className="mt-12 flex justify-center">
             <button
               onClick={handleSaveAndContinue}
-              className="px-16 py-4 bg-green-800 hover:bg-green-900 text-white rounded-lg font-medium transition-colors text-lg"
+              disabled={!isFormValid}
+              className={`px-16 py-4 rounded-lg font-medium transition-colors text-lg ${isFormValid ? 'bg-green-800 hover:bg-green-900 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
             >
               Save & Continue
             </button>

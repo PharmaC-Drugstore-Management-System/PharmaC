@@ -1,56 +1,84 @@
 import { useEffect, useState } from "react";
+import thaiBahtText from 'thai-baht-text';
 import { Printer, Download } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const PurchaseOrderDocument = () => {
+  const location = useLocation();
+  const [userID, setUserID] = useState(null);
+  const navigate = useNavigate();
+
+  // Type definitions
+  type OrderItem = {
+    id: number;
+    name: string;
+    brand: string;
+    amount: number;
+    unit: string;
+    price: number;
+    image: string;
+  };
+
+  type TransformedOrderItem = {
+    id: number;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    discount: number;
+    amount: number;
+  };
+
+  // Get data from navigation state or sessionStorage fallback
+  const { selectedItems, supplierDetails } = location.state || {};
+
+  // Fallback: try to get from sessionStorage if navigation state is empty
+  const getDataFromStorage = () => {
+    try {
+      const stored = sessionStorage.getItem('podoc_payload');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const fallbackData = getDataFromStorage();
+  const items = selectedItems || fallbackData?.items || [];
+  const supplier = supplierDetails || fallbackData?.supplierDetails || {};
+
+  // Transform selected items to order data format
+  const transformedItems: TransformedOrderItem[] = items.map((item: OrderItem, index: number) => ({
+    id: index + 1,
+    description: item.name || "Unknown Product",
+    quantity: item.amount || 0,
+    unitPrice: item.price || 0,
+    discount: 0.0,
+    amount: (item.amount || 0) * (item.price || 0),
+  }));
+
+  // Calculate totals
+  const subtotal = transformedItems.reduce((sum, item) => sum + item.amount, 0);
+  const specialDiscount = 0.0;
+  const afterDiscount = subtotal - specialDiscount;
+  const vat = 0.0;
+  const total = afterDiscount + vat;
+
   const [orderData] = useState({
     orderNumber: "A000001",
-    issueDate: "12/10/08",
-    supplier: "SPR-207: SIAM PHARMACEUTICAL CO.,LTD.",
-    contactName: "Samophone",
-    taxId: "2050103665259",
-    address: "9.99 ซอ 10 ตรวจ 5",
-    preparedBy: "Loatlong Zhongguo",
-    items: [
-      {
-        id: 1,
-        description: "ATHAULIA-S",
-        quantity: 500,
-        unitPrice: 83.33,
-        discount: 0.0,
-        amount: 25000.0,
-      },
-      {
-        id: 2,
-        description: "CEMOL 500mg ช่า ญาง 1000 S",
-        quantity: 15,
-        unitPrice: 45.0,
-        discount: 0.0,
-        amount: 675.0,
-      },
-      {
-        id: 3,
-        description: "A-MOL Para 250mg/5ml 60ml",
-        quantity: 150,
-        unitPrice: 8.0,
-        discount: 0.0,
-        amount: 1200.0,
-      },
-      {
-        id: 4,
-        description: "BAKAMOL 10 S",
-        quantity: 100,
-        unitPrice: 5.0,
-        discount: 0.0,
-        amount: 500.0,
-      },
-    ],
-    subtotal: 27375.0,
-    specialDiscount: 0.0,
-    afterDiscount: 27375.0,
-    vat: 0.0,
-    total: 27375.0,
+    issueDate: supplier.issueDate || new Date().toLocaleDateString(),
+    supplier: supplier.supplier || "No Supplier Specified",
+    contactName: supplier.contactName || "No Contact Name",
+    taxId: supplier.taxId || "No Tax ID",
+    address: supplier.address || "No Address",
+    preparedBy: supplier.preparedBy || "No Prepared By",
+    items: transformedItems,
+    subtotal: subtotal,
+    specialDiscount: specialDiscount,
+    afterDiscount: afterDiscount,
+    vat: vat,
+    total: total,
   });
+
+  // using `thai-baht-text` package for baht text conversion
 
   const handlePrint = () => {
     window.print();
@@ -61,7 +89,114 @@ const PurchaseOrderDocument = () => {
     alert("Download functionality would be implemented here");
   };
 
-   const navigate = useNavigate();
+  // const handleConfirm = async () => {
+  //   try {
+  //     // Prepare the payload for PDF generation with current page URL
+  //     const payload = {
+  //       description: `Purchase Order ${orderData.orderNumber}`,
+  //       frontendURL: `${window.location.origin}/podoc`,
+  //       supplierDetails: {
+  //         supplier: orderData.supplier,
+  //         contactName: orderData.contactName,
+  //         taxId: orderData.taxId,
+  //         address: orderData.address,
+  //         issueDate: orderData.issueDate,
+  //         preparedBy: orderData.preparedBy
+  //       },
+  //       items: orderData.items.map(item => ({
+  //         name: item.description,
+  //         quantity: item.quantity,
+  //         unitPrice: item.unitPrice,
+  //         amount: item.amount
+  //       })),
+  //       total: orderData.total
+  //     };
+
+  //     // บันทึกข้อมูลใน sessionStorage เพื่อให้ Puppeteer เข้าถึงได้
+  //     sessionStorage.setItem('podoc_payload', JSON.stringify({
+  //       items: items,
+  //       supplierDetails: supplier,
+  //       total: orderData.total
+  //     }));
+
+  //     // Send to server to create and save PDF
+  //     const response = await fetch('http://localhost:5000/purchase/pdf', {
+  //       method: 'POST',
+  //       credentials: 'include',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (data?.success) {
+  //       alert(`บันทึก PDF สำเร็จแล้ว! ID: ${data.id}`);
+  //       console.log('PDF saved with ID:', data.id);
+  //     } else {
+  //       alert('ไม่สามารถบันทึก PDF ได้');
+  //       console.warn('Failed to save PDF on server', data);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error creating PDF:', error);
+  //     alert('เกิดข้อผิดพลาดในการสร้าง PDF');
+  //   }
+  // };
+
+  const handleConfirm = async () => {
+    try {
+      // เก็บ payload ให้ backend เข้าถึงได้ (Puppeteer จะเข้าไปอ่าน sessionStorage)
+      sessionStorage.setItem(
+        'podoc_payload',
+        JSON.stringify({
+          items: orderData.items,
+          supplierDetails: supplier,
+          total: orderData.total
+        })
+      );
+
+      // ส่ง request ไป backend ให้ Puppeteer generate PDF
+      const response = await fetch('http://localhost:5000/purchase/pdf', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userID: userID,
+          description: `Purchase Order ${orderData.orderNumber}`,
+          frontendURL: window.location.href, 
+          issueDate: orderData.issueDate,
+          preparedBy: orderData.preparedBy,
+          // Send the data that should appear in the PDF
+          podocData: {
+            supplierDetails: {
+              supplier: orderData.supplier,
+              contactName: orderData.contactName,
+              taxId: orderData.taxId,
+              address: orderData.address,
+              issueDate: orderData.issueDate,
+              preparedBy: orderData.preparedBy,
+              businessLogo: supplier.businessLogo, // Include the uploaded image
+            },
+            items: items,
+            total: orderData.total
+          }
+        }),
+      });
+
+      const data = await response.json();
+      if (data?.success) {
+        alert(`บันทึก PDF สำเร็จแล้ว! ID: ${data.id}`);
+        console.log('PDF saved with ID:', data.id);
+      } else {
+        alert('ไม่สามารถบันทึก PDF ได้');
+        console.warn('Failed to save PDF on server', data);
+      }
+    } catch (error) {
+      console.error('Error creating PDF:', error);
+      alert('เกิดข้อผิดพลาดในการสร้าง PDF');
+    }
+  };
+
+
   const checkme = async () => {
     try {
       const authme = await fetch('http://localhost:5000/api/me', {
@@ -69,7 +204,8 @@ const PurchaseOrderDocument = () => {
         credentials: 'include'
       })
       const data = await authme.json();
-      if (authme.status === 401) {
+      setUserID(data.user.id);
+      if (authme.status === 401 || authme.status === 403) {
         navigate('/login');
         return;
       }
@@ -84,6 +220,13 @@ const PurchaseOrderDocument = () => {
 
   useEffect(() => {
     checkme()
+    // Console log the data being used in PODoc
+    console.log('PODoc received data:', {
+      selectedItems: items,
+      supplierDetails: supplier,
+      transformedItems,
+      orderData
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -112,10 +255,11 @@ const PurchaseOrderDocument = () => {
             {/* Header */}
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">💊</span>
-                </div>
-                <h1 className="text-2xl font-bold text-teal-700">PharmaC</h1>
+                {supplier.businessLogo ? (
+                  <div className="flex items-center justify-center">
+                    <img src={supplier.businessLogo} alt="Supplier Logo" className="w-50 h-25 object-contain" />
+                  </div>
+                ) : null}
               </div>
               <div className="text-right text-sm text-gray-600">
                 <div>PharmaC</div>
@@ -279,19 +423,6 @@ const PurchaseOrderDocument = () => {
                       </td>
                     </tr>
                   ))}
-                  {/* Empty rows for spacing */}
-                  {[...Array(10)].map((_, index) => (
-                  <tr key={`empty-${index}`}>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                  
-                   
-                  </tr>
-                ))}
                 </tbody>
               </table>
             </div>
@@ -307,7 +438,7 @@ const PurchaseOrderDocument = () => {
                     <div>Amount</div>
                   </div>
                   <div className="text-xl pt-1 pr-2">
-                    หนึ่งล้านสองหมื่นห้าร้อย
+                    {typeof thaiBahtText === 'function' ? thaiBahtText(orderData.total) : ''}
                   </div>
                 </div>
               </div>
@@ -408,7 +539,17 @@ const PurchaseOrderDocument = () => {
                 </div>
               </div>
             </div>
+
           </div>
+        </div>
+        <div className="mt-12 flex justify-center w-full">
+          <button
+            onClick={handleConfirm}
+            className="bg-green-800 hover:bg-green-900 p-6 rounded-xl text-white font-bold transition-colors duration-200"
+            style={{ width: '500px' }}
+          >
+            Confirm
+          </button>
         </div>
       </div>
     </div>
