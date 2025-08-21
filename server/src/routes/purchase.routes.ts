@@ -13,4 +13,6 @@ router.get('/pdf/:id', controller.getPDF);
 // Get list of all PDF documents (metadata only) - requires authentication  
 router.get('/pdfs', controller.getAllPDFs);
 
+router.get('/count',controller.getCount)
+
 export default router;

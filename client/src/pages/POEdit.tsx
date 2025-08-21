@@ -135,7 +135,11 @@ const PurchaseOrder = () => {
 
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-800">Order</h3>
+            <div className="flex items-center gap-4">
+              <h3 className="text-xl font-semibold text-gray-800">Order</h3>
+              <div className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">{orderItems.length} items</div>
+              <div className="text-sm text-gray-600 bg-white border border-gray-200 px-2 py-1 rounded">Selected: {selectedItems.size}</div>
+            </div>
           </div>
 
           {/* Order Table Header */}
@@ -147,70 +151,72 @@ const PurchaseOrder = () => {
             <div>Price (THB)</div>
           </div>
 
-          {/* Order Items */}
-          <div className="space-y-4 mt-4">
-            {orderItems.map((item) => (
-              <div
-                key={item.id}
-                className="grid grid-cols-6 gap-4 items-center py-3 border-b border-gray-100"
-              >
-                <div>
-                  <input
-                    type="checkbox"
-                    checked={selectedItems.has(item.id)}
-                    onChange={() => handleItemSelection(item.id)}
-                    className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
-                  />
-                </div>
-                <div className="col-span-2 flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
-                    {item.image}
-                  </div>
+          {/* Order Items (scrollable list) */}
+          <div className="mt-4">
+            <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 rounded">
+              {orderItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-6 gap-4 items-center py-3 px-2"
+                >
                   <div>
-                    <span className="font-medium text-gray-800">{item.name}</span>
-                    <div className="text-sm text-gray-500">{item.brand}</div>
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.has(item.id)}
+                      onChange={() => handleItemSelection(item.id)}
+                      className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
+                    />
+                  </div>
+                  <div className="col-span-2 flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
+                      {item.image}
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-800">{item.name}</span>
+                      <div className="text-sm text-gray-500">{item.brand}</div>
+                    </div>
+                  </div>
+                  <div className="text-gray-600">{item.id}</div>
+                  <div className="flex items-center space-x-2">
+                      {selectedItems.has(item.id) && (
+                        <button
+                          onClick={() => updateQuantity(item.id, Math.max(1, item.amount - 1))}
+                          className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                      )}
+                      {selectedItems.has(item.id) ? (
+                        <input
+                          type="number"
+                          min={1}
+                          value={item.amount}
+                          onChange={e => {
+                            const value = Number(e.target.value);
+                            updateQuantity(item.id, isNaN(value) || value < 1 ? 1 : value);
+                          }}
+                          className="mx-2 min-w-12 text-center border rounded px-2 py-1 w-20"
+                        />
+                      ) : (
+                        <span className="mx-2 min-w-12 text-center">
+                          {item.amount} {item.unit}
+                        </span>
+                      )}
+                      {selectedItems.has(item.id) && (
+                        <button
+                          onClick={() => updateQuantity(item.id, item.amount + 1)}
+                          className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      )}
+                  </div>
+                  <div className="font-semibold">
+                    {(item.price ?? 0).toLocaleString()}
                   </div>
                 </div>
-                <div className="text-gray-600">{item.id}</div>
-                <div className="flex items-center space-x-2">
-                    {selectedItems.has(item.id) && (
-                      <button
-                        onClick={() => updateQuantity(item.id, Math.max(1, item.amount - 1))}
-                        className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                    )}
-                    {selectedItems.has(item.id) ? (
-                      <input
-                        type="number"
-                        min={1}
-                        value={item.amount}
-                        onChange={e => {
-                          const value = Number(e.target.value);
-                          updateQuantity(item.id, isNaN(value) || value < 1 ? 1 : value);
-                        }}
-                        className="mx-2 min-w-12 text-center border rounded px-2 py-1 w-20"
-                      />
-                    ) : (
-                      <span className="mx-2 min-w-12 text-center">
-                        {item.amount} {item.unit}
-                      </span>
-                    )}
-                    {selectedItems.has(item.id) && (
-                      <button
-                        onClick={() => updateQuantity(item.id, item.amount + 1)}
-                        className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    )}
-                </div>
-                <div className="font-semibold">
-                  {(item.price ?? 0).toLocaleString()}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Total Summary */}

@@ -66,13 +66,17 @@ const purchaseService = {
         throw new Error('Not found employee id in database')
       }
 
+      // Get current document count for filename
+      const docCount = await prisma.purchase_document.count({});
+      const nextDocNumber = docCount + 1;
+
       const created = await prisma.purchase_document.create({
         data: {
           employee_id: userID, 
           description: description || "",
           issue_date: issueDate ? new Date(issueDate) : new Date(), // Convert string to Date
           pdf_file: pdfBuffer,
-          pdf_filename: `PO-${Date.now()}.pdf`,
+          pdf_filename: `A${String(nextDocNumber).padStart(6, '0')}.pdf`,
           pdf_mime: "application/pdf",
         },
       });
@@ -136,6 +140,16 @@ const purchaseService = {
 
       return documents;
     } catch (error) {
+      throw error;
+    }
+  },
+  // Return count of purchase_document rows
+  countPODocuments: async () => {
+    try {
+      const count = await prisma.purchase_document.count({});
+      return count;
+    } catch (error) {
+      console.error('Error counting purchase_documents:', error);
       throw error;
     }
   },

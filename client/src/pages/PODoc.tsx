@@ -6,6 +6,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 const PurchaseOrderDocument = () => {
   const location = useLocation();
   const [userID, setUserID] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
 
   // Type definitions
@@ -54,7 +56,7 @@ const PurchaseOrderDocument = () => {
     discount: 0.0,
     amount: (item.amount || 0) * (item.price || 0),
   }));
-
+  const [documentCount, setDocumentCount] = useState(0);
   // Calculate totals
   const subtotal = transformedItems.reduce((sum, item) => sum + item.amount, 0);
   const specialDiscount = 0.0;
@@ -62,8 +64,9 @@ const PurchaseOrderDocument = () => {
   const vat = 0.0;
   const total = afterDiscount + vat;
 
-  const [orderData] = useState({
-    orderNumber: "A000001",
+  // Create order data dynamically with updated document count
+  const orderData = {
+    orderNumber: `A${String(documentCount + 1).padStart(6, '0')}`,
     issueDate: supplier.issueDate || new Date().toLocaleDateString(),
     supplier: supplier.supplier || "No Supplier Specified",
     contactName: supplier.contactName || "No Contact Name",
@@ -76,7 +79,7 @@ const PurchaseOrderDocument = () => {
     afterDiscount: afterDiscount,
     vat: vat,
     total: total,
-  });
+  };
 
   // using `thai-baht-text` package for baht text conversion
 
@@ -89,60 +92,23 @@ const PurchaseOrderDocument = () => {
     alert("Download functionality would be implemented here");
   };
 
-  // const handleConfirm = async () => {
-  //   try {
-  //     // Prepare the payload for PDF generation with current page URL
-  //     const payload = {
-  //       description: `Purchase Order ${orderData.orderNumber}`,
-  //       frontendURL: `${window.location.origin}/podoc`,
-  //       supplierDetails: {
-  //         supplier: orderData.supplier,
-  //         contactName: orderData.contactName,
-  //         taxId: orderData.taxId,
-  //         address: orderData.address,
-  //         issueDate: orderData.issueDate,
-  //         preparedBy: orderData.preparedBy
-  //       },
-  //       items: orderData.items.map(item => ({
-  //         name: item.description,
-  //         quantity: item.quantity,
-  //         unitPrice: item.unitPrice,
-  //         amount: item.amount
-  //       })),
-  //       total: orderData.total
-  //     };
 
-  //     // บันทึกข้อมูลใน sessionStorage เพื่อให้ Puppeteer เข้าถึงได้
-  //     sessionStorage.setItem('podoc_payload', JSON.stringify({
-  //       items: items,
-  //       supplierDetails: supplier,
-  //       total: orderData.total
-  //     }));
+  const countDoc = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/purchase/count', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      const count = await response.json();
 
-  //     // Send to server to create and save PDF
-  //     const response = await fetch('http://localhost:5000/purchase/pdf', {
-  //       method: 'POST',
-  //       credentials: 'include',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (data?.success) {
-  //       alert(`บันทึก PDF สำเร็จแล้ว! ID: ${data.id}`);
-  //       console.log('PDF saved with ID:', data.id);
-  //     } else {
-  //       alert('ไม่สามารถบันทึก PDF ได้');
-  //       console.warn('Failed to save PDF on server', data);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error creating PDF:', error);
-  //     alert('เกิดข้อผิดพลาดในการสร้าง PDF');
-  //   }
-  // };
+      setDocumentCount(count.data);
+    } catch (error) {
+      console.error('Error fetching document count:', error);
+    }
+  }
 
   const handleConfirm = async () => {
+    setIsProcessing(true);
     try {
       // เก็บ payload ให้ backend เข้าถึงได้ (Puppeteer จะเข้าไปอ่าน sessionStorage)
       sessionStorage.setItem(
@@ -184,15 +150,22 @@ const PurchaseOrderDocument = () => {
 
       const data = await response.json();
       if (data?.success) {
-        alert(`บันทึก PDF สำเร็จแล้ว! ID: ${data.id}`);
-        console.log('PDF saved with ID:', data.id);
+        // Show success animation for 2 seconds before navigating
+        setIsProcessing(false);
+        setShowSuccess(true);
+        
+        setTimeout(() => {
+          // Clear sessionStorage and navigate to doc-record
+          sessionStorage.removeItem('podoc_payload');
+          navigate('/doc-record');
+        }, 2000);
       } else {
-        alert('ไม่สามารถบันทึก PDF ได้');
+        setIsProcessing(false);
         console.warn('Failed to save PDF on server', data);
       }
     } catch (error) {
+      setIsProcessing(false);
       console.error('Error creating PDF:', error);
-      alert('เกิดข้อผิดพลาดในการสร้าง PDF');
     }
   };
 
@@ -220,6 +193,7 @@ const PurchaseOrderDocument = () => {
 
   useEffect(() => {
     checkme()
+    countDoc()
     // Console log the data being used in PODoc
     console.log('PODoc received data:', {
       selectedItems: items,
@@ -233,6 +207,34 @@ const PurchaseOrderDocument = () => {
   return (
     // Print and Save to local
     <div>
+      {/* Loading Processing Modal */}
+      {(isProcessing || showSuccess) && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-sm w-full mx-4 shadow-2xl">
+            <div className="text-center">
+              {isProcessing && (
+                <>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-800 mx-auto mb-4"></div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Creating a PDF files</h3>
+                  <p className="text-gray-600 text-sm">Please wait...</p>
+                </>
+              )}
+              {showSuccess && (
+                <>
+                  <div className="rounded-full h-12 w-12 bg-green-100 mx-auto mb-4 flex items-center justify-center animate-bounce">
+                    <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-green-800 mb-2">PDF Created Successfully!</h3>
+                  <p className="text-gray-600 text-sm">Navigating to document page...</p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex justify-end gap-2 p-4 no-print">
         <button
           onClick={handleDownload}
@@ -291,7 +293,7 @@ const PurchaseOrderDocument = () => {
                       ต้นฉบับ / Original
                     </div>
                     <div className="text-xl font-bold text-gray-800">
-                      A000001
+                      A{String(documentCount + 1).padStart(6, '0')}
                     </div>
                   </div>
                 </div>
@@ -545,10 +547,15 @@ const PurchaseOrderDocument = () => {
         <div className="mt-12 flex justify-center w-full">
           <button
             onClick={handleConfirm}
-            className="bg-green-800 hover:bg-green-900 p-6 rounded-xl text-white font-bold transition-colors duration-200"
+            disabled={isProcessing}
+            className={`p-6 rounded-xl font-bold transition-colors duration-200 ${
+              isProcessing 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-green-800 hover:bg-green-900'
+            } text-white`}
             style={{ width: '500px' }}
           >
-            Confirm
+            {isProcessing ? 'Processing...' : 'Confirm'}
           </button>
         </div>
       </div>
