@@ -17,6 +17,10 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// serve uploaded files
+import path from 'path';
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 // ✅ ใส่ routes ตรงนี้!
 app.use("/", apiRouter);
 
