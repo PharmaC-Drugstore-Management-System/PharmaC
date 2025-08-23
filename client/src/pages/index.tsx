@@ -110,12 +110,22 @@ export default function PharmaDashboard() {
       {/* Main Content */}
 
       <div className="flex-1 p-4 overflow-y-auto">
-        {/* Inventory Title */}
-        <div className="flex items-center mb-6">
-          <div className="w-1 h-8 bg-green-600 mr-2"></div>
-          <h2 className="text-xl font-bold" style={{ color: "black" }}>
-            Main Menu
-          </h2>
+        {/* Main Menu Title and Quick Actions */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-8 bg-green-600 mr-2"></div>
+            <h2 className="text-xl font-bold" style={{ color: "black" }}>
+              Main Menu
+            </h2>
+          </div>
+          {/* Quick POS Access */}
+          <button
+            onClick={() => navigate('/pos')}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+          >
+            <span>🛒</span>
+            <span>เปิดขาย (POS)</span>
+          </button>
         </div>
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

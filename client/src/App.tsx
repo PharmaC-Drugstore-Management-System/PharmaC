@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import Navbar from '../components/Navbar';
-import Header from '../components/Header';
+import Navbar from '../src/components/Navbar.tsx';
+import Header from '../src/components/Header.tsx';
 // import PharmacInventoryPage from "./pages/PharmacInventoryPage.tsx";
 import AddMedicinePage from "./pages/AddMedicinePage.tsx";
 import MedicineDetailPage from "./pages/MedicineDetailPage.tsx";
@@ -20,6 +20,7 @@ import ExpiryMonitor from "./pages/expiryMonitorPage.tsx";
 import DocumentRecord from "./pages/DocRecordPage.tsx";
 import OrderRecord from "./pages/orderRecordPage.tsx";
 import MembershipRanking from "./pages/memberRankingPage.tsx";
+import POSPage from "./pages/POSPage.tsx";
 
 function AppContent() {
   const location = useLocation();
@@ -65,6 +66,7 @@ function AppContent() {
             <Route path="/doc-record" element={<DocumentRecord/>}/>
             <Route path="/order-record" element={<OrderRecord/>}/>
             <Route path="/membership-ranking" element={<MembershipRanking/>}/>
+            <Route path="/pos" element={<POSPage/>}/>
           </Routes>
         </div>
       </div>
