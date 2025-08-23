@@ -19,20 +19,40 @@ const paymentService = {
       throw error;
     }
   },
-  medtod: async (customer : any, type : any, email : any) =>{
+  medtod: async (customer: any, type: any, email: any) => {
     try {
-        const paymentMethod  = await stripe.paymentMethods.create({
-            type: type,
-            billing_details: {
-            email: email,
-            name:customer
-            }
-        });
-        return paymentMethod;
+      const paymentMethod = await stripe.paymentMethods.create({
+        type: type,
+        billing_details: {
+          email: email,
+          name: customer,
+        },
+      });
+      return paymentMethod;
     } catch (error) {
-        throw error;
+      throw error;
     }
   },
-  
+  qr: async (payment_method: any, pi: any) => {
+    try {
+      // Generate a QR code for the payment using Stripe's Payment Links API
+      const confirmIntent = await stripe.paymentIntents.confirm(pi, {
+        payment_method: payment_method,
+      });
+
+      // The paymentLink.url can be used to generate a QR code using a QR code library or service
+      return confirmIntent;
+    } catch (error) {
+      throw error;
+    }
+  },
+  check : async (pi : any) => {
+    try {
+        const retrieveIntent = await stripe.paymentIntents.retrieve(`${pi}`);
+        return retrieveIntent
+    } catch (error) {
+        
+    }
+  }
 };
 export default paymentService;
