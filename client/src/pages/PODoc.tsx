@@ -1,56 +1,87 @@
 import { useEffect, useState } from "react";
+import thaiBahtText from 'thai-baht-text';
 import { Printer, Download } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const PurchaseOrderDocument = () => {
-  const [orderData] = useState({
-    orderNumber: "A000001",
-    issueDate: "12/10/08",
-    supplier: "SPR-207: SIAM PHARMACEUTICAL CO.,LTD.",
-    contactName: "Samophone",
-    taxId: "2050103665259",
-    address: "9.99 ซอ 10 ตรวจ 5",
-    preparedBy: "Loatlong Zhongguo",
-    items: [
-      {
-        id: 1,
-        description: "ATHAULIA-S",
-        quantity: 500,
-        unitPrice: 83.33,
-        discount: 0.0,
-        amount: 25000.0,
-      },
-      {
-        id: 2,
-        description: "CEMOL 500mg ช่า ญาง 1000 S",
-        quantity: 15,
-        unitPrice: 45.0,
-        discount: 0.0,
-        amount: 675.0,
-      },
-      {
-        id: 3,
-        description: "A-MOL Para 250mg/5ml 60ml",
-        quantity: 150,
-        unitPrice: 8.0,
-        discount: 0.0,
-        amount: 1200.0,
-      },
-      {
-        id: 4,
-        description: "BAKAMOL 10 S",
-        quantity: 100,
-        unitPrice: 5.0,
-        discount: 0.0,
-        amount: 500.0,
-      },
-    ],
-    subtotal: 27375.0,
-    specialDiscount: 0.0,
-    afterDiscount: 27375.0,
-    vat: 0.0,
-    total: 27375.0,
-  });
+  const location = useLocation();
+  const [userID, setUserID] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const navigate = useNavigate();
+
+  // Type definitions
+  type OrderItem = {
+    id: number;
+    name: string;
+    brand: string;
+    amount: number;
+    unit: string;
+    price: number;
+    image: string;
+  };
+
+  type TransformedOrderItem = {
+    id: number;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    discount: number;
+    amount: number;
+  };
+
+  // Get data from navigation state or sessionStorage fallback
+  const { selectedItems, supplierDetails } = location.state || {};
+
+  // Fallback: try to get from sessionStorage if navigation state is empty
+  const getDataFromStorage = () => {
+    try {
+      const stored = sessionStorage.getItem('podoc_payload');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const fallbackData = getDataFromStorage();
+  const items = selectedItems || fallbackData?.items || [];
+  const supplier = supplierDetails || fallbackData?.supplierDetails || {};
+
+  // Transform selected items to order data format
+  const transformedItems: TransformedOrderItem[] = items.map((item: OrderItem, index: number) => ({
+    id: index + 1,
+    description: item.name || "Unknown Product",
+    quantity: item.amount || 0,
+    unitPrice: item.price || 0,
+    discount: 0.0,
+    amount: (item.amount || 0) * (item.price || 0),
+  }));
+  const [documentCount, setDocumentCount] = useState(0);
+  // Calculate totals
+  const subtotal = transformedItems.reduce((sum, item) => sum + item.amount, 0);
+  const specialDiscount = 0.0;
+  const afterDiscount = subtotal - specialDiscount;
+  const vat = 0.0;
+  const total = afterDiscount + vat;
+
+  // Create order data dynamically with updated document count
+  const orderData = {
+    orderNumber: `A${String(documentCount + 1).padStart(6, '0')}`,
+    issueDate: supplier.issueDate || new Date().toLocaleDateString(),
+    supplier: supplier.supplier || "No Supplier Specified",
+    contactName: supplier.contactName || "No Contact Name",
+    taxId: supplier.taxId || "No Tax ID",
+    address: supplier.address || "No Address",
+    preparedBy: supplier.preparedBy || "No Prepared By",
+    items: transformedItems,
+    subtotal: subtotal,
+    specialDiscount: specialDiscount,
+    afterDiscount: afterDiscount,
+    vat: vat,
+    total: total,
+  };
+
+  // using `thai-baht-text` package for baht text conversion
 
   const handlePrint = () => {
     window.print();
@@ -61,7 +92,84 @@ const PurchaseOrderDocument = () => {
     alert("Download functionality would be implemented here");
   };
 
-   const navigate = useNavigate();
+
+  const countDoc = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/purchase/count', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      const count = await response.json();
+
+      setDocumentCount(count.data);
+    } catch (error) {
+      console.error('Error fetching document count:', error);
+    }
+  }
+
+  const handleConfirm = async () => {
+    setIsProcessing(true);
+    try {
+      // เก็บ payload ให้ backend เข้าถึงได้ (Puppeteer จะเข้าไปอ่าน sessionStorage)
+      sessionStorage.setItem(
+        'podoc_payload',
+        JSON.stringify({
+          items: orderData.items,
+          supplierDetails: supplier,
+          total: orderData.total
+        })
+      );
+
+      // ส่ง request ไป backend ให้ Puppeteer generate PDF
+      const response = await fetch('http://localhost:5000/purchase/pdf', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userID: userID,
+          description: `Purchase Order ${orderData.orderNumber}`,
+          frontendURL: window.location.href, 
+          issueDate: orderData.issueDate,
+          preparedBy: orderData.preparedBy,
+          // Send the data that should appear in the PDF
+          podocData: {
+            supplierDetails: {
+              supplier: orderData.supplier,
+              contactName: orderData.contactName,
+              taxId: orderData.taxId,
+              address: orderData.address,
+              issueDate: orderData.issueDate,
+              preparedBy: orderData.preparedBy,
+              businessLogo: supplier.businessLogo, // Include the uploaded image
+            },
+            items: items,
+            total: orderData.total
+          }
+        }),
+      });
+
+      const data = await response.json();
+      if (data?.success) {
+        // Show success animation for 2 seconds before navigating
+        setIsProcessing(false);
+        setShowSuccess(true);
+        
+        setTimeout(() => {
+          // Clear sessionStorage and navigate to doc-record
+          sessionStorage.removeItem('podoc_payload');
+          navigate('/doc-record');
+        }, 2000);
+      } else {
+        setIsProcessing(false);
+        console.warn('Failed to save PDF on server', data);
+      }
+    } catch (error) {
+      setIsProcessing(false);
+      console.error('Error creating PDF:', error);
+    }
+  };
+
+
   const checkme = async () => {
     try {
       const authme = await fetch('http://localhost:5000/api/me', {
@@ -69,7 +177,8 @@ const PurchaseOrderDocument = () => {
         credentials: 'include'
       })
       const data = await authme.json();
-      if (authme.status === 401) {
+      setUserID(data.user.id);
+      if (authme.status === 401 || authme.status === 403) {
         navigate('/login');
         return;
       }
@@ -84,12 +193,48 @@ const PurchaseOrderDocument = () => {
 
   useEffect(() => {
     checkme()
+    countDoc()
+    // Console log the data being used in PODoc
+    console.log('PODoc received data:', {
+      selectedItems: items,
+      supplierDetails: supplier,
+      transformedItems,
+      orderData
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     // Print and Save to local
     <div>
+      {/* Loading Processing Modal */}
+      {(isProcessing || showSuccess) && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-sm w-full mx-4 shadow-2xl">
+            <div className="text-center">
+              {isProcessing && (
+                <>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-800 mx-auto mb-4"></div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Creating a PDF files</h3>
+                  <p className="text-gray-600 text-sm">Please wait...</p>
+                </>
+              )}
+              {showSuccess && (
+                <>
+                  <div className="rounded-full h-12 w-12 bg-green-100 mx-auto mb-4 flex items-center justify-center animate-bounce">
+                    <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-green-800 mb-2">PDF Created Successfully!</h3>
+                  <p className="text-gray-600 text-sm">Navigating to document page...</p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex justify-end gap-2 p-4 no-print">
         <button
           onClick={handleDownload}
@@ -112,10 +257,11 @@ const PurchaseOrderDocument = () => {
             {/* Header */}
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">💊</span>
-                </div>
-                <h1 className="text-2xl font-bold text-teal-700">PharmaC</h1>
+                {supplier.businessLogo ? (
+                  <div className="flex items-center justify-center">
+                    <img src={supplier.businessLogo} alt="Supplier Logo" className="w-50 h-25 object-contain" />
+                  </div>
+                ) : null}
               </div>
               <div className="text-right text-sm text-gray-600">
                 <div>PharmaC</div>
@@ -147,7 +293,7 @@ const PurchaseOrderDocument = () => {
                       ต้นฉบับ / Original
                     </div>
                     <div className="text-xl font-bold text-gray-800">
-                      A000001
+                      A{String(documentCount + 1).padStart(6, '0')}
                     </div>
                   </div>
                 </div>
@@ -279,19 +425,6 @@ const PurchaseOrderDocument = () => {
                       </td>
                     </tr>
                   ))}
-                  {/* Empty rows for spacing */}
-                  {[...Array(10)].map((_, index) => (
-                  <tr key={`empty-${index}`}>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                    <td className="border border-gray-300 p-4">&nbsp;</td>
-                  
-                   
-                  </tr>
-                ))}
                 </tbody>
               </table>
             </div>
@@ -307,7 +440,7 @@ const PurchaseOrderDocument = () => {
                     <div>Amount</div>
                   </div>
                   <div className="text-xl pt-1 pr-2">
-                    หนึ่งล้านสองหมื่นห้าร้อย
+                    {typeof thaiBahtText === 'function' ? thaiBahtText(orderData.total) : ''}
                   </div>
                 </div>
               </div>
@@ -408,7 +541,22 @@ const PurchaseOrderDocument = () => {
                 </div>
               </div>
             </div>
+
           </div>
+        </div>
+        <div className="mt-12 flex justify-center w-full">
+          <button
+            onClick={handleConfirm}
+            disabled={isProcessing}
+            className={`p-6 rounded-xl font-bold transition-colors duration-200 ${
+              isProcessing 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-green-800 hover:bg-green-900'
+            } text-white`}
+            style={{ width: '500px' }}
+          >
+            {isProcessing ? 'Processing...' : 'Confirm'}
+          </button>
         </div>
       </div>
     </div>

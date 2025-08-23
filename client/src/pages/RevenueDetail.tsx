@@ -56,7 +56,7 @@ export default function RevenueDetail() {
         credentials: 'include'
       });
       const data = await authme.json();
-      if (authme.status === 401) {
+      if (authme.status === 401 || authme.status === 403) {
         navigate('/login');
         return;
       }

@@ -200,6 +200,7 @@ model product {
   iscontrolled       Boolean?
   producttype        String?              @db.VarChar(255)
   unit               String?              @db.VarChar(255)
+  image              String?              @db.VarChar(255)
   cart               cart[]
   cost               cost[]
   forecasted_product forecasted_product[]
@@ -217,6 +218,9 @@ model purchase_document {
   description          String?   @db.VarChar
   employee_id          Int?
   issue_date           DateTime? @db.Date
+  pdf_file             Bytes?
+  pdf_filename         String?   @db.VarChar(100)
+  pdf_mime             String?   @db.VarChar(100)
   document             document? @relation(fields: [document_id], references: [document_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_document_fk")
   employee             employee? @relation(fields: [employee_id], references: [employee_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_employee_fk")
   store                store?    @relation(fields: [store_id], references: [store_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_store_fk")

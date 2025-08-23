@@ -67,7 +67,7 @@ export default function AccountPage() {
             });
             const data: AuthMeResponse = await authme.json();
 
-            if (authme.status === 401) {
+            if (authme.status === 401 || authme.status === 403) {
                 navigate('/login');
                 return;
             }

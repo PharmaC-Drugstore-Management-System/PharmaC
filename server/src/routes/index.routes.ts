@@ -17,4 +17,7 @@ router.use("/inventory", inventoryRoute);
 import forecastRoute from "./forecast.routes.ts";
 router.use("/arima", forecastRoute);
 
+import purchaseRoute from "./purchase.routes.ts";
+router.use("/purchase", purchaseRoute);
+
 export default router;

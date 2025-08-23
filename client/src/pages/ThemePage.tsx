@@ -6,7 +6,7 @@ import i18n from 'i18next';
 
 
 export default function SettingsToggles() {
-  const { t, i18n: i18nextInstance } = useTranslation();
+  const {  i18n: i18nextInstance } = useTranslation();
   const navigate = useNavigate();
   
   const [language, setLanguage] = useState(i18nextInstance.language.toUpperCase());
@@ -29,7 +29,7 @@ export default function SettingsToggles() {
           credentials: 'include'
         })
         const data = await authme.json();
-        if (authme.status === 401) {
+        if (authme.status === 401 || authme.status === 403) {
           navigate('/login');
           return;
         }
