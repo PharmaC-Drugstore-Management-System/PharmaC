@@ -8,6 +8,7 @@ const inventory_service = {
     iscontrolled: boolean,
     product_type: string,
     unit: string,
+    image?: string | null,
   ) => {
     try {
       const add = await prisma.product.create({
@@ -19,6 +20,7 @@ const inventory_service = {
           iscontrolled: iscontrolled,
           producttype: product_type,
           unit: unit,
+          image: image,
         },
       });
       return add;

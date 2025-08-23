@@ -17,8 +17,11 @@ type MedicineItem = {
   name: string;
   brand: string;
   price: number;
+  image?: string | null;
+  productType?: string | null;
+  unit?: string | null;
+  isControlled?: boolean | null;
   expiredDate: string;
-  lotId: string;
   amount: number;
 };
 
@@ -35,16 +38,30 @@ export default function PharmacInventoryPage() {
         credentials: "include",
       });
       const result = await res.json();
-      const formattedItems = result.data.map((item: any): MedicineItem => ({
-        id: item.product_id,
-        name: item.product_name,
-        brand: item.brand,
-        price: item.price,
-        expiredDate: item.expiredDate || "-",
-        lotId: item.lot.map((lot: any) => lot.lot_id) || "-",
-        amount: item.amount ?? 0,
-      }));
-      console.log("Formatted Items:", formattedItems);
+      const data = result?.data || [];
+      const formattedItems = data.map(
+        (item: any): MedicineItem => ({
+          id: item.product_id,
+          name: item.product_name || "-",
+          brand: item.brand || "-",
+          price: item.price ?? 0,
+          image: item.image || null,
+          productType: item.producttype ?? null,
+          unit: item.unit ?? item.unit_name ?? item.unitName ?? null,
+          isControlled:
+            item.iscontrolled ??
+            item.isControlled ??
+            item.is_controlled ??
+            item.controlled ??
+            false,
+          expiredDate:
+            (item.lot && item.lot[0] && item.lot[0].expired_date) || "-",
+          amount:
+            item.stock && item.stock.length > 0 && item.stock[0].quantity_id_fk
+              ? item.stock[0].quantity_id_fk
+              : item.amount ?? 0,
+        })
+      );
       setItems(formattedItems);
     } catch (error) {
       console.log("Error", error);
@@ -143,7 +160,9 @@ export default function PharmacInventoryPage() {
           <div className="flex items-center w-full">
             <CheckCircle className="w-8 h-8 text-green-600 flex-shrink-0" />
             <div className="ml-4 flex-1">
-              <p className="text-sm font-medium text-gray-500">Total Medicines</p>
+              <p className="text-sm font-medium text-gray-500">
+                Total Medicines
+              </p>
               <p className="text-2xl font-bold text-gray-900">{items.length}</p>
             </div>
           </div>
@@ -155,7 +174,9 @@ export default function PharmacInventoryPage() {
             <AlertTriangle className="w-8 h-8 text-red-600" />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-500">Low Stock</p>
-              <p className="text-2xl font-bold text-gray-900">{lowStockItems.length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {lowStockItems.length}
+              </p>
             </div>
           </div>
         </div>
@@ -190,9 +211,7 @@ export default function PharmacInventoryPage() {
                 </p>
                 <p
                   className={`text-3xl font-bold ${
-                    expireSoonItems.length > 0
-                      ? "text-white"
-                      : "text-gray-900"
+                    expireSoonItems.length > 0 ? "text-white" : "text-gray-900"
                   }`}
                 >
                   {expireSoonItems.length}
@@ -238,23 +257,28 @@ export default function PharmacInventoryPage() {
         </div>
 
         {/* Table Head */}
-        <div className="grid grid-cols-6 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-200">
+        <div className="grid grid-cols-8 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-200">
+          <div className="font-medium text-gray-700">Image</div>
           <div className="font-medium text-gray-700 flex items-center">
             <span>Name</span>
           </div>
           <div className="font-medium text-gray-700">Brand</div>
+          <div className="font-medium text-gray-700">Type</div>
+          <div className="font-medium text-gray-700">Unit</div>
+          <div className="font-medium text-gray-700">Controlled</div>
           <div className="font-medium text-gray-700">Price</div>
-          <div className="font-semibold">Stock</div>
-          <div className="font-medium text-gray-700">Expired date</div>
-          <div className="font-medium text-gray-700 flex items-center">
-            <span>Lot id</span>
-            <Edit2
+
+          <div className="flex items-center justify-between">
+            <span className="font-semibold">Stock</span>
+            <button
               onClick={() => {
                 setEditMode(!editMode);
                 setSelectedItemId(null);
               }}
-              className="h-5 w-5 ml-auto text-gray-500 cursor-pointer hover:scale-125 transition-transform duration-300"
-            />
+              className="text-gray-500 cursor-pointer hover:scale-125 transition-transform duration-300"
+            >
+              <Edit2 className="h-5 w-5" />
+            </button>
           </div>
         </div>
 
@@ -262,16 +286,36 @@ export default function PharmacInventoryPage() {
         <div className="divide-y divide-gray-200 overflow-y-auto flex-1">
           {items.map((item) => {
             const isSelected = selectedItemId === item.id;
-            const isDimmed =
-              editMode && selectedItemId !== null && !isSelected;
+            const isDimmed = editMode && selectedItemId !== null && !isSelected;
+            const rawImage = item.image ?? "";
+            const imgSrc = rawImage
+              ? rawImage.startsWith("http")
+                ? rawImage
+                : `http://localhost:5000${rawImage}`
+              : null;
 
             return (
               <div
                 key={item.id}
-                className={`grid grid-cols-6 gap-4 px-6 py-4 hover:bg-gray-50 transition-all duration-300 ${
+                className={`grid grid-cols-8 gap-4 px-6 py-4 hover:bg-gray-50 transition-all duration-300 ${
                   isDimmed ? "opacity-50" : "opacity-100"
                 }`}
               >
+                {/* Image cell */}
+                <div className="flex items-center">
+                  {imgSrc ? (
+                    <img
+                      src={imgSrc}
+                      alt={item.name}
+                      className="h-12 w-12 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 bg-gray-100 rounded flex items-center justify-center text-sm text-gray-400">
+                      No
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex items-center space-x-2">
                   {editMode && (
                     <input
@@ -306,27 +350,36 @@ export default function PharmacInventoryPage() {
                       className="border p-1 rounded"
                     />
                     <input
-                      type="number"
-                      value={item.price}
+                      type="text"
+                      value={item.productType ?? ""}
                       onChange={(e) =>
-                        handleInputChange(item.id, "price", +e.target.value)
+                        handleInputChange(
+                          item.id,
+                          "productType",
+                          e.target.value
+                        )
                       }
                       className="border p-1 rounded"
                     />
+                    <input
+                      type="text"
+                      value={item.unit ?? ""}
+                      onChange={(e) =>
+                        handleInputChange(item.id, "unit", e.target.value)
+                      }
+                      className="border p-1 rounded"
+                    />
+                    <div className="text-gray-700">{item.price}</div>
                     <div className="text-gray-700">{item.amount}</div>
                     <input
                       type="text"
                       value={item.expiredDate}
                       onChange={(e) =>
-                        handleInputChange(item.id, "expiredDate", e.target.value)
-                      }
-                      className="border p-1 rounded"
-                    />
-                    <input
-                      type="text"
-                      value={item.lotId}
-                      onChange={(e) =>
-                        handleInputChange(item.id, "lotId", e.target.value)
+                        handleInputChange(
+                          item.id,
+                          "expiredDate",
+                          e.target.value
+                        )
                       }
                       className="border p-1 rounded"
                     />
@@ -334,14 +387,21 @@ export default function PharmacInventoryPage() {
                 ) : (
                   <>
                     <div className="text-gray-700">{item.brand}</div>
+                    <div className="text-gray-700">
+                      {item.productType ?? "-"}
+                    </div>
+                    <div className="text-gray-700">{item.unit ?? "-"}</div>
+                    <div className={`text-gray-700`}>
+                      {item.isControlled ? "Yes" : "No"}
+                    </div>
                     <div className="text-gray-700">{item.price}</div>
-                    <div className={`font-semibold ${getAmountStatus(item.amount)}`}>
+                    <div
+                      className={`font-semibold ${getAmountStatus(
+                        item.amount
+                      )}`}
+                    >
                       {item.amount}
                     </div>
-                    <div className={getExpirationClass(item.expiredDate)}>
-                      {item.expiredDate}
-                    </div>
-                    <div className="text-gray-700">{item.lotId}</div>
                   </>
                 )}
               </div>
