@@ -1,9 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import CustomerPaymentPage from './pages/CustomerPaymentPage';
 import Navbar from '../src/components/Navbar.tsx';
 import Header from '../src/components/Header.tsx';
 // import PharmacInventoryPage from "./pages/PharmacInventoryPage.tsx";
 import AddMedicinePage from "./pages/AddMedicinePage.tsx";
-// import MedicineDetailPage from "./pages/MedicineDetailPage.tsx";
 import PharmacInventoryPage from "./pages/PharmacInventoryPage.tsx";
 import SettingsPage from "./pages/settingPage.tsx";
 import AccountPage from "./pages/accountPage.tsx";
@@ -21,9 +23,13 @@ import DocumentRecord from "./pages/DocRecordPage.tsx";
 import OrderRecord from "./pages/orderRecordPage.tsx";
 import MembershipRanking from "./pages/memberRankingPage.tsx";
 import POSPage from "./pages/POSPage.tsx";
+import { useEffect } from 'react';
 
 function AppContent() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
   const isSettingsPage = location.pathname === '/settings';
   const isAccountPage = location.pathname === '/accountSetting';
   const isThemePage = location.pathname === '/pageSetting';
@@ -32,6 +38,28 @@ function AppContent() {
   const isLoginPage = location.pathname === '/login'
   const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage || isEditRolePage || isRegisterPage || isLoginPage;
 
+  // Force Customer to stay on CustomerPaymentPage
+  useEffect(() => {
+    if (user && user.role === 'Customer' && location.pathname !== '/customer-payment') {
+      navigate('/customer-payment', { replace: true });
+    }
+  }, [user, location.pathname, navigate]);
+
+  // Show loading spinner
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-teal-600"></div>
+      </div>
+    );
+  }
+
+  // If user is Customer, show Customer Payment Page directly regardless of URL
+  if (user && user.role === 'Customer') {
+    return <CustomerPaymentPage />;
+  }
+
+  // Default layout for Owner/Staff or unauthenticated users
   return (
     <div className="flex h-screen bg-[#FAF9F8]">
       {/* Conditionally render Navbar */}
@@ -49,24 +77,99 @@ function AppContent() {
         {/* Page content */}
         <div className={`flex-1 overflow-y-auto ${!hideNavAndHeader ? 'p-6' : ''}`}>
           <Routes>
-            <Route path="/" element={<MainMenu />} />
-            <Route path="/add-medicine" element={<AddMedicinePage />} />
-            <Route path="/inventory" element={<PharmacInventoryPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/accountSetting" element={<AccountPage />} />
-            <Route path="/pageSetting" element={< ThemePage/>} />
-            <Route path="/editrole" element={< EditRolePage/>} />
-            <Route path="/podoc" element={< PODoc/>} />
-            <Route path="/poedit" element={< POEdit/>} />
-            <Route path="/poform" element={< POForm/>} />
-            <Route path="/register" element={< RegisterPage/>} />
-            <Route path="/login" element={< LoginPage/>} />
-            <Route path="/statistic" element={<StatisticPage />} />
-            <Route path="/expiry-monitor" element={<ExpiryMonitor />} />
-            <Route path="/doc-record" element={<DocumentRecord/>}/>
-            <Route path="/order-record" element={<OrderRecord/>}/>
-            <Route path="/membership-ranking" element={<MembershipRanking/>}/>
-            <Route path="/pos" element={<POSPage/>}/>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            
+            {/* Protected Routes for Admin/Staff */}
+            <Route path="/" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <MainMenu />
+              </ProtectedRoute>
+            } />
+            <Route path="/add-medicine" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <AddMedicinePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/inventory" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <PharmacInventoryPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute allowedRoles={['Owner']}>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/accountSetting" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <AccountPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/pageSetting" element={
+              <ProtectedRoute allowedRoles={['Owner']}>
+                <ThemePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/editrole" element={
+              <ProtectedRoute allowedRoles={['Owner']}>
+                <EditRolePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/podoc" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <PODoc />
+              </ProtectedRoute>
+            } />
+            <Route path="/poedit" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <POEdit />
+              </ProtectedRoute>
+            } />
+            <Route path="/poform" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <POForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/statistic" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <StatisticPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/expiry-monitor" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <ExpiryMonitor />
+              </ProtectedRoute>
+            } />
+            <Route path="/doc-record" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <DocumentRecord />
+              </ProtectedRoute>
+            } />
+            <Route path="/order-record" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <OrderRecord />
+              </ProtectedRoute>
+            } />
+            <Route path="/membership-ranking" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <MembershipRanking />
+              </ProtectedRoute>
+            } />
+            
+            {/* POS accessible by Owner and Staff only */}
+            <Route path="/pos" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <POSPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Customer Payment Page - Customer only */}
+            <Route path="/customer-payment" element={
+              <ProtectedRoute allowedRoles={['Customer']}>
+                <CustomerPaymentPage />
+              </ProtectedRoute>
+            } />
           </Routes>
         </div>
       </div>
@@ -76,9 +179,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

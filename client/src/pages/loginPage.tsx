@@ -1,41 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import medicineImage from "../assets/medicine.png";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login: authLogin, user, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const login = async () => {
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      console.log('User already logged in, redirecting...');
+      navigate("/", { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert('กรุณากรอกอีเมลและรหัสผ่าน');
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const log = await fetch('http://localhost:5000/api/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          password
-        })
-      });
-
-      if (!log.ok) {
-        const err = await log.json();
-        console.error("Login failed:", err);
-        return;
+      const success = await authLogin(email, password);
+      if (success) {
+        console.log('Login successful, navigating to /');
+        navigate("/", { replace: true });
+      } else {
+        alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
       }
-
-      const res = await log.json();
-      console.log('Login successful:', res);
-      navigate("/");
-
     } catch (error) {
-      console.log('Fetch error:', error);
+      console.error('Login error:', error);
+      alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,10 +49,17 @@ export default function LoginPage() {
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     console.log("Login attempt:", { email, password, rememberMe });
-
-    login()
-
+    handleLogin();
   };
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col lg:flex-row">
       {/* Left Panel - Login Form */}
@@ -134,9 +146,14 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="w-full bg-green-700 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-green-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm sm:text-base"
+                disabled={isLoading}
+                className={`w-full py-2.5 sm:py-3 rounded-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm sm:text-base ${
+                  isLoading 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-green-700 text-white hover:bg-green-800'
+                }`}
               >
-                Submit
+                {isLoading ? 'กำลังเข้าสู่ระบบ...' : 'Submit'}
               </button>
             </div>
           </div>
