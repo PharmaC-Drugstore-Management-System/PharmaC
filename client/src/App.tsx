@@ -21,7 +21,7 @@ import StatisticPage from "./pages/StatisticPage.tsx";
 import ExpiryMonitor from "./pages/expiryMonitorPage.tsx";
 import DocumentRecord from "./pages/DocRecordPage.tsx";
 import OrderRecord from "./pages/orderRecordPage.tsx";
-import MembershipRanking from "./pages/memberRankingPage.tsx";
+import MembershipRanking from "./pages/membershipPage.tsx";
 import POSPage from "./pages/POSPage.tsx";
 import { useEffect } from 'react';
 
