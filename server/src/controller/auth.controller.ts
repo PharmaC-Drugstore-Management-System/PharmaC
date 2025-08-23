@@ -25,6 +25,7 @@ const controller = {
           tax_id: user.tax_id,
           phonenumber: user.phonenumber,
           birthdate: user.birthdate,
+          role_id: user.role_id,
         },
         JWT_SECRET,
         { expiresIn: "7d" }
@@ -53,6 +54,7 @@ const controller = {
         return res.status(404).json({ message: "Email or password not found" });
       }
       const user = await auth_service.login({ email, password });
+      console.log('Login controller - user from DB:', user); // Debug log
       const token = jwt.sign(
         {
           id: user.employee_id,
@@ -62,6 +64,7 @@ const controller = {
           tax_id: user.tax_id,
           phonenumber: user.phonenumber,
           birthdate: user.birthdate,
+          role_id: user.role_id,
         },
         JWT_SECRET,
         { expiresIn: "7d" }
@@ -83,6 +86,7 @@ const controller = {
   me: async (req: any, res: any) => {
     try {
       const user = (req as any).user;
+      console.log('ME endpoint - user from JWT:', user); // Debug log
       res.status(200).json({ user });
     } catch (error: any) {
       return res
