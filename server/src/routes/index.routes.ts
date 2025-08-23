@@ -20,4 +20,12 @@ router.use("/arima", forecastRoute);
 import purchaseRoute from "./purchase.routes.ts";
 router.use("/purchase", purchaseRoute);
 
+import orderRoute from "./order.routes.ts"
+router.use("/order",orderRoute)
+
+import cartRoute from "./cart.routes.ts"
+router.use("/cart", cartRoute)
+
+import paymentRoute from "./payment.routes.ts"
+router.use("/payment", paymentRoute)
 export default router;

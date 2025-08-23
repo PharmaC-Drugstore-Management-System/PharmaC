@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Minus, ShoppingCart, CreditCard, Banknote, Receipt, Trash2, X, User, Star } from "lucide-react";
+import { Search, Plus, Minus, ShoppingCart, CreditCard, Banknote, Receipt, Trash2, X, User, Star, QrCode } from "lucide-react";
 import "../styles/pos.css";
 
 interface Product {
@@ -30,7 +30,7 @@ export default function POSPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedPayment, setSelectedPayment] = useState<"cash" | "card" | "transfer">("cash");
+  const [selectedPayment, setSelectedPayment] = useState<"cash" | "qrcode" | "transfer">("cash");
   const [customerPaid, setCustomerPaid] = useState("");
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
@@ -401,26 +401,15 @@ export default function POSPage() {
                       <span>เงินสด</span>
                     </button>
                     <button
-                      onClick={() => setSelectedPayment("card")}
+                      onClick={() => setSelectedPayment("qrcode")}
                       className={`p-2 rounded text-sm flex flex-col items-center ${
-                        selectedPayment === "card"
+                        selectedPayment === "qrcode"
                           ? "bg-blue-500 text-white"
                           : "bg-gray-200 text-gray-700"
                       }`}
                     >
-                      <CreditCard size={20} />
-                      <span>บัตร</span>
-                    </button>
-                    <button
-                      onClick={() => setSelectedPayment("transfer")}
-                      className={`p-2 rounded text-sm flex flex-col items-center ${
-                        selectedPayment === "transfer"
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      }`}
-                    >
-                      <Receipt size={20} />
-                      <span>โอน</span>
+                      <QrCode size={20} />
+                      <span>จ่ายด้วย QR</span>
                     </button>
                   </div>
                 </div>
@@ -469,8 +458,8 @@ export default function POSPage() {
 
       {/* Member Search Modal */}
       {showMemberModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-lg w-full mx-4 border border-blue-300 shadow-lg overflow-y-auto" style={{ maxHeight: '90vh' }}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold flex items-center">
                 <User className="mr-2" />
