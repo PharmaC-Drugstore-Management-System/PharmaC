@@ -86,7 +86,7 @@ export default function ExpiryMonitor() {
         </div>
 
         {/* Earliest Expiry Table */}
-        <div className="bg-white rounded-lg shadow-sm border">
+        <div className="bg-white rounded-lg shadow border">
           <div className="flex items-center justify-between p-4 border-b bg-gray-50 font-medium text-gray-700">
             <div className="flex-1">Name</div>
             <div className="flex-1 px-2">Brand</div>
