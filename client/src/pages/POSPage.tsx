@@ -41,6 +41,13 @@ export default function POSPage() {
   const [memberPhone, setMemberPhone] = useState("");
   const [currentMember, setCurrentMember] = useState<Member | null>(null);
   const [memberSearching, setMemberSearching] = useState(false);
+  const [memberModalMode, setMemberModalMode] = useState<'search' | 'add'>('search');
+  const [newMemberData, setNewMemberData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: ''
+  });
 
   // Mock price data - you can fetch this from your API
   const productPrices: Record<number, number> = {
@@ -145,6 +152,39 @@ export default function POSPage() {
   const removeMember = () => {
     setCurrentMember(null);
     setMemberPhone("");
+  };
+
+  const addNewMember = async () => {
+    if (!newMemberData.name || !newMemberData.phone) {
+      alert('กรุณากรอกชื่อและเบอร์โทรศัพท์');
+      return;
+    }
+
+    setMemberSearching(true);
+    try {
+      // สร้างสมาชิกใหม่ (ในอนาคตจะเชื่อมต่อกับ API จริง)
+      const newMember: Member = {
+        id: `M${Date.now()}`,
+        name: newMemberData.name,
+        phone: newMemberData.phone,
+        points: 0,
+        level: 'Bronze'
+      };
+
+      await new Promise(resolve => setTimeout(resolve, 1000)); // จำลองการบันทึกข้อมูล
+
+      setCurrentMember(newMember);
+      setShowMemberModal(false);
+      setNewMemberData({ name: '', phone: '', email: '', address: '' });
+      setMemberModalMode('search');
+      
+      alert(`เพิ่มสมาชิกใหม่สำเร็จ: ${newMember.name}`);
+    } catch (error) {
+      console.error('Error adding member:', error);
+      alert('เกิดข้อผิดพลาดในการเพิ่มสมาชิก');
+    } finally {
+      setMemberSearching(false);
+    }
   };
 
   const calculatePoints = () => {
@@ -418,81 +458,202 @@ export default function POSPage() {
 
       {/* Member Search Modal */}
       {showMemberModal && (
-        <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-lg w-full mx-4 border border-blue-300 shadow-lg overflow-y-auto" style={{ maxHeight: '90vh' }}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold flex items-center">
                 <User className="mr-2" />
-                ค้นหาสมาชิก
+                {memberModalMode === 'search' ? 'ค้นหาสมาชิก' : 'เพิ่มสมาชิกใหม่'}
               </h3>
               <button
-                onClick={() => setShowMemberModal(false)}
+                onClick={() => {
+                  setShowMemberModal(false);
+                  setMemberModalMode('search');
+                  setNewMemberData({ name: '', phone: '', email: '', address: '' });
+                }}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X size={24} />
               </button>
             </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                เบอร์โทรศัพท์
-              </label>
-              <input
-                type="tel"
-                value={memberPhone}
-                onChange={(e) => setMemberPhone(e.target.value)}
-                placeholder="กรอกเบอร์โทรศัพท์..."
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                maxLength={10}
-              />
-            </div>
 
-            <div className="flex space-x-2">
+            {/* Mode Toggle */}
+            <div className="flex mb-4 bg-gray-100 rounded-lg p-1">
               <button
-                onClick={() => searchMember(memberPhone)}
-                disabled={!memberPhone || memberSearching}
-                className={`flex-1 py-2 rounded-lg font-medium ${
-                  memberPhone && !memberSearching
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                onClick={() => setMemberModalMode('search')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  memberModalMode === 'search'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                {memberSearching ? "กำลังค้นหา..." : "ค้นหา"}
+                ค้นหาสมาชิก
               </button>
               <button
-                onClick={() => {
-                  setShowMemberModal(false);
-                  setMemberPhone("");
-                }}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
+                onClick={() => setMemberModalMode('add')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  memberModalMode === 'add'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
               >
-                ยกเลิก
+                เพิ่มสมาชิกใหม่
               </button>
             </div>
 
-            {/* Quick Member Selection */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-3">สมาชิกตัวอย่าง (Demo):</p>
-              <div className="space-y-2">
-                {[
-                  { phone: "0812345678", name: "คุณสมชาย ใจดี" },
-                  { phone: "0823456789", name: "คุณสมหญิง รักสุขภาพ" },
-                  { phone: "0834567890", name: "คุณวิชัย สุขสบาย" },
-                ].map((member, index) => (
+            {memberModalMode === 'search' ? (
+              // Search Member Mode
+              <>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-2">
+                    เบอร์โทรศัพท์
+                  </label>
+                  <input
+                    type="tel"
+                    value={memberPhone}
+                    onChange={(e) => setMemberPhone(e.target.value)}
+                    placeholder="กรอกเบอร์โทรศัพท์..."
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    maxLength={10}
+                  />
+                </div>
+
+                <div className="flex space-x-2 mb-4">
                   <button
-                    key={index}
-                    onClick={() => {
-                      setMemberPhone(member.phone);
-                      searchMember(member.phone);
-                    }}
-                    className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded text-sm"
+                    onClick={() => searchMember(memberPhone)}
+                    disabled={!memberPhone || memberSearching}
+                    className={`flex-1 py-2 rounded-lg font-medium ${
+                      memberPhone && !memberSearching
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
                   >
-                    <div className="font-medium">{member.name}</div>
-                    <div className="text-gray-600">{member.phone}</div>
+                    {memberSearching ? "กำลังค้นหา..." : "ค้นหา"}
                   </button>
-                ))}
-              </div>
-            </div>
+                  <button
+                    onClick={() => {
+                      setShowMemberModal(false);
+                      setMemberPhone("");
+                    }}
+                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
+                  >
+                    ยกเลิก
+                  </button>
+                </div>
+
+                {/* Quick Member Selection */}
+                <div className="pt-4 border-t border-gray-200">
+                  <p className="text-sm text-gray-600 mb-3">สมาชิกตัวอย่าง (Demo):</p>
+                  <div className="space-y-2">
+                    {[
+                      { phone: "0812345678", name: "คุณสมชาย ใจดี" },
+                      { phone: "0823456789", name: "คุณสมหญิง รักสุขภาพ" },
+                      { phone: "0834567890", name: "คุณวิชัย สุขสบาย" },
+                    ].map((member, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setMemberPhone(member.phone);
+                          searchMember(member.phone);
+                        }}
+                        className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded text-sm"
+                      >
+                        <div className="font-medium">{member.name}</div>
+                        <div className="text-gray-600">{member.phone}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              // Add New Member Mode
+              <>
+                <div className="space-y-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      ชื่อ-นามสกุล <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={newMemberData.name}
+                      onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})}
+                      placeholder="กรอกชื่อ-นามสกุล"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={newMemberData.phone}
+                      onChange={(e) => setNewMemberData({...newMemberData, phone: e.target.value})}
+                      placeholder="08X-XXX-XXXX"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      maxLength={10}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      อีเมล
+                    </label>
+                    <input
+                      type="email"
+                      value={newMemberData.email}
+                      onChange={(e) => setNewMemberData({...newMemberData, email: e.target.value})}
+                      placeholder="example@email.com"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      ที่อยู่
+                    </label>
+                    <textarea
+                      value={newMemberData.address}
+                      onChange={(e) => setNewMemberData({...newMemberData, address: e.target.value})}
+                      placeholder="กรอกที่อยู่"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex space-x-2">
+                  <button
+                    onClick={addNewMember}
+                    disabled={!newMemberData.name || !newMemberData.phone || memberSearching}
+                    className={`flex-1 py-2 rounded-lg font-medium ${
+                      newMemberData.name && newMemberData.phone && !memberSearching
+                        ? "bg-green-600 hover:bg-green-700 text-white"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
+                    {memberSearching ? "กำลังเพิ่มสมาชิก..." : "เพิ่มสมาชิก"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMemberModal(false);
+                      setMemberModalMode('search');
+                      setNewMemberData({ name: '', phone: '', email: '', address: '' });
+                    }}
+                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
+                  >
+                    ยกเลิก
+                  </button>
+                </div>
+
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    💡 <strong>หมายเหตุ:</strong> สมาชิกใหม่จะเริ่มต้นที่ระดับ Bronze และได้รับ 0 แต้ม
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
