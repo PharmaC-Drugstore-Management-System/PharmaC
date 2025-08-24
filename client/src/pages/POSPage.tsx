@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Minus, ShoppingCart, CreditCard, Banknote, Receipt, Trash2, X, User, Star, QrCode } from "lucide-react";
+import { Search, Plus, Minus, ShoppingCart,  Banknote, Trash2, X, User, Star, QrCode } from "lucide-react";
 import "../styles/pos.css";
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   product_id: number;
@@ -30,11 +31,28 @@ export default function POSPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedPayment, setSelectedPayment] = useState<"cash" | "qrcode" | "transfer">("cash");
+  const [selectedPayment, setSelectedPayment] = useState<"cash" | "promptpay" | "transfer">("cash");
   const [customerPaid, setCustomerPaid] = useState("");
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [employee_id, setEmployeeId] = useState<number | null>(null);
+  const [orderId, setOrderId]  = useState<number | null>(null);
+  // QR Code Payment States
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [showQRConfirmModal, setShowQRConfirmModal] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState<any>(null);
+  const [qrPaymentStatus, setQrPaymentStatus] = useState<'pending' | 'success' | 'failed' | 'require_action'>('pending');
+  const [qrSentToDisplay, setQrSentToDisplay] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  
+  // Payment verification states
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+  const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
+  const [showRequireActionModal, setShowRequireActionModal] = useState(false);
   
   // Member System States
   const [showMemberModal, setShowMemberModal] = useState(false);
@@ -58,7 +76,32 @@ export default function POSPage() {
 
   useEffect(() => {
     fetchProducts();
+    checkme();
   }, []);
+
+  const verifyStatus  = async () => {
+    try {
+      console.log(qrCodeData?.pi)
+      console.log(qrCodeData?.order_id)
+      const response = await fetch('http://localhost:5000/payment/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          pi: qrCodeData?.pi,
+          order_id: orderId,
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setQrPaymentStatus(data.status);
+      }
+    } catch (error) {
+      console.error("Error verifying payment status:", error);
+    }
+  }
 
   const fetchProducts = async () => {
     try {
@@ -205,9 +248,16 @@ export default function POSPage() {
   const processPayment = async () => {
     setIsProcessing(true);
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
+      if (selectedPayment === "promptpay") {
+        // Show QR confirmation modal first instead of creating payment immediately
+        setShowQRConfirmModal(true);
+        setIsProcessing(false); // Reset processing state since we're showing modal
+        return;
+      } else {
+        // Handle Cash Payment (existing logic)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
         const receipt = {
           id: `POS-${Date.now()}`,
           date: new Date().toLocaleString('th-TH'),
@@ -219,23 +269,185 @@ export default function POSPage() {
           change: getChange(),
           member: currentMember,
           pointsEarned: currentMember ? calculatePoints() : 0,
-        };      setReceiptData(receipt);
-      setShowReceipt(true);
-      setCart([]);
-      setCustomerPaid("");
+        };
+        
+        setReceiptData(receipt);
+        setShowReceipt(true);
+        setCart([]);
+        setCustomerPaid("");
+      }
       
     } catch (error) {
-      console.error("Payment processing error:", error);
+      if (error instanceof Error) {
+        console.error("Payment processing error:", error.message);
+      } else {
+        console.error("Payment processing error:", error);
+      }
       alert("เกิดข้อผิดพลาดในการชำระเงิน");
     } finally {
       setIsProcessing(false);
     }
   };
-
+    const navigate = useNavigate();
+    
+    const checkme = async () => {
+      try {
+        const authme = await fetch('http://localhost:5000/api/me', {
+          method: 'GET',
+          credentials: 'include'
+        })
+        const data = await authme.json();
+        setEmployeeId(data.user.id)
+        if (authme.status === 401 || authme.status === 403) {
+          navigate('/login');
+          return;
+        }
+  
+        console.log('Authme data:', data);
+      } catch (error) {
+        console.log('Error', error)
+  
+      }
+    }
+  
   const canProcessPayment = () => {
     const total = getTotalAmount();
     const paid = parseFloat(customerPaid) || 0;
     return cart.length > 0 && (selectedPayment !== "cash" || paid >= total);
+  };
+
+  // Handle QR Payment Creation after confirmation
+  const confirmQRPayment = async () => {
+    setIsProcessing(true);
+    setShowQRConfirmModal(false);
+    
+    try {
+      const orderData = {
+        items: cart.map(item => ({
+          product_id: item.product_id,
+          price: item.price,
+          quantity: item.quantity
+        })),
+        employee_id: employee_id,
+        customer_id: currentMember?.id || null,
+        payment_method_types: "promptpay",
+        total_amount: getTotalAmount()
+      };
+
+      console.log('Sending order data to create QR for customer display:', orderData);
+
+      const response = await fetch('http://localhost:5000/order/createOrder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(orderData)
+      });
+
+      const result = await response.json();
+      console.log('RESULT',result.data);
+
+      if (result.status) {
+        // Store order ID and payment intent ID for verification
+        setOrderId(result.data.order_id);
+        setPaymentIntentId(result.data.pi); // Store payment intent ID
+        setQrCodeData(result.data);
+        setQrPaymentStatus('pending');
+        setQrSentToDisplay(true);
+        setShowSuccessPopup(true);
+        
+        console.log('Stored Order ID:', result.data.order_id);
+        console.log('Stored Payment Intent ID:', result.data.pi);
+        
+        // Auto-hide success popup after 3 seconds
+        setTimeout(() => {
+          setShowSuccessPopup(false);
+        }, 3000);
+      } else {
+        throw new Error(result.message || result.error || 'Failed to create QR payment');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Payment processing error:", error.message);
+        setErrorMessage(`เกิดข้อผิดพลาดในการชำระเงิน: ${error.message}`);
+      } else {
+        console.error("Payment processing error:", error);
+        setErrorMessage("เกิดข้อผิดพลาดในการชำระเงิน");
+      }
+      
+      setShowErrorPopup(true);
+      // Auto-hide error popup after 5 seconds
+      setTimeout(() => {
+        setShowErrorPopup(false);
+      }, 5000);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Verify Payment Function
+  const verifyPayment = async () => {
+    if (!orderId || !paymentIntentId) {
+      setErrorMessage('ไม่พบข้อมูลการสั่งซื้อหรือข้อมูลการชำระเงิน');
+      setShowErrorPopup(true);
+      setTimeout(() => setShowErrorPopup(false), 5000);
+      return;
+    }
+
+    setIsVerifyingPayment(true);
+    
+    try {
+      console.log('Verifying payment with order_id:', orderId, 'pi:', paymentIntentId);
+
+      const response = await fetch('http://localhost:5000/payment/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          order_id: orderId,
+          pi: paymentIntentId
+        })
+      });
+
+      const result = await response.json();
+      console.log('Payment verification result:', result);
+      
+      if (result.success) {
+        // Payment successful - show success modal
+        setQrPaymentStatus('success');
+        setShowPaymentSuccessModal(true);
+      } else if (result.status && result.data) {
+        // Payment still pending
+        const paymentStatus = result.data;
+        if (paymentStatus === 'succeeded') {
+          setQrPaymentStatus('success');
+          setShowPaymentSuccessModal(true);
+        } else if (paymentStatus === 'requires_action') {
+          setQrPaymentStatus('require_action');
+          setShowRequireActionModal(true);
+        } else {
+          setErrorMessage(`Payment Status: ${paymentStatus} - Please wait and try again`);
+          setShowErrorPopup(true);
+          setTimeout(() => setShowErrorPopup(false), 5000);
+        }
+      } else {
+        // Verification failed
+        setErrorMessage(result.error || 'Unable to verify payment');
+        setShowErrorPopup(true);
+        setTimeout(() => setShowErrorPopup(false), 5000);
+      }
+      
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      setErrorMessage('Error verifying payment');
+      setShowErrorPopup(true);
+      setTimeout(() => setShowErrorPopup(false), 5000);
+    } finally {
+      setIsVerifyingPayment(false);
+    }
   };
 
   return (
@@ -401,9 +613,9 @@ export default function POSPage() {
                       <span>เงินสด</span>
                     </button>
                     <button
-                      onClick={() => setSelectedPayment("qrcode")}
+                      onClick={() => setSelectedPayment("promptpay")}
                       className={`p-2 rounded text-sm flex flex-col items-center ${
-                        selectedPayment === "qrcode"
+                        selectedPayment === "promptpay"
                           ? "bg-blue-500 text-white"
                           : "bg-gray-200 text-gray-700"
                       }`}
@@ -440,15 +652,28 @@ export default function POSPage() {
                 )}
 
                 <button
-                  onClick={processPayment}
-                  disabled={!canProcessPayment() || isProcessing}
+                  onClick={qrSentToDisplay && selectedPayment === "promptpay" ? verifyPayment : processPayment}
+                  disabled={!canProcessPayment() || isProcessing || (qrSentToDisplay && isVerifyingPayment)}
                   className={`w-full py-3 rounded-lg font-medium ${
-                    canProcessPayment() && !isProcessing
+                    qrSentToDisplay && selectedPayment === "promptpay"
+                      ? isVerifyingPayment
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : qrPaymentStatus === 'require_action'
+                          ? "bg-orange-500 hover:bg-orange-600 text-white"
+                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                      : canProcessPayment() && !isProcessing
                       ? "bg-green-600 hover:bg-green-700 text-white"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
                 >
-                  {isProcessing ? "กำลังประมวลผล..." : "ชำระเงิน"}
+                  {qrSentToDisplay && selectedPayment === "promptpay"
+                    ? isVerifyingPayment
+                      ? "Verifying..."
+                      : "Verify Payment"
+                    : isProcessing
+                    ? "กำลังประมวลผล..."
+                    : "ชำระเงิน"
+                  }
                 </button>
               </>
             )}
@@ -745,6 +970,425 @@ export default function POSPage() {
                 ปิด
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Payment Modal */}
+      {showQRModal && qrCodeData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold flex items-center">
+                <QrCode className="mr-2" />
+                ชำระเงินด้วย QR Code
+              </h3>
+              <button
+                onClick={() => {
+                  setShowQRModal(false);
+                  setQrCodeData(null);
+                  setQrPaymentStatus('pending');
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="text-center mb-6">
+              <h4 className="font-bold mb-2">สแกน QR Code เพื่อชำระเงิน</h4>
+              <p className="text-sm text-gray-600 mb-4">
+                จำนวนเงิน: ฿{getTotalAmount().toFixed(2)}
+              </p>
+              
+              {/* QR Code Display */}
+              <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4">
+                {qrCodeData.qr_code_url ? (
+                  <img 
+                    src={qrCodeData.qr_code_url} 
+                    alt="QR Code for Payment"
+                    className="w-48 h-48 mx-auto"
+                  />
+                ) : (
+                  <div className="w-48 h-48 mx-auto bg-gray-100 flex items-center justify-center">
+                    <p className="text-gray-500">กำลังโหลด QR Code...</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Payment Status */}
+              <div className="mb-4">
+                {qrPaymentStatus === 'pending' && (
+                  <div className="flex items-center justify-center text-orange-600">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-600 mr-2"></div>
+                    รอการชำระเงิน...
+                  </div>
+                )}
+                {qrPaymentStatus === 'success' && (
+                  <div className="text-green-600 font-medium">
+                    ✅ ชำระเงินสำเร็จ!
+                  </div>
+                )}
+                {qrPaymentStatus === 'require_action' && (
+                  <div className="text-orange-500 font-medium">
+                    ⚠️ ต้องการดำเนินการเพิ่มเติม
+                  </div>
+                )}
+                {qrPaymentStatus === 'failed' && (
+                  <div className="text-red-600 font-medium">
+                    ❌ การชำระเงินล้มเหลว
+                  </div>
+                )}
+              </div>
+
+              {/* Order Details */}
+              <div className="text-left bg-gray-50 p-3 rounded-lg mb-4">
+                <p className="text-sm font-medium mb-2">รายการสินค้า:</p>
+                {cart.map((item, index) => (
+                  <div key={index} className="flex justify-between text-sm mb-1">
+                    <span>{item.product_name} x{item.quantity}</span>
+                    <span>฿{item.total.toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="border-t pt-2 mt-2">
+                  <div className="flex justify-between font-bold">
+                    <span>รวมทั้งหมด:</span>
+                    <span>฿{getTotalAmount().toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              {qrPaymentStatus === 'success' ? (
+                <button
+                  onClick={() => {
+                    // Clear cart and close modal after successful payment
+                    setCart([]);
+                    setShowQRModal(false);
+                    setQrCodeData(null);
+                    setQrPaymentStatus('pending');
+                    alert('ขายสำเร็จ! ขอบคุณครับ');
+                  }}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
+                >
+                  เสร็จสิ้น
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+
+                      verifyStatus();
+                    }}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+                  >
+                    ตรวจสอบการชำระเงิน
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowQRModal(false);
+                      setQrCodeData(null);
+                      setQrPaymentStatus('pending');
+                    }}
+                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
+                  >
+                    ยกเลิก
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Payment Confirmation Modal */}
+      {showQRConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold flex items-center">
+                <QrCode className="mr-2" />
+                {qrSentToDisplay ? 'ตรวจสอบการชำระเงิน' : 'ยืนยันการชำระเงินด้วย QR Code'}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowQRConfirmModal(false);
+                  setQrSentToDisplay(false);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Status Indicator */}
+            {qrSentToDisplay && (
+              <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <div className="flex items-center text-orange-700">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
+                  <span className="text-sm font-medium">
+                    QR Code ถูกส่งไปยังหน้าจอลูกค้าแล้ว - รอการชำระเงิน
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            <div className="mb-6">
+              <h4 className="font-bold mb-4">รายการสินค้า</h4>
+              
+              {/* Order Details */}
+              <div className="space-y-2 mb-4">
+                {cart.map((item, index) => (
+                  <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <div>
+                      <p className="font-medium text-sm">{item.product_name}</p>
+                      <p className="text-xs text-gray-600">
+                        ฿{item.price?.toFixed(2)} x {item.quantity}
+                      </p>
+                    </div>
+                    <span className="font-medium text-green-600">฿{item.total.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Member Info */}
+              {currentMember && (
+                <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                  <div className="flex items-center space-x-2">
+                    <User size={16} className="text-blue-600" />
+                    <span className="text-sm font-medium">สมาชิก: {currentMember.name}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <Star size={14} className="text-yellow-500" />
+                    <span className="text-xs text-gray-600">
+                      จะได้รับ +{Math.floor(getTotalAmount() / 10)} แต้ม
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Total */}
+              <div className="border-t pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-bold">ยอดรวมทั้งหมด:</span>
+                  <span className="text-xl font-bold text-green-600">
+                    ฿{getTotalAmount().toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowQRConfirmModal(false);
+                  setQrSentToDisplay(false);
+                }}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 rounded-lg font-medium"
+              >
+                ยกเลิก
+              </button>
+              
+              {!qrSentToDisplay ? (
+                <button
+                  onClick={confirmQRPayment}
+                  disabled={isProcessing}
+                  className={`flex-2 py-3 rounded-lg font-medium ${
+                    isProcessing
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700 text-white"
+                  }`}
+                  style={{ flex: 2 }}
+                >
+                  {isProcessing ? "กำลังส่ง QR Code..." : "ส่ง QR Code ไปหน้าจอลูกค้า"}
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    verifyStatus();
+                  }}
+                  className="flex-2 bg-blue-600 hover:bg-blue-700  text-white py-3 rounded-lg font-medium"
+                  style={{ flex: 2 }}
+                >
+                  ตรวจสอบการชำระเงิน
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Popup */}
+      {showSuccessPopup && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-slide-in">
+            <div className="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
+              <span className="text-green-900 font-bold text-sm">✓</span>
+            </div>
+            <div>
+              <p className="font-medium">QR Code ส่งสำเร็จ!</p>
+              <p className="text-sm text-green-100">ส่งไปยังหน้าจอลูกค้าแล้ว</p>
+            </div>
+            <button
+              onClick={() => setShowSuccessPopup(false)}
+              className="ml-4 text-green-100 hover:text-white"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Success Modal */}
+      {showPaymentSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+            <div className="mb-6">
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-8 h-8 bg-green-400 rounded-full flex items-center justify-center">
+                  <span className="text-green-900 font-bold text-xl">✓</span>
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-green-600 mb-2">Payment Successful!</h3>
+              <p className="text-gray-600 mb-4">การชำระเงินเสร็จสมบูรณ์แล้ว</p>
+              
+              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-600">Order ID:</span>
+                  <span className="font-semibold">#{orderId}</span>
+                </div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-600">Total Amount:</span>
+                  <span className="font-semibold text-green-600">฿{getTotalAmount().toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Payment Method:</span>
+                  <span className="font-semibold">PromptPay QR</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => window.print()}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium"
+              >
+                Print Receipt
+              </button>
+              <button
+                onClick={() => {
+                  // Reset all states and prepare for new transaction
+                  setShowPaymentSuccessModal(false);
+                  setShowQRConfirmModal(false);
+                  setCart([]);
+                  setQrSentToDisplay(false);
+                  setOrderId(null);
+                  setPaymentIntentId(null);
+                  setQrPaymentStatus('pending');
+                  setQrCodeData(null);
+                  setSelectedPayment('cash');
+                }}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium"
+              >
+                New Transaction
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Require Action Modal */}
+      {showRequireActionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div className="text-center">
+              {/* Orange Warning Icon */}
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">!</span>
+                </div>
+              </div>
+              
+              {/* Title */}
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                ต้องการดำเนินการเพิ่มเติม
+              </h3>
+              
+              {/* Description */}
+              <p className="text-gray-600 mb-6">
+                การชำระเงินของคุณต้องการการยืนยันเพิ่มเติม กรุณาตรวจสอบธนาคารหรือแอปพลิเคชันของคุณ
+              </p>
+              
+              {/* Order Information */}
+              <div className="bg-orange-50 rounded-lg p-4 mb-6">
+                <div className="text-left">
+                  <p className="text-sm font-medium text-orange-800 mb-2">รายละเอียดคำสั่งซื้อ:</p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-orange-700">หมายเลขคำสั่งซื้อ:</span>
+                    <span className="font-mono text-orange-900">{orderId}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-orange-700">จำนวนเงิน:</span>
+                    <span className="font-bold text-orange-900">฿{getTotalAmount().toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-orange-700">วิธีชำระเงิน:</span>
+                    <span className="text-orange-900">PromptPay</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    setShowRequireActionModal(false);
+                    // Reset to pending status to allow retry
+                    setQrPaymentStatus('pending');
+                  }}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 rounded-lg font-medium"
+                >
+                  ตรวจสอบอีกครั้ง
+                </button>
+                <button
+                  onClick={() => {
+                    setShowRequireActionModal(false);
+                    setCart([]);
+                    setSelectedPayment('cash');
+                    setQrPaymentStatus('pending');
+                    setOrderId(null);
+                    setPaymentIntentId(null);
+                  }}
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-medium"
+                >
+                  ยกเลิกรายการ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Popup */}
+      {showErrorPopup && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-slide-in max-w-md">
+            <div className="w-6 h-6 bg-red-400 rounded-full flex items-center justify-center">
+              <span className="text-red-900 font-bold text-sm">!</span>
+            </div>
+            <div className="flex-1">
+              <p className="font-medium">เกิดข้อผิดพลาด</p>
+              <p className="text-sm text-red-100">{errorMessage}</p>
+            </div>
+            <button
+              onClick={() => setShowErrorPopup(false)}
+              className="ml-4 text-red-100 hover:text-white"
+            >
+              <X size={16} />
+            </button>
           </div>
         </div>
       )}

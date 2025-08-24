@@ -57,19 +57,20 @@ const controller = {
       });
     }
   },
-  paymentCheck : async(req: any, res: any) => {
-        try {
-        const {pi} = req.body
-        const response = await paymentService.check(pi)
-        return res.status(200).json({status:true,data:response})
-
-    } catch (error) {
-        res.status(500).json({
-        status: false,
-        error: error instanceof Error ? error.message : "Internal server error"
-      });
-    }
-  }
+  paymentCheck: async (req: any, res: any) => {
+      try {
+        const { pi, order_id } = req.body;
+        const response = await paymentService.check(pi);
+        console.log(response)
+        if(response === 'succeeded'){
+          const update = await paymentService.updateStatus(order_id)
+          return res.status(200).json({success:true, data:update })
+        }
+        return res.status(200).json({ status: true, data: response });
+      } catch (error: any) {
+        return res.status(500).json({ status: false, error: error.message });
+      }
+    },
 
 };
 
