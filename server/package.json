@@ -28,7 +28,8 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "puppeteer": "^24.17.0"
+    "puppeteer": "^24.17.0",
+    "stripe": "^18.4.0"
   },
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec bun run build && bun run start",
