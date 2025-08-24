@@ -23,9 +23,6 @@ router.use("/purchase", purchaseRoute);
 import orderRoute from "./order.routes.ts"
 router.use("/order",orderRoute)
 
-// import cartRoute from "./cart.routes.ts"
-// router.use("/cart", cartRoute)
-
 import customerRoute  from "./customer.routes.ts"
 router.use("/customer", customerRoute);
 

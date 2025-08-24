@@ -56,7 +56,7 @@ const orderService = {
             const completeOrder = await prisma.order.findUnique({
                 where: { order_id: order.order_id },
                 include: {
-                    carts: {
+                    cart: {
                         include: {
                             product: true
                         }

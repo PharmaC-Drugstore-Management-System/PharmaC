@@ -161,7 +161,8 @@ model order {
   vat               Float?          @db.Real
   employee_id       Int?
   customer_id       Int?
-  cart              cart[]
+  status            String?         @default("PENDING") @db.VarChar(50)
+  carts             cart[]
   cost              cost?           @relation(fields: [cost_id], references: [cost_id], onDelete: NoAction, onUpdate: NoAction, map: "order_cost_fk")
   customer          customer?       @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "order_customer_fk")
   employee          employee?       @relation(fields: [employee_id], references: [employee_id], onDelete: NoAction, onUpdate: NoAction, map: "order_employee_fk")
