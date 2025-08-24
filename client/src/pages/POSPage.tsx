@@ -42,7 +42,7 @@ export default function POSPage() {
   const [showQRModal, setShowQRModal] = useState(false);
   const [showQRConfirmModal, setShowQRConfirmModal] = useState(false);
   const [qrCodeData, setQrCodeData] = useState<any>(null);
-  const [qrPaymentStatus, setQrPaymentStatus] = useState<'pending' | 'success' | 'failed' | 'require_action'>('pending');
+  const [qrPaymentStatus, setQrPaymentStatus] = useState<'pending' | 'success' | 'failed'>('pending');
   const [qrSentToDisplay, setQrSentToDisplay] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
@@ -52,7 +52,6 @@ export default function POSPage() {
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
-  const [showRequireActionModal, setShowRequireActionModal] = useState(false);
   
   // Member System States
   const [showMemberModal, setShowMemberModal] = useState(false);
@@ -425,9 +424,6 @@ export default function POSPage() {
         if (paymentStatus === 'succeeded') {
           setQrPaymentStatus('success');
           setShowPaymentSuccessModal(true);
-        } else if (paymentStatus === 'requires_action') {
-          setQrPaymentStatus('require_action');
-          setShowRequireActionModal(true);
         } else {
           setErrorMessage(`Payment Status: ${paymentStatus} - Please wait and try again`);
           setShowErrorPopup(true);
@@ -658,9 +654,7 @@ export default function POSPage() {
                     qrSentToDisplay && selectedPayment === "promptpay"
                       ? isVerifyingPayment
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : qrPaymentStatus === 'require_action'
-                          ? "bg-orange-500 hover:bg-orange-600 text-white"
-                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-blue-600 hover:bg-blue-700 text-white"
                       : canProcessPayment() && !isProcessing
                       ? "bg-green-600 hover:bg-green-700 text-white"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -1029,11 +1023,6 @@ export default function POSPage() {
                     ✅ ชำระเงินสำเร็จ!
                   </div>
                 )}
-                {qrPaymentStatus === 'require_action' && (
-                  <div className="text-orange-500 font-medium">
-                    ⚠️ ต้องการดำเนินการเพิ่มเติม
-                  </div>
-                )}
                 {qrPaymentStatus === 'failed' && (
                   <div className="text-red-600 font-medium">
                     ❌ การชำระเงินล้มเหลว
@@ -1295,78 +1284,6 @@ export default function POSPage() {
               >
                 New Transaction
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Require Action Modal */}
-      {showRequireActionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <div className="text-center">
-              {/* Orange Warning Icon */}
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">!</span>
-                </div>
-              </div>
-              
-              {/* Title */}
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                ต้องการดำเนินการเพิ่มเติม
-              </h3>
-              
-              {/* Description */}
-              <p className="text-gray-600 mb-6">
-                การชำระเงินของคุณต้องการการยืนยันเพิ่มเติม กรุณาตรวจสอบธนาคารหรือแอปพลิเคชันของคุณ
-              </p>
-              
-              {/* Order Information */}
-              <div className="bg-orange-50 rounded-lg p-4 mb-6">
-                <div className="text-left">
-                  <p className="text-sm font-medium text-orange-800 mb-2">รายละเอียดคำสั่งซื้อ:</p>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-orange-700">หมายเลขคำสั่งซื้อ:</span>
-                    <span className="font-mono text-orange-900">{orderId}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-orange-700">จำนวนเงิน:</span>
-                    <span className="font-bold text-orange-900">฿{getTotalAmount().toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-orange-700">วิธีชำระเงิน:</span>
-                    <span className="text-orange-900">PromptPay</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => {
-                    setShowRequireActionModal(false);
-                    // Reset to pending status to allow retry
-                    setQrPaymentStatus('pending');
-                  }}
-                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 rounded-lg font-medium"
-                >
-                  ตรวจสอบอีกครั้ง
-                </button>
-                <button
-                  onClick={() => {
-                    setShowRequireActionModal(false);
-                    setCart([]);
-                    setSelectedPayment('cash');
-                    setQrPaymentStatus('pending');
-                    setOrderId(null);
-                    setPaymentIntentId(null);
-                  }}
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-medium"
-                >
-                  ยกเลิกรายการ
-                </button>
-              </div>
             </div>
           </div>
         </div>
