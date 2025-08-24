@@ -43,6 +43,32 @@ const controller = {
         error: error instanceof Error ? error.message : "Internal server error"
       });
     }
+  },
+  paymentQrcode : async(req:any, res:any) => {
+    try {
+        const {payment_method, pi} = req.body
+        const response = await paymentService.qr(payment_method,pi)
+        return res.status(200).json({status:true,data:response})
+
+    } catch (error) {
+        res.status(500).json({
+        status: false,
+        error: error instanceof Error ? error.message : "Internal server error"
+      });
+    }
+  },
+  paymentCheck : async(req: any, res: any) => {
+        try {
+        const {pi} = req.body
+        const response = await paymentService.check(pi)
+        return res.status(200).json({status:true,data:response})
+
+    } catch (error) {
+        res.status(500).json({
+        status: false,
+        error: error instanceof Error ? error.message : "Internal server error"
+      });
+    }
   }
 
 };

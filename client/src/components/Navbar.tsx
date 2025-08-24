@@ -35,7 +35,7 @@ export default function NavbarComponent() {
       case 6:
         navigate('/order-record'); break;
       case 7:
-        navigate('/membership-ranking'); break;
+        navigate('/membership'); break;
       case 8:
         navigate('/settings'); break;
     }
@@ -108,7 +108,10 @@ export default function NavbarComponent() {
               className={`flex items-center justify-center w-10 h-10 ${activeTab === 7 ? 'bg-white rounded-full' : ''} cursor-pointer`}
               onClick={() => handleTabClick(7)}
             >
-              <Trophy size={20} color={activeTab === 7 ? "#0D9488" : "white"} />
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke={activeTab === 7 ? "#0D9488" : "white"} strokeWidth="2" />
+              <rect x="6" y="14" width="12" height="6" rx="3" stroke={activeTab === 7 ? "#0D9488" : "white"} strokeWidth="2" />
+              </svg>
             </div>
 
             {/* Settings Icon */}

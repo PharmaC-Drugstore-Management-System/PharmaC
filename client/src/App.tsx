@@ -151,7 +151,7 @@ function AppContent() {
                 <OrderRecord />
               </ProtectedRoute>
             } />
-            <Route path="/membership-ranking" element={
+            <Route path="/membership" element={
               <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
                 <MembershipRanking />
               </ProtectedRoute>
