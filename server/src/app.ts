@@ -1,10 +1,11 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
+import http from "http";
 // Middleware
 
 import apiRouter from "./routes/index.routes"; // ✅ import routes
+import { initWebSocket } from "../ws";
 
 const app = express();
 
@@ -28,7 +29,9 @@ app.use("/", apiRouter);
 app.get("/health", (_req, res) => {
   res.status(200).json({ message: "Server is healthy" });
 });
-
+const server = http.createServer(app);
+initWebSocket(server);
+console.log("Ws connected")
 // Error handler
 app.use((err: any, _req: any, res: any, _next: any) => {
   console.error("❌ Error:", err);
