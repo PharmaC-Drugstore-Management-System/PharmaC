@@ -12,115 +12,80 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // <-- Add this line
 
+// Tooltip Component
+interface TooltipProps {
+  children: React.ReactNode;
+  text: string;
+}
+
+const Tooltip: React.FC<TooltipProps> = ({ children, text }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  return (
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+    >
+      {children}
+      {isVisible && (
+        <div className="absolute left-16 top-1/2 transform -translate-y-1/2 z-50">
+          <div className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg whitespace-nowrap">
+            {text}
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1">
+              <div className="w-0 h-0 border-t-[6px] border-b-[6px] border-r-[6px] border-transparent border-r-gray-800"></div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function NavbarComponent() {
   const [activeTab, setActiveTab] = useState(0); // Set default
   const navigate = useNavigate(); // <-- Add this line
 
+  const navigationItems = [
+    { name: 'หน้าหลัก', icon: LayoutGrid, path: '/' },
+    { name: 'คลังสินค้า', icon: Inbox, path: '/inventory' },
+    { name: 'จุดขาย', icon: ShoppingCart, path: '/pos' },
+    { name: 'สถิติ', icon: BarChart3, path: '/statistic' },
+    { name: 'ติดตามหมดอายุ', icon: Clock, path: '/expiry-monitor' },
+    { name: 'บันทึกเอกสาร', icon: FileText, path: '/doc-record' },
+    { name: 'บันทึกคำสั่งซื้อ', icon: ClipboardCheck, path: '/order-record' },
+    { name: 'จัดการสมาชิก', icon: null, path: '/membership' }, // Custom icon
+    { name: 'ตั้งค่า', icon: Settings, path: '/settings' }
+  ];
+
   const handleTabClick = (index: number): void => {
     setActiveTab(index);
-    // 🔀 Navigate to the corresponding page
-    switch (index) {
-      case 0:
-        navigate('/'); break;
-      case 1:
-        navigate('/inventory'); break;
-      case 2:
-        navigate('/pos'); break;
-      case 3:
-        navigate('/statistic'); break;
-      case 4:
-        navigate('/expiry-monitor'); break;
-      case 5:
-        navigate('/doc-record'); break;
-      case 6:
-        navigate('/order-record'); break;
-      case 7:
-        navigate('/membership'); break;
-      case 8:
-        navigate('/settings'); break;
-    }
+    navigate(navigationItems[index].path);
   };
 
    return (
     <div className="h-screen flex items-center">
       <div className="bg-teal-600 flex flex-col items-center rounded-[20px]" style={{ width: '60px', height: '85vh', marginLeft: '20px', marginRight: '20px' }}>
         <div className="flex flex-col items-center justify-between h-full py-8">
-          {/* Changed from space-y-12 to space-y-6 for smaller gaps */}
           <div className="flex flex-col space-y-6">
-            {/* Dashboard Icon */}
-            <div 
-              className={`flex items-center justify-center w-10 h-10 ${activeTab === 0 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-              onClick={() => handleTabClick(0)}
-            >
-              <LayoutGrid size={20} color={activeTab === 0 ? "#0D9488" : "white"}/>
-            </div>
-
-            {/* Inbox Icon - Inventory */}
-            <div 
-              className={`flex items-center justify-center w-10 h-10 ${activeTab === 1 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-              onClick={() => handleTabClick(1)}
-            >
-              <Inbox size={20} color={activeTab === 1 ? "#0D9488" : "white"} />
-            </div>
-
-            {/* POS Icon - Point of Sale */}
-            <div 
-              className={`flex items-center justify-center w-10 h-10 ${activeTab === 2 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-              onClick={() => handleTabClick(2)}
-            >
-              <ShoppingCart size={20} color={activeTab === 2 ? "#0D9488" : "white"} />
-            </div>
-
-            {/* Analytics Icon */}
-            <div 
-              className={`flex items-center justify-center w-10 h-10 ${activeTab === 3 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-              onClick={() => handleTabClick(3)}
-            >
-              <BarChart3 size={20} color={activeTab === 3 ? "#0D9488" : "white"}/>
-            </div>
-
-            {/* Clock Icon */}
-            <div 
-              className={`flex items-center justify-center w-10 h-10 ${activeTab === 4 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-              onClick={() => handleTabClick(4)}
-            >
-              <Clock size={20} color={activeTab === 4 ? "#0D9488" : "white"} />
-            </div>
-
-            {/* Documents Icon */}
-            <div 
-              className={`flex items-center justify-center w-10 h-10 ${activeTab === 5 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-              onClick={() => handleTabClick(5)}
-            >
-              <FileText size={20} color={activeTab === 5 ? "#0D9488" : "white"}/>
-            </div>
-
-            {/* Order Record */}
-            <div 
-              className={`flex items-center justify-center w-10 h-10 ${activeTab === 6 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-              onClick={() => handleTabClick(6)}
-            >
-              <ClipboardCheck size={20} color={activeTab === 6 ? "#0D9488" : "white"} />
-            </div>
-
-            {/* Membership's rank */}
-            <div 
-              className={`flex items-center justify-center w-10 h-10 ${activeTab === 7 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-              onClick={() => handleTabClick(7)}
-            >
-              <svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="8" r="4" stroke={activeTab === 7 ? "#0D9488" : "white"} strokeWidth="2" />
-              <rect x="6" y="14" width="12" height="6" rx="3" stroke={activeTab === 7 ? "#0D9488" : "white"} strokeWidth="2" />
-              </svg>
-            </div>
-
-            {/* Settings Icon */}
-            <div 
-              className={`flex items-center justify-center w-10 h-10 ${activeTab === 8 ? 'bg-white rounded-full' : ''} cursor-pointer`}
-              onClick={() => handleTabClick(8)}
-            >
-              <Settings size={20} color={activeTab === 8 ? "#0D9488" : "white"} />
-            </div>
+            {navigationItems.map((item, index) => (
+              <Tooltip key={index} text={item.name}>
+                <div 
+                  className={`flex items-center justify-center w-10 h-10 ${activeTab === index ? 'bg-white rounded-full' : ''} cursor-pointer transition-all duration-200 hover:scale-110`}
+                  onClick={() => handleTabClick(index)}
+                >
+                  {item.icon ? (
+                    <item.icon size={20} color={activeTab === index ? "#0D9488" : "white"} />
+                  ) : (
+                    // Custom membership icon
+                    <svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="4" stroke={activeTab === index ? "#0D9488" : "white"} strokeWidth="2" />
+                      <rect x="6" y="14" width="12" height="6" rx="3" stroke={activeTab === index ? "#0D9488" : "white"} strokeWidth="2" />
+                    </svg>
+                  )}
+                </div>
+              </Tooltip>
+            ))}
           </div>
         </div>
       </div>

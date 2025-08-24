@@ -23,6 +23,10 @@ router.use("/purchase", purchaseRoute);
 import orderRoute from "./order.routes.ts"
 router.use("/order",orderRoute)
 
+import customerRoute  from "./customer.routes.ts"
+router.use("/customer", customerRoute);
+
+
 import paymentRoute from "./payment.routes.ts"
 router.use("/payment", paymentRoute)
 export default router;
