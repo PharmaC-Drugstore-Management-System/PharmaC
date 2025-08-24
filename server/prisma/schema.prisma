@@ -13,9 +13,10 @@ model cart {
   lot_id     Int?
   amount     Int?
   unit_price Float?   @db.Real
+  order_id   Int?
   lot        lot?     @relation(fields: [lot_id], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "cart_lot_fk")
+  order      order?   @relation(fields: [order_id], references: [order_id], onDelete: NoAction, onUpdate: NoAction, map: "cart_order_fk")
   product    product? @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "cart_product_fk")
-  order      order[]
 }
 
 model cost {
@@ -33,14 +34,14 @@ model cost {
 }
 
 model customer {
-  customer_id   Int         @id @default(autoincrement())
-  membership_id Int?
-  citizen_id    String?     @db.VarChar
-  name          String?     @db.VarChar
-  phone_number  String?     @db.VarChar
-  birthday      DateTime?   @db.Date
-  gender        String?     @db.VarChar
-  membership    membership? @relation(fields: [membership_id], references: [membership_id], onDelete: NoAction, onUpdate: NoAction, map: "customer_membership_fk")
+  customer_id  Int       @id @default(autoincrement())
+  citizen_id   String?   @db.VarChar
+  name         String?   @db.VarChar
+  phone_number String?   @db.VarChar
+  birthday     DateTime? @db.Date
+  gender       String?   @db.VarChar
+  point        Int?
+  order        order[]
 }
 
 model document {
@@ -137,13 +138,6 @@ model lot {
   stock_stock_lot_id_fkTolot stock[]    @relation("stock_lot_id_fkTolot")
 }
 
-model membership {
-  membership_id Int        @id @default(autoincrement())
-  point         Int?
-  customer      customer[]
-  order         order[]
-}
-
 model metrics {
   metrics_id  Int     @id @default(autoincrement())
   metric_name String? @db.VarChar
@@ -160,18 +154,17 @@ model order {
   order_id          Int             @id @default(autoincrement())
   cost_id           Int?
   revenue_source_id Int?
-  cart_id           Int?
   time              DateTime?       @db.Date
   date              DateTime?       @db.Date
   total_amount      Int?
   total_price       Float?          @db.Real
   vat               Float?          @db.Real
   employee_id       Int?
-  membership_id     Int?
-  cart              cart?           @relation(fields: [cart_id], references: [cart_id], onDelete: NoAction, onUpdate: NoAction, map: "order_cart_fk")
+  customer_id       Int?
+  cart              cart[]
   cost              cost?           @relation(fields: [cost_id], references: [cost_id], onDelete: NoAction, onUpdate: NoAction, map: "order_cost_fk")
+  customer          customer?       @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "order_customer_fk")
   employee          employee?       @relation(fields: [employee_id], references: [employee_id], onDelete: NoAction, onUpdate: NoAction, map: "order_employee_fk")
-  membership        membership?     @relation(fields: [membership_id], references: [membership_id], onDelete: NoAction, onUpdate: NoAction, map: "order_membership_fk")
   revenue_source    revenue_source? @relation(fields: [revenue_source_id], references: [revenue_source_id], onDelete: NoAction, onUpdate: NoAction, map: "order_revenue_source_fk")
   revenue           revenue[]
 }

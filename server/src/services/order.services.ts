@@ -4,12 +4,10 @@ const orderService = {
         try {
             const create = await prisma.order.create({
                 data: {
-                    product_id: product_id,
                     employee_id: employee_id,
-                    membership_id: membership_id,
                     total_amount: total_amount,
                     total_price: total_price,
-                    status: "PENDING"
+                    
                 }
             });
             return create;

@@ -26,8 +26,9 @@ router.use("/order",orderRoute)
 // import cartRoute from "./cart.routes.ts"
 // router.use("/cart", cartRoute)
 
-import memberRoute from "./membership.routes.ts"
-router.use("/membership", memberRoute)
+import customerRoute  from "./customer.routes.ts"
+router.use("/customer", customerRoute);
+
 
 import paymentRoute from "./payment.routes.ts"
 router.use("/payment", paymentRoute)
