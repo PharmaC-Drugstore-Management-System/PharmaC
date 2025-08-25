@@ -7,6 +7,7 @@ const controller = {
       const {
         items,
         employee_id,
+        point,
         customer_id,
         total_amount,
         total_price,
@@ -19,6 +20,7 @@ const controller = {
       const response = await orderService.create(
         items,
         employee_id,
+        point,
         customer_id,
         total_amount,
         total_price

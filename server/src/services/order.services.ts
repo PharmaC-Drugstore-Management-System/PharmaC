@@ -1,7 +1,7 @@
 import prisma from "../utils/prisma.utils";
 
 const orderService = {
-    create: async(items: any[], employee_id: number,customer_id: number, total_amount: number, total_price: number) => {
+    create: async(items: any[], employee_id: number, point:number,customer_id: number, total_amount: number, total_price: number) => {
         try {
             // Step 1: Create cart items with full details
             const cartItems = await prisma.cart.createMany({
