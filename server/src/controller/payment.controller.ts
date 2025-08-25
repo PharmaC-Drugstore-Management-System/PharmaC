@@ -63,12 +63,11 @@ const controller = {
         const response = await paymentService.check(pi);
         console.log(response)
         if(response === 'succeeded'){
-          const update = await paymentService.updateStatus(order_id)
-          return res.status(200).json({success:true, data:update })
+          await paymentService.updateStatus(order_id)
         }
-        return res.status(200).json({ status: true, data: response });
+        return res.status(200).json({ success: true, status: response });
       } catch (error: any) {
-        return res.status(500).json({ status: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
       }
     },
 
