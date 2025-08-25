@@ -217,7 +217,7 @@ export default function POSPage() {
       }
       
       const customers = await response.json();
-      const member = customers.find((customer: any) => customer.phone_number?.includes(phone));
+      const member = customers.find((customer: any) => customer.phone_number === phone);
       
       if (member) {
         // Convert database customer to Member interface
@@ -456,8 +456,43 @@ export default function POSPage() {
       setIsProcessing(false);
     }
   };
-
-  // Verify Payment Function
+   const [points, setPoints] = useState<number>(0);
+  const addPoints = async () => {
+    const calculated = calculatePoints();
+    setPoints(calculated);
+    
+    // Only add points if member exists and points are positive
+    if (!currentMember?.id || calculated <= 0) {
+      console.log('No member selected or no points to add');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`http://localhost:5000/customer/add-point/${currentMember.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          point: calculated,
+        })
+      });
+      
+      const data = await response.json();
+      console.log('Add points response:', data);
+      
+      if (data.status) {
+        console.log(`✅ Successfully added ${calculated} points to ${currentMember.name}`);
+      } else {
+        console.error('❌ Failed to add points:', data.error);
+        alert(`Failed to add points: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error adding points:', error);
+      alert('Error occurred while adding points');
+    }
+  }
   const verifyPayment = async () => {
     if (!orderId || !paymentIntentId) {
       setErrorMessage('ไม่พบข้อมูลการสั่งซื้อหรือข้อมูลการชำระเงิน');
@@ -489,6 +524,10 @@ export default function POSPage() {
       if (result.success && result.status === 'succeeded') {
         // Payment successful - show success modal
         setQrPaymentStatus('success');
+        if(currentMember){
+          addPoints();
+          console.log("Addpoint successfully")
+        }
         setShowRequiresActionModal(false);
         setShowPaymentSuccessModal(true);
       } else if (result.status === 'requires_action') {
@@ -869,8 +908,17 @@ export default function POSPage() {
                       <button
                         key={index}
                         onClick={() => {
+                          // Directly set the customer instead of searching by phone
+                          const convertedMember: Member = {
+                            id: customer.customer_id.toString(),
+                            name: customer.name || 'Unknown Customer',
+                            phone: customer.phone_number || '',
+                            points: customer.point || 0,
+                            level: customer.point >= 500 ? 'Gold' : customer.point >= 200 ? 'Silver' : 'Bronze'
+                          };
+                          setCurrentMember(convertedMember);
                           setMemberPhone(customer.phone_number);
-                          searchMember(customer.phone_number);
+                          setShowMemberModal(false);
                         }}
                         className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded text-sm"
                       >

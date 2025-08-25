@@ -28,7 +28,7 @@ const customer_service = {
       throw error;
     }
   },
-  
+
   update: async (id: number, data: any) => {
     try {
       const updatedMember = await prisma.customer.update({
@@ -50,7 +50,7 @@ const customer_service = {
       throw error;
     }
   },
-  
+
   getById: async (id: number) => {
     try {
       const member = await prisma.customer.findUnique({
@@ -61,6 +61,24 @@ const customer_service = {
       return member;
     } catch (error: any) {
       console.error("Error in member_service.getById():", error.message);
+      throw error;
+    }
+  },
+  addPointById: async (id: number, point : number) => {
+    try {
+      const addPoint = await prisma.customer.update({
+        where:{
+          customer_id: id
+        },
+        data: {
+          point:{
+            increment:point
+          }
+        }
+      })
+      return addPoint
+    } catch (error : any) {
+      console.error("Error in member_service.addPointById():", error.message);
       throw error;
     }
   },
