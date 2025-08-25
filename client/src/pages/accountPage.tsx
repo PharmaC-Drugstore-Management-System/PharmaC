@@ -53,16 +53,64 @@ export default function AccountPage() {
         setUserInfo(newUserInfo);
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                if (typeof reader.result === 'string') {
-                    setImageUrl(reader.result);
+            try {
+                console.log('🖼️ Image change started');
+                console.log('📁 Selected file:', file);
+                
+                // แสดงตัวอย่างรูปภาพทันที
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    if (typeof reader.result === 'string') {
+                        console.log('👁️ Setting preview image');
+                        setImageUrl(reader.result);
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                // อัพโหลดไฟล์ไปยัง server ทันที (ไม่ต้องรอ save)
+                console.log('📤 Starting upload to server...');
+                const formData = new FormData();
+                formData.append('profileImage', file);
+
+                const response = await fetch('http://localhost:5000/acc/upload-profile-image', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                console.log('📨 Response status:', response.status);
+                console.log('📨 Response ok:', response.ok);
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Profile image uploaded successfully:', result);
+                    
+                    // อัพเดท imageUrl ด้วย URL จริงจาก server
+                    setImageUrl(result.data.imageUrl);
+                    console.log('🎉 Image URL updated:', result.data.imageUrl);
+                    
+                    // แสดงข้อความสำเร็จ
+                    alert('Profile image updated successfully!');
+                } else {
+                    const errorResult = await response.json();
+                    console.error('❌ Failed to upload profile image:', errorResult);
+                    
+                    // แสดงข้อความผิดพลาด
+                    alert(`Failed to upload image: ${errorResult.message}`);
+                    
+                    // โหลดข้อมูลใหม่เพื่อเอารูปเดิมกลับมา
+                    loadDataFromAPI();
                 }
-            };
-            reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('💥 Error uploading profile image:', error);
+                alert('Error uploading image. Please try again.');
+                
+                // โหลดข้อมูลใหม่เพื่อเอารูปเดิมกลับมา
+                loadDataFromAPI();
+            }
         }
     };
 
@@ -114,6 +162,13 @@ export default function AccountPage() {
             setFirstname(user.firstname || '');
             setLastname(user.lastname || '');
             setEmployeeId(user.employee_id || user.id);
+
+            // Set profile image from database or use default
+            if (user.profile_image) {
+                setImageUrl(user.profile_image);
+            } else {
+                setImageUrl('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face');
+            }
 
             // Set user info fields
             setUserInfo([
@@ -217,6 +272,7 @@ export default function AccountPage() {
                 <div className="bg-white rounded-2xl shadow-lg mb-8 overflow-hidden border border-gray-200">
                     <div className="bg-gray-800 px-8 py-6">
                         <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+
                             {/* Profile Image */}
                             <div className="relative">
                                 <div className="w-32 h-32 rounded-full overflow-hidden bg-white p-1 shadow-lg">
@@ -226,23 +282,23 @@ export default function AccountPage() {
                                             alt="Profile"
                                             className="w-full h-full object-cover"
                                         />
-                                        {isEditing && (
-                                            <>
-                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200">
-                                                    <Pencil className="w-6 h-6" />
-                                                </div>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleImageChange}
-                                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                                />
-                                            </>
-                                        )}
+                                        {/* Always show change profile picture overlay */}
+                                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                            <div className="text-center">
+                                                <Pencil className="w-6 h-6 mx-auto mb-1" />
+                                                <span className="text-xs font-medium">Change Photo</span>
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            title="Click to change profile picture"
+                                        />
                                     </div>
                                 </div>
                             </div>
-
                             {/* Name and ID */}
                             <div className="text-center md:text-left text-white">
                                 {isEditing ? (

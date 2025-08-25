@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Dark mode styles */
+/* .dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #111827;
+  color: #f9fafb;
+} */
+
 @page {
   size: A3 portrait !important;
   margin: 0;

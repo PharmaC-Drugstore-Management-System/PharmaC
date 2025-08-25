@@ -18,7 +18,8 @@ const controller = {
 
       const token = jwt.sign(
         {
-          id: user.employee_id,
+          employee_id: user.employee_id,
+          id: user.employee_id, // เก็บทั้งสองแบบเพื่อ backward compatibility
           email: user.email,
           firstname: user.firstname,
           lastname: user.lastname,
@@ -59,7 +60,8 @@ const controller = {
       console.log("Login controller - user from DB:", user); // Debug log
       const token = jwt.sign(
         {
-          id: user.employee_id,
+          employee_id: user.employee_id,
+          id: user.employee_id, // เก็บทั้งสองแบบเพื่อ backward compatibility
           email: user.email,
           firstname: user.firstname,
           lastname: user.lastname,
