@@ -1,9 +1,10 @@
 import account_service from "../services/account.service.ts";
 
 const controller = {
+  // Existing account method
   account: async (req: any, res: any, next: any) => {
     try {
-      const { employee_id } = req.body; // or req.params if sent as a URL param
+      const { employee_id } = req.body; 
 
       if (!employee_id) {
         return res.status(400).json({ message: "Employee ID is required" });
@@ -25,6 +26,7 @@ const controller = {
       return res.status(500).json({ message: "Internal server error" });
     }
   },
+
   edit_account: async (req: any, res: any, next: any) => {
     try {
       const {
@@ -37,26 +39,35 @@ const controller = {
         gender,
         birthdate,
         address,
+        additional_info,
+        country,
+        province,
+        storecode,
+        zipcode,
       } = req.body;
 
       const response = await account_service.edit({
-        employee_id : employee_id,
-        tax_id : tax_id,
-        firstname : firstname,
+        employee_id: employee_id,
+        tax_id: tax_id,
+        firstname: firstname,
         lastname: lastname,
-        email : email,
-        phonenumber : phonenumber,
-        gender : gender ,
-        birthdate : birthdate,
-        address : address
-      })
+        email: email,
+        phonenumber: phonenumber,
+        gender: gender,
+        birthdate: birthdate,
+        address: address,
+        additional_info: additional_info,
+        country: country,
+        province: province,
+        storecode: storecode,
+        zipcode: zipcode,
+      });
 
-      if(!response){
+      if (!response) {
         return res.status(404).json({ message: "Response in edit not found" });
       }
 
-      return res.status(200).json({message:'Edited', data : response})
-
+      return res.status(200).json({ message: "Edited", data: response });
     } catch (error) {
       console.error("Error in account controller:", error);
       return res.status(500).json({ message: "Internal server error" });

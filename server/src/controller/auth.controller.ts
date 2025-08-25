@@ -39,7 +39,9 @@ const controller = {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.status(200).json({ message: "Register Successfully", data: user });
+      return res
+        .status(200)
+        .json({ message: "Register Successfully", data: user });
     } catch (error: any) {
       console.log("Register User controller is Error");
       return res
@@ -54,7 +56,7 @@ const controller = {
         return res.status(404).json({ message: "Email or password not found" });
       }
       const user = await auth_service.login({ email, password });
-      console.log('Login controller - user from DB:', user); // Debug log
+      console.log("Login controller - user from DB:", user); // Debug log
       const token = jwt.sign(
         {
           id: user.employee_id,
@@ -77,7 +79,9 @@ const controller = {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.status(200).json({ message: "Login Successfully", data: user });
+      return res
+        .status(200)
+        .json({ message: "Login Successfully", data: user });
     } catch (error) {
       console.log("Login User controller is Error");
       return res.status(500).json({ message: "Error status 500" });
@@ -86,7 +90,7 @@ const controller = {
   me: async (req: any, res: any) => {
     try {
       const user = (req as any).user;
-      console.log('ME endpoint - user from JWT:', user); // Debug log
+      console.log("ME endpoint - user from JWT:", user); // Debug log
       res.status(200).json({ user });
     } catch (error: any) {
       return res

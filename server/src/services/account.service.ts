@@ -22,16 +22,21 @@ const account_service = {
         },
         data: {
           firstname: data.firstname,
-          lastname:data.lastname,
+          lastname: data.lastname,
           email: data.email,
           tax_id: data.tax_id,
           phonenumber: data.phonenumber,
           gender: data.gender,
           birthdate: new Date(data.birthdate),
           address: data.address,
+          additional_info: data.additional_info,
+          country: data.country,
+          province: data.province,
+          storecode: data.storecode,
+          zipcode: data.zipcode,
         },
       });
-      if(!editacc){
+      if (!editacc) {
         throw new Error('Error to edit')
       }
       return editacc

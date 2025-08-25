@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, User } from "lucide-react";
+import { Plus, User, Settings, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface AuthMeResponse {
@@ -22,6 +22,7 @@ export default function Header() {
   const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [employeeId, setEmployeeId] = useState<number | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
   
   const checkme = async () => {
     try {
@@ -52,47 +53,17 @@ export default function Header() {
     }
   };
 
-  // Fetch detailed user profile data if not available from /api/me
-  const loadUserProfile = async () => {
-    if (employeeId === null || userProfile?.firstname) return;
-    
-    try {
-      const res = await fetch('http://localhost:5000/acc/account-detail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          employee_id: employeeId,
-        }),
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setUserProfile({
-          firstname: data.data.firstname || '',
-          lastname: data.data.lastname || '',
-          email: data.data.email || '',
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  };
+
 
   useEffect(() => {
     checkme();
   }, []);
 
-  useEffect(() => {
-    if (employeeId !== null) {
-      loadUserProfile();
-    }
-  }, [employeeId]);
 
-  // Display name logic
-  const displayName = userProfile 
+
+  // Display name logic - show only first name
+  const displayFirstName = userProfile?.firstname || 'User';
+  const fullName = userProfile 
     ? `${userProfile.firstname} ${userProfile.lastname}`.trim() || 'User'
     : 'User';
   
@@ -112,17 +83,63 @@ export default function Header() {
             <button className="p-2 bg-gray-200 rounded-full shadow-md hover:bg-gray-300 flex items-center">
               <span>🔔</span>
             </button>
-            <button 
-              onClick={() => navigate('/accountSetting')} 
-              className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition duration-200"
-            >
-              <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-gray-600" />
-              </div>
-              <span className="text-gray-800 font-medium hidden sm:block">{displayName}</span>
-            </button>
+            
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowDropdown(!showDropdown)} 
+                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition duration-200"
+              >
+                <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-gray-600" />
+                </div>
+                <span className="text-gray-800 font-medium hidden sm:block">{displayFirstName}</span>
+                <ChevronDown className="w-4 h-4 text-gray-600 hidden sm:block" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                  {/* User Info Section */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-12 w-12 bg-gray-300 rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-gray-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{fullName}</p>
+                        <p className="text-sm text-gray-500">{userProfile?.email || 'No email'}</p>
+                        <p className="text-xs text-gray-400">ID: #{employeeId}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        navigate('/accountSetting');
+                        setShowDropdown(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center space-x-3"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Profile Settings</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+        
+        {/* Overlay to close dropdown when clicking outside */}
+        {showDropdown && (
+          <div 
+            className="fixed inset-0 z-10" 
+            onClick={() => setShowDropdown(false)}
+          ></div>
+        )}
       </div>
     
   );
