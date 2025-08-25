@@ -1,4 +1,3 @@
-import { get } from "http";
 import prisma from "../utils/prisma.utils";
 
 const customer_service = {

@@ -28,7 +28,9 @@ const controller = {
       // Convert THB to satang (smallest unit) for Stripe
       // 100 THB = 10,000 satang (multiply by 100)
       const stripeAmount = Math.round(total_amount * 100);
-      console.log(`Converting ${total_amount} THB to ${stripeAmount} satang for Stripe`);
+      console.log(
+        `Converting ${total_amount} THB to ${stripeAmount} satang for Stripe`
+      );
 
       const stripeItems = response.order?.carts
         ? response.order.carts.map((cart: any) => ({
@@ -59,7 +61,7 @@ const controller = {
       );
 
       const filteredResponse = {
-        order_id : response.order?.order_id,
+        order_id: response.order?.order_id,
         pi: paymentIntent.id,
         qrcode_url:
           qrcode.next_action?.promptpay_display_qr_code?.image_url_png,
@@ -68,21 +70,36 @@ const controller = {
           ? JSON.parse(paymentIntent.metadata.items)
           : [],
         payment_type: paymentIntent.payment_method_types,
-      
       };
 
-      
       // Emit order to customer display via Socket.IO
       emitOrderToCustomerDisplay({
         order: response.order,
         qrCode: qrcode.next_action?.promptpay_display_qr_code?.image_url_png,
         payment_intent_id: paymentIntent.id,
-        timestamp: new Date().toISOString()
-      });      return res.status(200).json({ status: true, data: filteredResponse });
+        timestamp: new Date().toISOString(),
+      });
+      return res.status(200).json({ status: true, data: filteredResponse });
     } catch (error: any) {
-      console.log('Error',error.message)
+      console.log("Error", error.message);
       return res.status(500).json({ status: false, error: error.message });
     }
   },
+  list: async (req: any, res: any) => {
+    try {
+      const response = await orderService.list()
+      if(!response) throw new Error
+      return res.status(200).json({status : true, data: response})
+    } catch (error : any) {
+        console.log("Error", error.message);
+      return res.status(500).json({ status: false, error: error.message });
+    }
+
+
+
+
+  },
+
+
 };
 export default controller;
