@@ -79,6 +79,29 @@ const orderService = {
             console.error("Service error:", error);
             throw error;
         }
+    },
+    list : async () => {
+        try {
+            const data = await prisma.order.findMany({
+                include: {
+                    customer: {
+                        select: {
+                            customer_id: true,
+                            name: true,
+                            phone_number: true,
+                            citizen_id: true
+                        }
+                    }
+                },
+                orderBy: {
+                    date: 'desc'
+                }
+            })
+            return data;
+        } catch (error) {
+             console.error("Service error get list order:", error);
+            throw error;
+        }
     }
 }
 

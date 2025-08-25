@@ -52,6 +52,7 @@ export default function POSPage() {
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
+  const [showRequiresActionModal, setShowRequiresActionModal] = useState(false);
   
   // Member System States
   const [showMemberModal, setShowMemberModal] = useState(false);
@@ -65,6 +66,7 @@ export default function POSPage() {
     email: '',
     address: ''
   });
+  const [quickMembers, setQuickMembers] = useState<any[]>([]);
 
   // Mock price data - you can fetch this from your API
   const productPrices: Record<number, number> = {
@@ -76,7 +78,22 @@ export default function POSPage() {
   useEffect(() => {
     fetchProducts();
     checkme();
+    loadQuickCustomers();
   }, []);
+
+  const loadQuickCustomers = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/customer/get-customers");
+      if (response.ok) {
+        const customers = await response.json();
+        setQuickMembers(customers.slice(0, 3)); // Get first 3 customers for quick access
+      }
+    } catch (error) {
+      console.error("Error loading quick customers:", error);
+      // If API fails, use empty array (no demo customers)
+      setQuickMembers([]);
+    }
+  };
 
   const verifyStatus  = async () => {
     try {
@@ -95,10 +112,36 @@ export default function POSPage() {
       });
       if (response.ok) {
         const data = await response.json();
-        setQrPaymentStatus(data.status);
+        console.log('Payment verification response:', data);
+        
+        // Check if payment is actually successful
+        if (data.success && (data.status === 'succeeded')) {
+          setQrPaymentStatus('success');
+          setShowRequiresActionModal(false); // Close requires action modal if open
+          setShowPaymentSuccessModal(true);
+        } else if (data.status === 'requires_action') {
+          setQrPaymentStatus('pending');
+          setShowPaymentSuccessModal(false); // Close success modal if open
+          setShowRequiresActionModal(true);
+        } else if (data.status === 'pending') {
+          setQrPaymentStatus('pending');
+          setShowPaymentSuccessModal(false);
+          setShowRequiresActionModal(false);
+          // Don't show success modal for pending payments
+        } else if (data.status === 'failed' || data.status === 'canceled') {
+          setQrPaymentStatus('failed');
+          setShowPaymentSuccessModal(false);
+          setShowRequiresActionModal(false);
+        } else {
+          // For any other status, keep it pending
+          setQrPaymentStatus('pending');
+          setShowPaymentSuccessModal(false);
+          setShowRequiresActionModal(false);
+        }
       }
     } catch (error) {
       console.error("Error verifying payment status:", error);
+      setQrPaymentStatus('failed');
     }
   }
 
@@ -167,25 +210,32 @@ export default function POSPage() {
   const searchMember = async (phone: string) => {
     setMemberSearching(true);
     try {
-      // Mock member data - replace with actual API call
-      const mockMembers: Member[] = [
-        { id: "M001", name: "คุณสมชาย ใจดี", phone: "0812345678", points: 250, level: "Silver" },
-        { id: "M002", name: "คุณสมหญิง รักสุขภาพ", phone: "0823456789", points: 150, level: "Bronze" },
-        { id: "M003", name: "คุณวิชัย สุขสบาย", phone: "0834567890", points: 450, level: "Gold" },
-      ];
+      // Call real API to get all customers and search by phone
+      const response = await fetch("http://localhost:5000/customer/get-customers");
+      if (!response.ok) {
+        throw new Error('Failed to fetch customers');
+      }
       
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+      const customers = await response.json();
+      const member = customers.find((customer: any) => customer.phone_number?.includes(phone));
       
-      const member = mockMembers.find(m => m.phone.includes(phone));
       if (member) {
-        setCurrentMember(member);
+        // Convert database customer to Member interface
+        const convertedMember: Member = {
+          id: member.customer_id.toString(), // Convert to string for UI compatibility
+          name: member.name || 'Unknown Customer',
+          phone: member.phone_number || '',
+          points: member.point || 0,
+          level: member.point >= 500 ? 'Gold' : member.point >= 200 ? 'Silver' : 'Bronze'
+        };
+        setCurrentMember(convertedMember);
         setShowMemberModal(false);
       } else {
-        alert("ไม่พบข้อมูลสมาชิก");
+        alert("Member not found");
       }
     } catch (error) {
       console.error("Error searching member:", error);
-      alert("เกิดข้อผิดพลาดในการค้นหาสมาชิก");
+      alert("Error occurred while searching for member");
     } finally {
       setMemberSearching(false);
     }
@@ -198,32 +248,54 @@ export default function POSPage() {
 
   const addNewMember = async () => {
     if (!newMemberData.name || !newMemberData.phone) {
-      alert('กรุณากรอกชื่อและเบอร์โทรศัพท์');
+      alert('Please fill in name and phone number');
       return;
     }
 
     setMemberSearching(true);
     try {
-      // สร้างสมาชิกใหม่ (ในอนาคตจะเชื่อมต่อกับ API จริง)
-      const newMember: Member = {
-        id: `M${Date.now()}`,
+      // Call real API to add new customer
+      const customerData = {
         name: newMemberData.name,
-        phone: newMemberData.phone,
-        points: 0,
-        level: 'Bronze'
+        phone_number: newMemberData.phone,
+        citizen_id: null, // Optional
+        birthday: null, // Optional
+        gender: null, // Optional
+        point: 0 // Start with 0 points
       };
 
-      await new Promise(resolve => setTimeout(resolve, 1000)); // จำลองการบันทึกข้อมูล
+      const response = await fetch("http://localhost:5000/customer/add-customer", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customerData)
+      });
 
-      setCurrentMember(newMember);
+      if (!response.ok) {
+        throw new Error('Failed to add customer');
+      }
+
+      const newCustomer = await response.json();
+      
+      // Convert database customer to Member interface
+      const convertedMember: Member = {
+        id: newCustomer.customer_id.toString(), // Convert to string for UI compatibility
+        name: newCustomer.name || 'Unknown Customer',
+        phone: newCustomer.phone_number || '',
+        points: newCustomer.point || 0,
+        level: 'Bronze' // New members start at Bronze
+      };
+
+      setCurrentMember(convertedMember);
       setShowMemberModal(false);
       setNewMemberData({ name: '', phone: '', email: '', address: '' });
       setMemberModalMode('search');
       
-      alert(`เพิ่มสมาชิกใหม่สำเร็จ: ${newMember.name}`);
+      alert(`New member added successfully: ${convertedMember.name}`);
     } catch (error) {
-      console.error('Error adding member:', error);
-      alert('เกิดข้อผิดพลาดในการเพิ่มสมาชิก');
+      console.error("Error adding member:", error);
+      alert("Error occurred while adding member");
     } finally {
       setMemberSearching(false);
     }
@@ -328,7 +400,7 @@ export default function POSPage() {
           quantity: item.quantity
         })),
         employee_id: employee_id,
-        customer_id: currentMember?.id || null,
+        customer_id: currentMember?.id ? (isNaN(parseInt(currentMember.id)) ? null : parseInt(currentMember.id)) : null, // Convert string ID back to integer safely
         payment_method_types: "promptpay",
         total_amount: getTotalAmount()
       };
@@ -414,23 +486,52 @@ export default function POSPage() {
       const result = await response.json();
       console.log('Payment verification result:', result);
       
-      if (result.success) {
+      if (result.success && result.status === 'succeeded') {
         // Payment successful - show success modal
         setQrPaymentStatus('success');
+        setShowRequiresActionModal(false);
         setShowPaymentSuccessModal(true);
+      } else if (result.status === 'requires_action') {
+        setQrPaymentStatus('pending');
+        setShowPaymentSuccessModal(false);
+        setShowRequiresActionModal(true);
+      } else if (result.status === 'pending') {
+        setQrPaymentStatus('pending');
+        setShowPaymentSuccessModal(false);
+        setShowRequiresActionModal(false);
+        setErrorMessage(`Payment Status: ${result.status} - Please wait and try again`);
+        setShowErrorPopup(true);
+        setTimeout(() => setShowErrorPopup(false), 5000);
+      } else if (result.status === 'failed' || result.status === 'canceled') {
+        setQrPaymentStatus('failed');
+        setShowPaymentSuccessModal(false);
+        setShowRequiresActionModal(false);
+        setErrorMessage(`Payment ${result.status} - Please try again`);
+        setShowErrorPopup(true);
+        setTimeout(() => setShowErrorPopup(false), 5000);
       } else if (result.status && result.data) {
-        // Payment still pending
+        // Legacy handling - check if result.data contains the actual status
         const paymentStatus = result.data;
         if (paymentStatus === 'succeeded') {
           setQrPaymentStatus('success');
+          setShowRequiresActionModal(false);
           setShowPaymentSuccessModal(true);
+        } else if (paymentStatus === 'requires_action') {
+          setQrPaymentStatus('pending');
+          setShowPaymentSuccessModal(false);
+          setShowRequiresActionModal(true);
         } else {
+          setQrPaymentStatus('pending');
+          setShowPaymentSuccessModal(false);
+          setShowRequiresActionModal(false);
           setErrorMessage(`Payment Status: ${paymentStatus} - Please wait and try again`);
           setShowErrorPopup(true);
           setTimeout(() => setShowErrorPopup(false), 5000);
         }
       } else {
         // Verification failed
+        setShowPaymentSuccessModal(false);
+        setShowRequiresActionModal(false);
         setErrorMessage(result.error || 'Unable to verify payment');
         setShowErrorPopup(true);
         setTimeout(() => setShowErrorPopup(false), 5000);
@@ -682,7 +783,7 @@ export default function POSPage() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold flex items-center">
                 <User className="mr-2" />
-                {memberModalMode === 'search' ? 'ค้นหาสมาชิก' : 'เพิ่มสมาชิกใหม่'}
+                {memberModalMode === 'search' ? 'Search Member' : 'Add New Member'}
               </h3>
               <button
                 onClick={() => {
@@ -706,7 +807,7 @@ export default function POSPage() {
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                ค้นหาสมาชิก
+                Search Member
               </button>
               <button
                 onClick={() => setMemberModalMode('add')}
@@ -716,7 +817,7 @@ export default function POSPage() {
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                เพิ่มสมาชิกใหม่
+                Add New Member
               </button>
             </div>
 
@@ -725,13 +826,13 @@ export default function POSPage() {
               <>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2">
-                    เบอร์โทรศัพท์
+                    Phone Number
                   </label>
                   <input
                     type="tel"
                     value={memberPhone}
                     onChange={(e) => setMemberPhone(e.target.value)}
-                    placeholder="กรอกเบอร์โทรศัพท์..."
+                    placeholder="Enter phone number..."
                     className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     maxLength={10}
                   />
@@ -747,7 +848,7 @@ export default function POSPage() {
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                   >
-                    {memberSearching ? "กำลังค้นหา..." : "ค้นหา"}
+                    {memberSearching ? "Searching..." : "Search"}
                   </button>
                   <button
                     onClick={() => {
@@ -756,31 +857,29 @@ export default function POSPage() {
                     }}
                     className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
                   >
-                    ยกเลิก
+                    Cancel
                   </button>
                 </div>
 
                 {/* Quick Member Selection */}
                 <div className="pt-4 border-t border-gray-200">
-                  <p className="text-sm text-gray-600 mb-3">สมาชิกตัวอย่าง (Demo):</p>
+                  <p className="text-sm text-gray-600 mb-3">Quick Access Customers:</p>
                   <div className="space-y-2">
-                    {[
-                      { phone: "0812345678", name: "คุณสมชาย ใจดี" },
-                      { phone: "0823456789", name: "คุณสมหญิง รักสุขภาพ" },
-                      { phone: "0834567890", name: "คุณวิชัย สุขสบาย" },
-                    ].map((member, index) => (
+                    {quickMembers.length > 0 ? quickMembers.map((customer, index) => (
                       <button
                         key={index}
                         onClick={() => {
-                          setMemberPhone(member.phone);
-                          searchMember(member.phone);
+                          setMemberPhone(customer.phone_number);
+                          searchMember(customer.phone_number);
                         }}
                         className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded text-sm"
                       >
-                        <div className="font-medium">{member.name}</div>
-                        <div className="text-gray-600">{member.phone}</div>
+                        <div className="font-medium">{customer.name}</div>
+                        <div className="text-gray-600">{customer.phone_number}</div>
                       </button>
-                    ))}
+                    )) : (
+                      <p className="text-sm text-gray-500 text-center py-2">No customers found</p>
+                    )}
                   </div>
                 </div>
               </>
@@ -790,20 +889,20 @@ export default function POSPage() {
                 <div className="space-y-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      ชื่อ-นามสกุล <span className="text-red-500">*</span>
+                      Full Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={newMemberData.name}
                       onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})}
-                      placeholder="กรอกชื่อ-นามสกุล"
+                      placeholder="Enter full name"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+                      Phone Number <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -817,7 +916,7 @@ export default function POSPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      อีเมล
+                      Email
                     </label>
                     <input
                       type="email"
@@ -830,12 +929,12 @@ export default function POSPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      ที่อยู่
+                      Address
                     </label>
                     <textarea
                       value={newMemberData.address}
                       onChange={(e) => setNewMemberData({...newMemberData, address: e.target.value})}
-                      placeholder="กรอกที่อยู่"
+                      placeholder="Enter address"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       rows={3}
                     />
@@ -852,7 +951,7 @@ export default function POSPage() {
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                   >
-                    {memberSearching ? "กำลังเพิ่มสมาชิก..." : "เพิ่มสมาชิก"}
+                    {memberSearching ? "Adding Member..." : "Add Member"}
                   </button>
                   <button
                     onClick={() => {
@@ -862,13 +961,13 @@ export default function POSPage() {
                     }}
                     className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
                   >
-                    ยกเลิก
+                    Cancel
                   </button>
                 </div>
 
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-700">
-                    💡 <strong>หมายเหตุ:</strong> สมาชิกใหม่จะเริ่มต้นที่ระดับ Bronze และได้รับ 0 แต้ม
+                    💡 <strong>Note:</strong> New members will start at Bronze level with 0 points
                   </p>
                 </div>
               </>
@@ -1283,6 +1382,64 @@ export default function POSPage() {
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium"
               >
                 New Transaction
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Requires Action Modal */}
+      {showRequiresActionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+            <div className="mb-6">
+              <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                  <span className="text-yellow-900 font-bold text-xl">!</span>
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-yellow-600 mb-2">Action Required!</h3>
+              <p className="text-gray-600 mb-4">การชำระเงินต้องการการดำเนินการเพิ่มเติม</p>
+              
+              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-600">Order ID:</span>
+                  <span className="font-semibold">#{orderId}</span>
+                </div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-600">Total Amount:</span>
+                  <span className="font-semibold text-yellow-600">฿{getTotalAmount().toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Status:</span>
+                  <span className="font-semibold text-yellow-600">Requires Action</span>
+                </div>
+              </div>
+              
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-yellow-700">
+                  ลูกค้าจำเป็นต้องดำเนินการเพิ่มเติมในการชำระเงิน กรุณาติดต่อลูกค้าหรือลองตรวจสอบการชำระเงินอีกครั้ง
+                </p>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowRequiresActionModal(false);
+                }}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-medium"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  setShowRequiresActionModal(false);
+                  verifyStatus(); // Check again
+                }}
+                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-3 rounded-lg font-medium"
+              >
+                Check Again
               </button>
             </div>
           </div>

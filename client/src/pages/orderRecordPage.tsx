@@ -1,57 +1,25 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Edit, Package, User, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Edit, Package, User, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function OrderRecord() {
-  const [orders] = useState([
-    {
-      id: '#10001',
-      customerName: 'Tanawat Tantawan',
-      orderDate: '01/05/2025',
-      status: 'Completed'
-    },
-    {
-      id: '#10002',
-      customerName: 'Maysa Wattana',
-      orderDate: '01/05/2025',
-      status: 'Completed'
-    },
-    {
-      id: '#10003',
-      customerName: 'Pattanayu Manpom',
-      orderDate: '01/05/2025',
-      status: 'Completed'
-    },
-    {
-      id: '#10004',
-      customerName: 'Ploysai Jaingam',
-      orderDate: '01/05/2025',
-      status: 'Completed'
-    },
-    {
-      id: '#10005',
-      customerName: 'Patcharapan Thanwa',
-      orderDate: '01/05/2025',
-      status: 'Cancelled'
-    },
-    {
-      id: '#10006',
-      customerName: 'Patcharapan Thanwa',
-      orderDate: '01/05/2025',
-      status: 'Completed'
-    }
-  ]);
 
+export default function OrderRecord() {
+  const navigate = useNavigate();
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateRange, setDateRange] = useState('1 May 2025 - 31 May 2025');
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Completed':
+    switch (status?.toUpperCase()) {
+      case 'COMPLETED':
+      case 'SUCCEEDED':
+      case 'PAID':
         return 'bg-green-100 text-green-800';
-      case 'Cancelled':
+      case 'CANCELLED':
+      case 'FAILED':
         return 'bg-red-100 text-red-800';
-      case 'Pending':
+      case 'PENDING':
+      case 'REQUIRES_ACTION':
         return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -59,16 +27,42 @@ export default function OrderRecord() {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Completed':
+    switch (status?.toUpperCase()) {
+      case 'COMPLETED':
+      case 'SUCCEEDED':
+      case 'PAID':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'Cancelled':
+      case 'CANCELLED':
+      case 'FAILED':
         return <XCircle className="w-4 h-4 text-red-600" />;
       default:
         return <Clock className="w-4 h-4 text-yellow-600" />;
     }
   };
-  const navigate = useNavigate();
+  
+  const orderLoadData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:5000/order/list', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      const data = await response.json();
+
+      if (data.status && data.data) {
+        setOrders(data.data);
+        console.log('Order data with customer info:', data.data);
+      } else {
+        setOrders([]);
+      }
+    } catch (error) {
+      console.log('Error loading orders:', error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const checkme = async () => {
     try {
       const authme = await fetch('http://localhost:5000/api/me', {
@@ -91,100 +85,113 @@ export default function OrderRecord() {
 
   useEffect(() => {
     checkme()
+    orderLoadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-        {/* Header */}
-        <div className="mb-8">
-          {/* Inventory Title */}
-          <div className="flex items-center mb-6">
-            <div className="w-1 h-8 bg-green-600 mr-2"></div>
-            <h2 className="text-xl font-bold" style={{ color: "black" }}>
-              Order Records
-            </h2>
-          </div>
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <Calendar className="w-4 h-4" />
-            <span>{dateRange}</span>
-
-          </div>
+      {/* Header */}
+      <div className="mb-8">
+        {/* Inventory Title */}
+        <div className="flex items-center mb-6">
+          <div className="w-1 h-8 bg-green-600 mr-2"></div>
+          <h2 className="text-xl font-bold" style={{ color: "black" }}>
+            Order Records
+          </h2>
         </div>
+      </div>
 
-        {/* Summary Cards */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 mb-3">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Completed Orders</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {orders.filter(order => order.status === 'Completed').length}
-                </p>
-              </div>
+      {/* Summary Cards */}
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 mb-3">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <XCircle className="w-8 h-8 text-red-600" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Cancelled Orders</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {orders.filter(order => order.status === 'Cancelled').length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Package className="w-8 h-8 text-blue-600" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
-              </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-500">Completed Orders</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {orders.filter(order =>
+                  order.status?.toUpperCase() === 'COMPLETED' ||
+                  order.status?.toUpperCase() === 'SUCCEEDED' ||
+                  order.status?.toUpperCase() === 'PAID'
+                ).length}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Orders Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <XCircle className="w-8 h-8 text-red-600" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-500">Cancelled Orders</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {orders.filter(order => order.status?.toUpperCase() === 'CANCELLED' || order.status?.toUpperCase() === 'FAILED').length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <Package className="w-8 h-8 text-blue-600" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-500">Total Orders</p>
+              <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Orders Table */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Order ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Customer Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Order Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    Loading orders...
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    No orders found
+                  </td>
+                </tr>
+              ) : (
+                orders.map((order) => (
+                  <tr key={order.order_id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="text-sm font-medium text-gray-900">{order.id}</div>
+                        <div className="text-sm font-medium text-gray-900">#{order.order_id}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -193,17 +200,21 @@ export default function OrderRecord() {
                           <User className="w-4 h-4 text-blue-600" />
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {order.customer?.name || 'Walk-in Customer'}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{order.orderDate}</div>
+                      <div className="text-sm text-gray-900">
+                        {order.date ? new Date(order.date).toLocaleDateString() : 'N/A'}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                        {getStatusIcon(order.status)}
-                        <span className="ml-2">{order.status}</span>
+                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status || 'Pending')}`}>
+                        {getStatusIcon(order.status || 'Pending')}
+                        <span className="ml-2">{order.status || 'Pending'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -212,44 +223,45 @@ export default function OrderRecord() {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-
-        {/* Pagination */}
-        <div className="mt-6 flex items-center justify-center">
-          <nav className="flex items-center space-x-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-            >
-              <span className="sr-only">Previous</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            <div className="flex items-center space-x-1">
-              <button className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">
-                01
-              </button>
-            </div>
-
-            <button
-              onClick={() => setCurrentPage(prev => prev + 1)}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-            >
-              <span className="sr-only">Next</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </nav>
-        </div>
-
-        
       </div>
-);
+
+      {/* Pagination */}
+      <div className="mt-6 flex items-center justify-center">
+        <nav className="flex items-center space-x-2">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+          >
+            <span className="sr-only">Previous</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <div className="flex items-center space-x-1">
+            <button className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">
+              01
+            </button>
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+          >
+            <span className="sr-only">Next</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </nav>
+      </div>
+
+
+    </div>
+  );
 }
