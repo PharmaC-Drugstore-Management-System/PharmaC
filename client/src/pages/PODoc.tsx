@@ -31,7 +31,7 @@ const PurchaseOrderDocument = () => {
   };
 
   // Get data from navigation state or sessionStorage fallback
-  const { selectedItems, supplierDetails } = location.state || {};
+  const { selectedItems, supplierDetails, signatures } = location.state || {};
 
   // Fallback: try to get from sessionStorage if navigation state is empty
   const getDataFromStorage = () => {
@@ -46,6 +46,7 @@ const PurchaseOrderDocument = () => {
   const fallbackData = getDataFromStorage();
   const items = selectedItems || fallbackData?.items || [];
   const supplier = supplierDetails || fallbackData?.supplierDetails || {};
+  const signatureData = signatures || fallbackData?.signatures || { purchaser: null };
 
   // Transform selected items to order data format
   const transformedItems: TransformedOrderItem[] = items.map((item: OrderItem, index: number) => ({
@@ -116,6 +117,7 @@ const PurchaseOrderDocument = () => {
         JSON.stringify({
           items: orderData.items,
           supplierDetails: supplier,
+          signatures: signatureData,
           total: orderData.total
         })
       );
@@ -501,32 +503,40 @@ const PurchaseOrderDocument = () => {
             <div className="print-footer  mx-auto bg-white" >
               <div className="border border-gray-400">
                 <div className="grid grid-cols-2 h-50">
-                  {/* Left Column - Approver */}
+                  {/* Left Column - Purchaser */}
                   <div className="border-r border-gray-400 p-6 flex flex-col justify-end">
                     <div className="border-b border-gray-400 mb-3 pb-2">
-                      <div className="h-16"></div> {/* Space for signature */}
+                      {signatureData.purchaser ? (
+                        <div className="h-16 flex items-center justify-center">
+                          <img 
+                            src={signatureData.purchaser} 
+                            alt="Purchaser Signature" 
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-16"></div>
+                      )}
                     </div>
                     <div className="text-center text-sm">
-                      <div className="mb-1">ผู้ตรวจสอบ / Approver</div>
+                      <div className="mb-1">ผู้ซื้อ / Purchaser</div>
                       <div>
-                        วันที่ / Date
-                        ................................................
+                        วันที่ / Date: {signatureData.purchaser ? new Date().toLocaleDateString() : '................................................'}
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Column - Authorized Signature */}
+                  {/* Right Column - Empty for Supplier (to be signed later) */}
                   <div className="p-6 flex flex-col justify-end">
                     <div className="border-b border-gray-400 mb-3 pb-2">
-                      <div className="h-16"></div> {/* Space for signature */}
+                      <div className="h-16"></div> {/* Empty space for supplier signature */}
                     </div>
                     <div className="text-center text-sm">
                       <div className="mb-1">
-                        ผู้มีอำนาจลงนาม / Authorized Signature
+                        ผู้ขาย / Supplier
                       </div>
                       <div>
-                        วันที่ / Date
-                        ................................................
+                        วันที่ / Date: ................................................
                       </div>
                     </div>
                   </div>
