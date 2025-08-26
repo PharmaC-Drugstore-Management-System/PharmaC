@@ -8,8 +8,8 @@ export default function SettingsPage() {
     { label: 'Account', href: '/accountSetting' },
     { label: 'Page Setting', href: '/pageSetting' },
     { label: 'Edit role', href: '/editrole' },
-    { label: 'Term & Condition', href: '#' },
-    { label: 'Contact us', href: '#' }
+    { label: 'Term & Condition', href: '/termCondition' },
+    { label: 'Contact us', href: '/contactUs' }
   ];
   const checkme = async () => {
     try {
@@ -37,37 +37,47 @@ export default function SettingsPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white p-4">
-      <div className="w-full">
-        {/* Header */}
-        <div className="flex items-center p-6 ">
-          <button className="flex items-center justify-center w-12 h-12 bg-teal-600 rounded-full mr-4" onClick={() => navigate('/')}>
-            <ChevronLeft className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-8 ">
+        <div className="flex items-center max-w-6xl mx-auto">
+          <button 
+            className="flex items-center justify-center w-12 h-12 bg-white bg-opacity-20 rounded-full mr-4 hover:bg-opacity-30 transition-all duration-200" 
+            onClick={() => navigate('/')}
+          >
+            <ChevronLeft className="w-6 h-6 text-green-500" />
           </button>
           <div>
-            <h2 className="text-lg font-medium text-gray-900">PhamarC</h2>
-            <h1 className="text-2xl font-semibold text-gray-900">Settings</h1>
+            <h2 className="text-sm font-medium text-teal-100">PharmaC</h2>
+            <h1 className="text-3xl font-bold text-white">Settings</h1>
           </div>
         </div>
+      </div>
 
-        {/* Settings Menu */}
-        <div className="pr-22 pl-22 ">
-          <div className="space-y-0">
+      {/* Settings Menu */}
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className="divide-y divide-gray-100">
             {settingsItems.map((item, index) => (
-              <div key={index}>
+              <div key={index} className="group">
                 <a
                   href={item.href}
-                  className="flex items-center justify-between py-4 text-gray-900 hover:text-teal-600 transition-colors duration-200"
+                  className="flex items-center justify-between px-8 py-6 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-all duration-200"
                 >
                   <span className="text-lg font-medium">{item.label}</span>
-                  <ChevronLeft className="w-5 h-5 rotate-180 text-gray-400" />
+                  <div className="flex items-center">
+                    <ChevronLeft className="w-5 h-5 rotate-180 text-gray-400 group-hover:text-teal-500 transition-colors duration-200" />
+                  </div>
                 </a>
-                {index < settingsItems.length - 1 && (
-                  <div className="border-b border-gray-100"></div>
-                )}
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Footer Info */}
+        <div className="text-center text-sm text-gray-500 mt-8">
+          <p>PharmaC Management System</p>
+          <p className="mt-1">Version 1.0.0</p>
         </div>
       </div>
     </div>
