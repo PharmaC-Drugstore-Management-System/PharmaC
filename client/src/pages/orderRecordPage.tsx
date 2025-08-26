@@ -91,8 +91,7 @@ export default function OrderRecord() {
 
 
   return (
-    <div className="bg-gray-50 min-h-screen " >
-      <div className="p-4">
+    <div className="min-h-screen bg-gray-50 p-4">
       {/* Header */}
       <div className="mb-8">
         {/* Inventory Title */}
@@ -152,9 +151,10 @@ export default function OrderRecord() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 ">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Order ID
@@ -227,12 +227,13 @@ export default function OrderRecord() {
               )}
             </tbody>
           </table>
+        </div>
       </div>
 
       {/* Pagination */}
       <div className="mt-6 flex items-center justify-center">
         <nav className="flex items-center space-x-2">
-          {/* <button
+          <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
           >
@@ -240,7 +241,7 @@ export default function OrderRecord() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-          </button> */}
+          </button>
 
           <div className="flex items-center space-x-1">
             <button className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">
@@ -248,7 +249,7 @@ export default function OrderRecord() {
             </button>
           </div>
 
-          {/* <button
+          <button
             onClick={() => setCurrentPage(prev => prev + 1)}
             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
           >
@@ -256,11 +257,11 @@ export default function OrderRecord() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </button> */}
+          </button>
         </nav>
       </div>
 
-      </div>
+
     </div>
   );
 }
