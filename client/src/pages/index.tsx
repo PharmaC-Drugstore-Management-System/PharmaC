@@ -13,6 +13,9 @@ import {
   Tooltip,
 } from "recharts";
 
+import { ShoppingCart } from "lucide-react";
+
+
 export default function PharmaDashboard() {
   // Sample data for the charts
   const navigate = useNavigate();
@@ -78,22 +81,22 @@ export default function PharmaDashboard() {
     const isInStock = item.status === "In Stock";
 
     return (
-      <div key={item.id} className="border-t border-gray-200 py-3">
+      <div key={item.id} className="border-t border-gray-200 dark:border-gray-600 py-3">
         <div className="flex items-center">
-          <div className="w-16 h-16 bg-gray-200 rounded mr-4"></div>
+          <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded mr-4"></div>
           <div className="flex-1">
-            <a href="#" className="text-xl hover:underline">
+            <a href="#" className="text-xl hover:underline text-gray-900 dark:text-white transition-colors duration-300">
               {item.name}
             </a>
           </div>
           <div className="w-24 text-center">
-            <div>{item.amount}</div>
+            <div className="text-gray-900 dark:text-white">{item.amount}</div>
           </div>
           <div className="flex justify-center items-center w-32">
             <span
               className={`px-4 py-1 rounded-full text-center text-sm ${isInStock
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
+                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                 }`}
             >
               {item.status}
@@ -105,25 +108,25 @@ export default function PharmaDashboard() {
   });
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
 
       {/* Main Content */}
 
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 p-4 ">
         {/* Main Menu Title and Quick Actions */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="w-1 h-8 bg-green-600 mr-2"></div>
-            <h2 className="text-xl font-bold" style={{ color: "black" }}>
+            <h2 className="text-xl font-bold text-black dark:text-white transition-colors duration-300">
               Main Menu
             </h2>
           </div>
           {/* Quick POS Access */}
           <button
             onClick={() => navigate('/pos')}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+            className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
           >
-            <span>🛒</span>
+            <ShoppingCart className="w-5 h-5" />
             <span>เปิดขาย (POS)</span>
           </button>
         </div>
@@ -132,8 +135,8 @@ export default function PharmaDashboard() {
           {/* Revenue Chart */}
           <div className="lg:col-span-2">
             <Link to="/RevenueDetail">
-              <div className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow">
-                <h3 className="text-lg font-semibold mb-4">Revenue</h3>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-all duration-300 border dark:border-gray-700">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Revenue</h3>
                 <div className="flex justify-center">
                   <LineChart width={600} height={250} data={revenueChartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -159,8 +162,8 @@ export default function PharmaDashboard() {
           </div>
 
           {/* Trend Pie Chart */}
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-4">Trend</h3>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border dark:border-gray-700 transition-colors duration-300">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Trend</h3>
             <div className="flex justify-center">
               <PieChart width={300} height={250}>
                 <Pie
@@ -192,17 +195,17 @@ export default function PharmaDashboard() {
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left Column - Sales Stats */}
           <div className="flex flex-col gap-4 h-full">
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-2">Amount Sales</h3>
-              <div className="text-4xl font-bold text-center">200</div>
+            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow flex-1 flex flex-col border dark:border-gray-700 transition-colors duration-300">
+              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Amount Sales</h3>
+              <div className="text-4xl font-bold text-center text-gray-900 dark:text-white">200</div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-2">Total Sales</h3>
-              <div className="text-4xl font-bold text-center">70,000</div>
+            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow flex-1 flex flex-col border dark:border-gray-700 transition-colors duration-300">
+              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Total Sales</h3>
+              <div className="text-4xl font-bold text-center text-gray-900 dark:text-white">70,000</div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
               </div>
@@ -211,30 +214,30 @@ export default function PharmaDashboard() {
 
           {/* Right Column - Inventory Stats */}
           <div className="flex flex-col gap-4 h-full">
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-1">
+            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow flex-1 flex flex-col border dark:border-gray-700 transition-colors duration-300">
+              <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-white">
                 Total Items in stock
               </h3>
-              <div className="text-4xl font-bold text-center">1,500</div>
+              <div className="text-4xl font-bold text-center text-gray-900 dark:text-white">1,500</div>
             </div>
 
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-1">Total Items sales</h3>
-              <div className="text-4xl font-bold text-center">10,000</div>
+            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow flex-1 flex flex-col border dark:border-gray-700 transition-colors duration-300">
+              <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-white">Total Items sales</h3>
+              <div className="text-4xl font-bold text-center text-gray-900 dark:text-white">10,000</div>
             </div>
 
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-2">Profit</h3>
-              <div className="text-4xl font-bold text-center">50,000</div>
+            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow flex-1 flex flex-col border dark:border-gray-700 transition-colors duration-300">
+              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Profit</h3>
+              <div className="text-4xl font-bold text-center text-gray-900 dark:text-white">50,000</div>
             </div>
           </div>
         </div>
 
         {/* Inventory Shortage Section */}
-        <div className="bg-white p-4 rounded-lg shadow mt-6">
-          <h3 className="text-lg font-semibold mb-4">Inventory Shortage</h3>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mt-6 border dark:border-gray-700 transition-colors duration-300">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Inventory Shortage</h3>
           <div>
-            <div className="flex font-semibold py-3 border-b border-gray-200">
+            <div className="flex font-semibold py-3 border-b border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white">
               <div className="flex-1">Product Name</div>
               <div className="w-24 text-center">Amount</div>
               <div className="w-32 text-center">Status</div>

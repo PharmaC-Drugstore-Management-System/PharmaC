@@ -23,6 +23,8 @@ import DocumentRecord from "./pages/DocRecordPage.tsx";
 import OrderRecord from "./pages/orderRecordPage.tsx";
 import MembershipRanking from "./pages/membershipPage.tsx";
 import POSPage from "./pages/POSPage.tsx";
+import TermsConditionsPage from "./pages/TermConditionPage.tsx";
+import ContactUsPage from "./pages/ContactUsPage.tsx";
 import { useEffect } from 'react';
 
 function AppContent() {
@@ -34,9 +36,11 @@ function AppContent() {
   const isAccountPage = location.pathname === '/accountSetting';
   const isThemePage = location.pathname === '/pageSetting';
   const isEditRolePage = location.pathname === '/editrole';
+  const isTermsPage = location.pathname === '/termCondition';
+  const isContactPage = location.pathname === '/contactUs';
   const isRegisterPage = location.pathname === '/register'
   const isLoginPage = location.pathname === '/login'
-  const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage || isEditRolePage || isRegisterPage || isLoginPage;
+  const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage || isEditRolePage || isTermsPage || isContactPage || isRegisterPage || isLoginPage;
 
   // Force Customer to stay on CustomerPaymentPage
   useEffect(() => {
@@ -154,6 +158,16 @@ function AppContent() {
             <Route path="/membership" element={
               <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
                 <MembershipRanking />
+              </ProtectedRoute>
+            } />
+            <Route path="/termCondition" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff', 'Customer']}>
+                <TermsConditionsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/contactUs" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff', 'Customer']}>
+                <ContactUsPage />
               </ProtectedRoute>
             } />
             

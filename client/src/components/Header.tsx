@@ -1,9 +1,93 @@
-import React from "react";
-import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, User, Settings, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+interface UserProfile {
+  firstname: string;
+  lastname: string;
+  email: string;
+  profile_image?: string;
+}
 
 export default function Header() {
   const navigate = useNavigate();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [employeeId, setEmployeeId] = useState<number | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  
+  const checkme = async () => {
+    try {
+      console.log('Loading profile data from API...');
+      
+      // Step 1: Get employee_id from JWT token
+      const authResponse = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (authResponse.status === 401 || authResponse.status === 403) {
+        navigate('/login');
+        return;
+      }
+
+      const authResult = await authResponse.json();
+      const employeeIdFromToken = authResult.user.employee_id || authResult.user.id;
+
+      if (!employeeIdFromToken) {
+        console.error('No employee ID found in token');
+        navigate('/login');
+        return;
+      }
+
+      setEmployeeId(employeeIdFromToken);
+
+      // Step 2: Use employee_id to get full account details
+      const accountResponse = await fetch('http://localhost:5000/acc/account-detail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ employee_id: employeeIdFromToken })
+      });
+
+      if (accountResponse.status === 401 || accountResponse.status === 403) {
+        navigate('/login');
+        return;
+      }
+
+      const result = await accountResponse.json();
+      const user = result.data;
+
+      console.log('User account data:', user);
+
+      // Set user profile data including profile image
+      setUserProfile({
+        firstname: user.firstname || '',
+        lastname: user.lastname || '',
+        email: user.email || '',
+        profile_image: user.profile_image || '',
+      });
+
+    } catch (error) {
+      console.log('Error loading profile data:', error);
+    }
+  };
+
+
+
+  useEffect(() => {
+    checkme();
+  }, []);
+
+
+
+  // Display name logic - show only first name
+  const displayFirstName = userProfile?.firstname || 'User';
+  const fullName = userProfile 
+    ? `${userProfile.firstname} ${userProfile.lastname}`.trim() || 'User'
+    : 'User';
+  
   return (
   
       <div
@@ -20,9 +104,97 @@ export default function Header() {
             <button className="p-2 bg-gray-200 rounded-full shadow-md hover:bg-gray-300 flex items-center">
               <span>🔔</span>
             </button>
-            <div className="h-10 w-10 bg-gray-300 rounded-full"></div>
+            
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowDropdown(!showDropdown)} 
+                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition duration-200"
+              >
+                <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+                  {userProfile?.profile_image ? (
+                    <img 
+                      src={userProfile.profile_image.startsWith('http') 
+                        ? userProfile.profile_image 
+                        : `http://localhost:5000/uploads/${userProfile.profile_image}`
+                      }
+                      alt="Profile"
+                      className="w-full h-full object-cover rounded-full"
+                      onError={(e) => {
+                        // Fallback to default avatar if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+                      }}
+                    />
+                  ) : (
+                    <User className="w-5 h-5 text-gray-600" />
+                  )}
+                </div>
+                <span className="text-gray-800 font-medium hidden sm:block">{displayFirstName}</span>
+                <ChevronDown className="w-4 h-4 text-gray-600 hidden sm:block" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                  {/* User Info Section */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-12 w-12 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+                        {userProfile?.profile_image ? (
+                          <img 
+                            src={userProfile.profile_image.startsWith('http') 
+                              ? userProfile.profile_image 
+                              : `http://localhost:5000/uploads/${userProfile.profile_image}`
+                            }
+                            alt="Profile"
+                            className="w-full h-full object-cover rounded-full"
+                            onError={(e) => {
+                              // Fallback to default avatar if image fails to load
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.parentElement!.innerHTML = '<svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+                            }}
+                          />
+                        ) : (
+                          <User className="w-6 h-6 text-gray-600" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{fullName}</p>
+                        <p className="text-sm text-gray-500">{userProfile?.email || 'No email'}</p>
+                        <p className="text-xs text-gray-400">ID: #{employeeId}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        navigate('/accountSetting');
+                        setShowDropdown(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center space-x-3"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Profile Settings</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+        
+        {/* Overlay to close dropdown when clicking outside */}
+        {showDropdown && (
+          <div 
+            className="fixed inset-0 z-10" 
+            onClick={() => setShowDropdown(false)}
+          ></div>
+        )}
       </div>
     
   );
