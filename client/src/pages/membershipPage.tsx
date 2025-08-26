@@ -6,12 +6,9 @@ import {
   User,
   Search,
   Phone,
-  Mail,
-  MapPin,
   Edit3,
   UserPlus,
   Calendar,
-  Badge,
   Gift,
   X,
 } from "lucide-react";
@@ -292,36 +289,45 @@ export default function MemberManagementPage() {
 
       // Transform the API data to match our Member interface
       if (data && Array.isArray(data)) {
-        const transformedMembers = data.map((customer: any, index: number) => {
-          // Map membership points to membership type
-          const getMembershipType = (points: number) => {
-            if (points >= 1000) return "Platinum";
-            if (points >= 500) return "Gold";
-            if (points >= 100) return "Silver";
-            return "Bronze";
-          };
+        // Map membership points to membership type
+        const getMembershipType = (points: number) => {
+          if (points >= 1000) return "Platinum";
+          if (points >= 500) return "Gold";
+          if (points >= 100) return "Silver";
+          return "Bronze";
+        };
 
-          return {
-            id: customer.customer_id || index + 1,
-            name: customer.name || "Unknown",
-            phone: customer.phone_number || "",
-            joinDate:
-              customer.joinDate ||
-              customer.createdAt ||
-              new Date().toISOString().split("T")[0],
-            birthday: customer.birthday
-              ? new Date(customer.birthday).toISOString().split("T")[0]
-              : "",
-            score: customer.point || 0,
+        const transformedMembers = data
+          .map((customer: any) => {
+            return {
+              id: customer.customer_id || 0,
+              name: customer.name || "Unknown",
+              phone: customer.phone_number || "",
+              joinDate:
+                customer.joinDate ||
+                customer.createdAt ||
+                new Date().toISOString().split("T")[0],
+              birthday: customer.birthday
+                ? new Date(customer.birthday).toISOString().split("T")[0]
+                : "",
+              score: customer.point || 0,
+              rank: 0, // Will be assigned after sorting
+              gender: customer.gender || "Other",
+              membershipType: getMembershipType(customer.point || 0) as
+                | "Bronze"
+                | "Silver"
+                | "Gold"
+                | "Platinum",
+            };
+          })
+          // Sort by points in descending order (highest points first)
+          .sort((a, b) => b.score - a.score)
+          // Assign ranks based on sorted order
+          .map((member, index) => ({
+            ...member,
             rank: index + 1,
-            gender: customer.gender || "Other",
-            membershipType: getMembershipType(customer.point || 0) as
-              | "Bronze"
-              | "Silver"
-              | "Gold"
-              | "Platinum",
-          };
-        });
+          }));
+
         setMembers(transformedMembers);
       }
     } catch (error) {

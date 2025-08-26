@@ -1426,6 +1426,7 @@ export default function POSPage() {
                   setQrPaymentStatus('pending');
                   setQrCodeData(null);
                   setSelectedPayment('cash');
+                  window.location.reload();
                 }}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium"
               >
