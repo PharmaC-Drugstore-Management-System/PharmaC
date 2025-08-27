@@ -11,6 +11,20 @@ export default function PharmaDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  const forecastRevenue = async () => {
+    try {
+      const info = await fetch('http://localhost:5000/revenue/monthly-revenue',{
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await info.json()
+      console.log("DATA ->",data)
+    } catch (error) {
+        console.error(error)
+    }
+  }
+  
+
   const revenueChartData = [
     { name: 'Jan', actual: 26000, projected: 25000 },
     { name: 'Feb', actual: 27000, projected: 26500 },
@@ -58,6 +72,7 @@ export default function PharmaDashboard() {
 
   useEffect(() => {
     checkme()
+    forecastRevenue()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

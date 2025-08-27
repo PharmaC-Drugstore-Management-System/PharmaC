@@ -3,15 +3,12 @@ dotenv.config();
 
 import { createServer } from 'http';
 import app from './src/app'; 
-import { initWebSocket } from './ws';
 
 const PORT = process.env.PORT || 3000;
 
 // Create HTTP server instead of using app.listen()
 const server = createServer(app);
 
-// Initialize WebSocket/Socket.IO
-const io = initWebSocket(server);
 
 // Start server with Socket.IO
 server.listen(PORT, () => {

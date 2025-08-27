@@ -1,8 +1,5 @@
-import forecast_service from '../services/forecast.service.ts';
-import fs from 'fs';
-import path from 'path';
-
-const DATA_FILE_PATH = path.join(__dirname, '../../mocktest.json');
+import forecast_service from '../services/forecast.service';
+import revenueService from '../services/revenue.service';
 
 const controller = {
     getForecastRevenue: async (req: any, res: any) => {
@@ -10,12 +7,23 @@ const controller = {
             let historicalData: { date: string; revenue: number }[];
 
             try {
-                const rawData = fs.readFileSync(DATA_FILE_PATH, 'utf-8');
-                historicalData = JSON.parse(rawData);
-                console.log(`Loaded ${historicalData.length} records from ${DATA_FILE_PATH}`);
-            } catch (fileError: any) {
-                console.error(`Error reading or parsing data file: ${fileError.message}`);
-                return res.status(500).json({ error: 'Failed to load historical data from file.', details: fileError.message });
+                // Get monthly revenue data from the API instead of mock file
+                historicalData = await revenueService.getMonthlyRevenue();
+                console.log(`Loaded ${historicalData.length} monthly revenue records from database`);
+                
+                // Validate that we have enough data for forecasting
+                if (historicalData.length < 12) {
+                    return res.status(400).json({ 
+                        error: 'Insufficient historical data for forecasting', 
+                        details: `Need at least 12 months of data, but only ${historicalData.length} months available` 
+                    });
+                }
+            } catch (dataError: any) {
+                console.error(`Error loading monthly revenue data: ${dataError.message}`);
+                return res.status(500).json({ 
+                    error: 'Failed to load historical revenue data from database.', 
+                    details: dataError.message 
+                });
             }
 
             const forecastPeriods = req.body.forecastPeriods || 12;

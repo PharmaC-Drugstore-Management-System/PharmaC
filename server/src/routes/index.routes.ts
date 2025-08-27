@@ -26,6 +26,8 @@ router.use("/order",orderRoute)
 import customerRoute  from "./customer.routes.ts"
 router.use("/customer", customerRoute);
 
+import revenueRoute from "./revenue.routes.ts"
+router.use("/revenue",revenueRoute)
 
 import paymentRoute from "./payment.routes.ts"
 router.use("/payment", paymentRoute)

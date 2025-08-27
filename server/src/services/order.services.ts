@@ -94,7 +94,7 @@ const orderService = {
                     }
                 },
                 orderBy: {
-                    date: 'desc'
+                    order_id: 'desc'
                 }
             })
             return data;

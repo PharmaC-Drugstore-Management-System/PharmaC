@@ -8,6 +8,18 @@ export default function OrderRecord() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
+
+  // Calculate pagination values
+  const totalPages = Math.ceil(orders.length / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const currentOrders = orders.slice(startIndex, endIndex);
+
+  // Reset to first page when orders change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [orders.length]);
 
   const getStatusColor = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -180,14 +192,14 @@ export default function OrderRecord() {
                     Loading orders...
                   </td>
                 </tr>
-              ) : orders.length === 0 ? (
+              ) : currentOrders.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                     No orders found
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                currentOrders.map((order) => (
                   <tr key={order.order_id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -230,33 +242,49 @@ export default function OrderRecord() {
       </div>
 
       {/* Pagination */}
-      <div className="mt-6 flex items-center justify-center">
+      <div className="mt-6 flex items-center justify-between">
+        {/* Records info */}
+        <div className="text-sm text-gray-700">
+          Showing {startIndex + 1} to {Math.min(endIndex, orders.length)} of {orders.length} orders
+        </div>
+
+        {/* Pagination controls */}
         <nav className="flex items-center space-x-2">
-          {/* <button
+          <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+            disabled={currentPage === 1}
+            className={`p-2 text-sm font-medium rounded-lg ${
+              currentPage === 1 
+                ? 'text-gray-400 cursor-not-allowed' 
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+            }`}
           >
             <span className="sr-only">Previous</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-          </button> */}
+          </button>
 
           <div className="flex items-center space-x-1">
             <button className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">
-              01
+              {currentPage.toString().padStart(2, '0')}
             </button>
           </div>
 
-          {/* <button
-            onClick={() => setCurrentPage(prev => prev + 1)}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className={`p-2 text-sm font-medium rounded-lg ${
+              currentPage === totalPages 
+                ? 'text-gray-400 cursor-not-allowed' 
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+            }`}
           >
             <span className="sr-only">Next</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </button> */}
+          </button>
         </nav>
       </div>
 
