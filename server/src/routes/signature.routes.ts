@@ -1,18 +1,20 @@
 import { Router } from 'express';
 import signatureController from '../controller/signature.controller'
+import { verifyToken } from '../middleware/verifyToken.ts';
+import signatureUpload from '../middleware/signature-upload.middleware';
 
 const router = Router();
 
-// Create signatures for a purchase order
-router.post('/create', signatureController.addSignature);
+// Create signatures for a purchase order (requires authentication)
+router.post('/create', verifyToken, signatureController.addSignature);
 
-// Get signatures for a purchase order
-// router.get('/:po_id', signatureController.getSignatures);
+// Upload signature as image file (requires authentication)
+router.post('/upload', verifyToken, signatureUpload.single('signature'), signatureController.uploadSignature);
 
-// Verify signature integrity
-// router.get('/:po_id/verify/:signer_type', signatureController.verifySignature);
+// Get all signatures
+router.get('/all', signatureController.getAllSignatures);
 
-// Get signature audit log
-// router.get('/:po_id/audit', signatureController.getAuditLog);
+// Get signature by ID
+router.get('/:id', signatureController.getSignature);
 
 export default router;

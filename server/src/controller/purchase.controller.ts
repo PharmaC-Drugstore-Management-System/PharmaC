@@ -11,8 +11,11 @@ const controller = {
         prepareBy,
         description,
         podocData,
+        signatureId,
       } = req.body;
-      console.log(req.body);
+      console.log('PDF request body:', req.body);
+      console.log('SignatureId received:', signatureId);
+      
       if (!frontendURL)
         return res
           .status(400)
@@ -31,7 +34,8 @@ const controller = {
         issueDate,
         prepareBy,
         cookies,
-        podocData
+        podocData,
+        signatureId // Pass signature ID to service
       );
       console.log("Response : ", response);
       return res.status(200).json({ success: true, data: response });

@@ -7,6 +7,18 @@ interface Document {
   issue_date: string;
   pdf_filename: string;
   pdf_mime: string;
+  signature_fk: number | null;
+  po_signature: {
+    id: number;
+    signer_name: string;
+    signature_image: string | null;
+    signed_at: string;
+  } | null;
+  employee: {
+    firstname: string;
+    lastname: string;
+    email: string;
+  } | null;
 }
 
 export default function DocumentRecord() {
@@ -15,6 +27,13 @@ export default function DocumentRecord() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPDF, setSelectedPDF] = useState<number | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [selectedDocumentForSignature, setSelectedDocumentForSignature] = useState<number | null>(null);
+  const [signatureData, setSignatureData] = useState({
+    signer_name: '',
+    cert_serial_number: '',
+    signature_hash: ''
+  });
 
   const checkme = async () => {
     try {
@@ -135,6 +154,15 @@ export default function DocumentRecord() {
                       <p className="text-xs text-gray-600 font-medium">PDF</p>
                     </div>
                     
+                    {/* Signature Indicator */}
+                    {doc.po_signature && (
+                      <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1" title={`Signed by: ${doc.po_signature.signer_name}`}>
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                    
                     {/* Hover Overlay */}
                     <div className="absolute inset-0 bg-transparent group-hover:bg-black/5 transition-colors duration-200"></div>
                     
@@ -168,6 +196,11 @@ export default function DocumentRecord() {
                     <p className="text-xs text-blue-600 truncate" title={doc.pdf_filename}>
                       📄 {doc.pdf_filename}
                     </p>
+                    {doc.po_signature && (
+                      <p className="text-xs text-green-600 truncate" title={`Signed by: ${doc.po_signature.signer_name}`}>
+                        ✓ Signed by {doc.po_signature.signer_name}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}

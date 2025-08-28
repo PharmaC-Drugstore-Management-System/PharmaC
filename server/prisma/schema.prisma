@@ -324,12 +324,11 @@ model trend {
 }
 
 model po_signature {
-  signer_name        String              @db.VarChar(255)
-  cert_serial_number String?             @db.VarChar(128)
-  signature_hash     String?             @db.Char(64)
-  signed_at          DateTime?           @db.Timestamp(6)
-  id                 Int                 @id(map: "po_signature_pk") @default(autoincrement())
-  purchase_document  purchase_document[]
+  signer_name       String              @db.VarChar(255)
+  signed_at         DateTime?           @db.Timestamp(6)
+  id                Int                 @id(map: "po_signature_pk") @default(autoincrement())
+  signature_image   String?             @db.VarChar(500)
+  purchase_document purchase_document[]
 
   @@map("po_signature")
 }

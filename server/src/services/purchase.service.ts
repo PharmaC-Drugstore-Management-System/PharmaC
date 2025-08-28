@@ -1,5 +1,6 @@
 import prisma from "../utils/prisma.utils";
 import puppeteer from "puppeteer";
+import signatureService from "./signature.service";
 
 const purchaseService = {
   createPDF: async (
@@ -9,9 +10,21 @@ const purchaseService = {
     issueDate: any,
     prepareBy: any,
     cookies?: any,
-    podocData?: any
+    podocData?: any,
+    signatureId?: number
   ) => {
     try {
+      console.log('createPDF called with signatureId:', signatureId);
+      
+      // Fetch signature data if signatureId is provided
+      let signatureData = null;
+      if (signatureId) {
+        signatureData = await signatureService.getSignature(signatureId);
+        console.log('Retrieved signature data:', signatureData);
+      } else {
+        console.log('No signatureId provided');
+      }
+
       const browser = await puppeteer.launch({
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
@@ -31,12 +44,18 @@ const purchaseService = {
 
       // If we have data to inject, set it in sessionStorage and reload
       if (podocData) {
-        console.log('Injecting PODoc data:', podocData);
+        // Include signature data in the payload
+        const enhancedPodocData = {
+          ...podocData,
+          signatureFromDB: signatureData // Add signature data from database
+        };
+        
+        console.log('Injecting PODoc data with signature:', enhancedPodocData);
         
         // Inject the data into sessionStorage
         await page.evaluate((data) => {
           sessionStorage.setItem('podoc_payload', JSON.stringify(data));
-        }, podocData);
+        }, enhancedPodocData);
         
         // Reload the page to use the injected data
         await page.reload({ waitUntil: "networkidle0" });
@@ -70,6 +89,8 @@ const purchaseService = {
       const docCount = await prisma.purchase_document.count({});
       const nextDocNumber = docCount + 1;
 
+      console.log('Creating document with signature_fk:', signatureId);
+
       const created = await prisma.purchase_document.create({
         data: {
           employee_id: userID, 
@@ -78,8 +99,11 @@ const purchaseService = {
           pdf_file: pdfBuffer,
           pdf_filename: `PO-A${String(nextDocNumber).padStart(6, '0')}.pdf`,
           pdf_mime: "application/pdf",
+          signature_fk: signatureId || null, // Link to signature if provided
         },
       });
+
+      console.log('Document created with signature_fk:', created.signature_fk);
 
       return created
     } catch (error) {
@@ -131,6 +155,24 @@ const purchaseService = {
           issue_date: true,
           pdf_filename: true,
           pdf_mime: true,
+          signature_fk: true,
+          // Include signature data
+          po_signature: {
+            select: {
+              id: true,
+              signer_name: true,
+              signature_image: true,
+              signed_at: true,
+            }
+          },
+          // Include employee data
+          employee: {
+            select: {
+              firstname: true,
+              lastname: true,
+              email: true,
+            }
+          }
           // Note: We don't select pdf_file to avoid loading large binary data
         },
         orderBy: {

@@ -46,7 +46,22 @@ const PurchaseOrderDocument = () => {
   const fallbackData = getDataFromStorage();
   const items = selectedItems || fallbackData?.items || [];
   const supplier = supplierDetails || fallbackData?.supplierDetails || {};
-  const signatureData = signatures || fallbackData?.signatures || { purchaser: null };
+  
+  // Prioritize signature from database over local signature data
+  const dbSignature = fallbackData?.signatureFromDB;
+  const localSignatures = signatures || fallbackData?.signatures || { purchaser: null };
+  
+  console.log('DB Signature:', dbSignature);
+  console.log('Local Signatures:', localSignatures);
+  
+  // Use database signature if available, otherwise use local signature
+  const signatureData = {
+    purchaser: dbSignature?.signature_image || localSignatures.purchaser,
+    signerName: dbSignature?.signer_name || 'Unknown Signer',
+    signedAt: dbSignature?.signed_at ? new Date(dbSignature.signed_at) : null
+  };
+  
+  console.log('Final signature data:', signatureData);
 
   // Transform selected items to order data format
   const transformedItems: TransformedOrderItem[] = items.map((item: OrderItem, index: number) => ({
@@ -108,9 +123,75 @@ const PurchaseOrderDocument = () => {
     }
   }
 
+  // Function to save signature to database
+  const saveSignatureToDatabase = async () => {
+    // Check if we already have signature data from database
+    if (fallbackData?.signatureFromDB) {
+      console.log('Using existing signature from database:', fallbackData.signatureFromDB);
+      return fallbackData.signatureFromDB;
+    }
+
+    // Use original signature data from navigation state or local storage
+    const originalSignatures = signatures || fallbackData?.signatures;
+    const localSignatureData = originalSignatures?.purchaser;
+    
+    console.log('Original signatures:', originalSignatures);
+    console.log('Local signature data:', localSignatureData);
+    
+    if (!localSignatureData) {
+      throw new Error('No signature data found');
+    }
+
+    try {
+      // Convert data URL to blob
+      const response = await fetch(localSignatureData);
+      const blob = await response.blob();
+      
+      // Create FormData to send the signature image
+      const formData = new FormData();
+      formData.append('signature', blob, `signature_${Date.now()}.png`);
+      
+      // Save signature to database
+      const signatureResponse = await fetch('http://localhost:5000/signature/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+
+      if (!signatureResponse.ok) {
+        throw new Error('Failed to save signature');
+      }
+
+      const signatureResult = await signatureResponse.json();
+      console.log('Signature saved successfully:', signatureResult);
+      
+      return signatureResult.data; // Return signature data including ID
+    } catch (error) {
+      console.error('Error saving signature:', error);
+      throw error;
+    }
+  };
+
   const handleConfirm = async () => {
     setIsProcessing(true);
     try {
+      let savedSignature = null;
+      
+      // Check if we have any signature data (original signatures from POForm)
+      const originalSignatures = signatures || fallbackData?.signatures;
+      const hasSignature = originalSignatures?.purchaser || fallbackData?.signatureFromDB;
+      
+      console.log('Original signatures from POForm:', originalSignatures);
+      console.log('Has signature to process:', !!hasSignature);
+      
+      if (hasSignature) {
+        console.log('Processing signature...');
+        savedSignature = await saveSignatureToDatabase();
+        console.log('Saved signature result:', savedSignature);
+      } else {
+        console.log('No signature data found to save');
+      }
+
       // เก็บ payload ให้ backend เข้าถึงได้ (Puppeteer จะเข้าไปอ่าน sessionStorage)
       sessionStorage.setItem(
         'podoc_payload',
@@ -122,32 +203,39 @@ const PurchaseOrderDocument = () => {
         })
       );
 
+      // Log the request data for debugging
+      const requestData = {
+        userID: userID,
+        description: `Purchase Order ${orderData.orderNumber}`,
+        frontendURL: window.location.href, 
+        issueDate: orderData.issueDate,
+        preparedBy: orderData.preparedBy,
+        signatureId: savedSignature?.id, // Include signature ID for reference
+        // Send the data that should appear in the PDF
+        podocData: {
+          supplierDetails: {
+            supplier: orderData.supplier,
+            contactName: orderData.contactName,
+            taxId: orderData.taxId,
+            address: orderData.address,
+            issueDate: orderData.issueDate,
+            preparedBy: orderData.preparedBy,
+            businessLogo: supplier.businessLogo, // Include the uploaded image
+          },
+          items: items,
+          total: orderData.total,
+          signature: savedSignature // Include signature info in PDF data
+        }
+      };
+      
+      console.log('PDF Request Data:', requestData);
+
       // ส่ง request ไป backend ให้ Puppeteer generate PDF
       const response = await fetch('http://localhost:5000/purchase/pdf', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userID: userID,
-          description: `Purchase Order ${orderData.orderNumber}`,
-          frontendURL: window.location.href, 
-          issueDate: orderData.issueDate,
-          preparedBy: orderData.preparedBy,
-          // Send the data that should appear in the PDF
-          podocData: {
-            supplierDetails: {
-              supplier: orderData.supplier,
-              contactName: orderData.contactName,
-              taxId: orderData.taxId,
-              address: orderData.address,
-              issueDate: orderData.issueDate,
-              preparedBy: orderData.preparedBy,
-              businessLogo: supplier.businessLogo, // Include the uploaded image
-            },
-            items: items,
-            total: orderData.total
-          }
-        }),
+        body: JSON.stringify(requestData),
       });
 
       const data = await response.json();
@@ -168,6 +256,8 @@ const PurchaseOrderDocument = () => {
     } catch (error) {
       setIsProcessing(false);
       console.error('Error creating PDF:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert('เกิดข้อผิดพลาดในการบันทึกเอกสาร: ' + errorMessage);
     }
   };
 
@@ -512,16 +602,23 @@ const PurchaseOrderDocument = () => {
                             src={signatureData.purchaser} 
                             alt="Purchaser Signature" 
                             className="max-h-full max-w-full object-contain"
+                            onLoad={() => console.log('Signature image loaded successfully:', signatureData.purchaser)}
+                            onError={(e) => {
+                              console.error('Failed to load signature image:', signatureData.purchaser);
+                              console.error('Image error:', e);
+                            }}
                           />
                         </div>
                       ) : (
-                        <div className="h-16"></div>
+                        <div className="h-16">
+                          {/* No signature to display */}
+                        </div>
                       )}
                     </div>
                     <div className="text-center text-sm">
                       <div className="mb-1">ผู้ซื้อ / Purchaser</div>
                       <div>
-                        วันที่ / Date: {signatureData.purchaser ? new Date().toLocaleDateString() : '................................................'}
+                        วันที่ / Date: {signatureData.signedAt ? signatureData.signedAt.toLocaleDateString() : (signatureData.purchaser ? new Date().toLocaleDateString() : '................................................')}
                       </div>
                     </div>
                   </div>
