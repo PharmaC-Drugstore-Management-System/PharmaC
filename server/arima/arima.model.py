@@ -23,7 +23,8 @@ def run_forecast(data_json, forecast_steps=12, test_size_months=6):
             train_df = df
             test_df = pd.DataFrame()
 
-        model = ARIMA(train_df['revenue'], order=(2,1,1))
+              
+        model = ARIMA(train_df['revenue'], order=(2, 1, 1))
         model_fit = model.fit()
 
         if not test_df.empty:
