@@ -14,5 +14,6 @@
   "amount": "จำนวน",
   "status": "สถานะ",
   "in_stock": "มีสินค้าในคลัง",
-  "out_of_stock": "สินค้าหมด"
+  "out_of_stock": "สินค้าหมด",
+  "main_menu": "หน้าหลัก"
 }

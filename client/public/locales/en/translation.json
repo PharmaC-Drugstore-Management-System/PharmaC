@@ -14,5 +14,6 @@
   "amount": "Amount",
   "status": "Status",
   "in_stock": "In Stock",
-  "out_of_stock": "Out of Stock"
+  "out_of_stock": "Out of Stock",
+  "main_menu": "Main Menu"
 }
