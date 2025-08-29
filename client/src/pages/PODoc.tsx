@@ -22,7 +22,7 @@ const PurchaseOrderDocument = () => {
   };
 
   type TransformedOrderItem = {
-    id: number;
+    id: number; 
     description: string;
     quantity: number;
     unitPrice: number;
@@ -37,8 +37,60 @@ const PurchaseOrderDocument = () => {
   const getDataFromStorage = () => {
     try {
       const stored = sessionStorage.getItem('podoc_payload');
-      return stored ? JSON.parse(stored) : null;
+      const parsed = stored ? JSON.parse(stored) : null;
+      console.log('Data from sessionStorage:', parsed);
+      return parsed;
     } catch {
+      return null;
+    }
+  };
+
+  // Type definition for signature data
+  type SignatureFromDB = {
+    id: number; 
+    signature_image: string;
+    signer_name: string;
+    signed_at: string;
+  };
+
+  // Type definition for user info from /api/me
+  type UserInfo = {
+    id: number;
+    firstname?: string;
+    lastname?: string;
+    email?: string;
+    employee_id?: string;
+  };
+
+  // State for signature data from database
+  const [dbSignatureData, setDbSignatureData] = useState<SignatureFromDB | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null); // Add typed state for user info
+  
+  // Function to fetch latest signature from database for current user
+  const fetchLatestSignature = async () => {
+    try {
+      const token = localStorage.getItem('token'); // Get JWT token
+      
+      const response = await fetch('http://localhost:5000/signature/latest', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {  
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Latest signature from database:', result.data);
+        setDbSignatureData(result.data);
+        return result.data;
+      } else {
+        console.log('No signature found in database');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching signature from database:', error);
       return null;
     }
   };
@@ -47,21 +99,53 @@ const PurchaseOrderDocument = () => {
   const items = selectedItems || fallbackData?.items || [];
   const supplier = supplierDetails || fallbackData?.supplierDetails || {};
   
-  // Prioritize signature from database over local signature data
-  const dbSignature = fallbackData?.signatureFromDB;
+  // Use database signature if available, otherwise use local signature data
   const localSignatures = signatures || fallbackData?.signatures || { purchaser: null };
   
-  console.log('DB Signature:', dbSignature);
+  console.log('DB Signature from state:', dbSignatureData);
   console.log('Local Signatures:', localSignatures);
+  console.log('User Info:', userInfo);
   
-  // Use database signature if available, otherwise use local signature
+  // Get signer name from logged-in user info
+  let signerName = 'Unknown Signer';
+  if (userInfo) {
+    if (userInfo.firstname && userInfo.lastname) {
+      signerName = `${userInfo.firstname} ${userInfo.lastname}`;
+    } else if (userInfo.firstname) {
+      signerName = userInfo.firstname;
+    } else if (userInfo.email) {
+      signerName = userInfo.email;
+    }
+  }
+  
+  // Prioritize POForm signature over database signature for display
   const signatureData = {
-    purchaser: dbSignature?.signature_image || localSignatures.purchaser,
-    signerName: dbSignature?.signer_name || 'Unknown Signer',
-    signedAt: dbSignature?.signed_at ? new Date(dbSignature.signed_at) : null
+    purchaser: localSignatures.purchaser || dbSignatureData?.signature_image, // Use POForm signature first
+    signerName: signerName, // Always use logged-in user name
+    signedAt: localSignatures.purchaser ? 
+      new Date() : // Use current time for new signatures
+      (dbSignatureData?.signed_at ? 
+        new Date(dbSignatureData.signed_at) : // Parse database date properly
+        null
+      )
   };
   
   console.log('Final signature data:', signatureData);
+  
+  // Debug date formatting
+  if (signatureData.signedAt) {
+    console.log('📅 Date debugging:', {
+      rawDate: signatureData.signedAt,
+      iso: signatureData.signedAt.toISOString(),
+      localString: signatureData.signedAt.toLocaleDateString(),
+      thaiFormat: signatureData.signedAt.toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }),
+      source: localSignatures.purchaser ? 'POForm (new Date())' : 'Database'
+    });
+  }
 
   // Transform selected items to order data format
   const transformedItems: TransformedOrderItem[] = items.map((item: OrderItem, index: number) => ({
@@ -83,7 +167,11 @@ const PurchaseOrderDocument = () => {
   // Create order data dynamically with updated document count
   const orderData = {
     orderNumber: `A${String(documentCount + 1).padStart(6, '0')}`,
-    issueDate: supplier.issueDate || new Date().toLocaleDateString(),
+    issueDate: supplier.issueDate || new Date().toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }),
     supplier: supplier.supplier || "No Supplier Specified",
     contactName: supplier.contactName || "No Contact Name",
     taxId: supplier.taxId || "No Tax ID",
@@ -193,15 +281,17 @@ const PurchaseOrderDocument = () => {
       }
 
       // เก็บ payload ให้ backend เข้าถึงได้ (Puppeteer จะเข้าไปอ่าน sessionStorage)
-      sessionStorage.setItem(
-        'podoc_payload',
-        JSON.stringify({
-          items: orderData.items,
-          supplierDetails: supplier,
-          signatures: signatureData,
-          total: orderData.total
-        })
-      );
+      const payloadData = {
+        items: orderData.items,
+        supplierDetails: supplier,
+        signatures: signatureData,
+        total: orderData.total,
+        // Include saved signature if available
+        signatureFromDB: savedSignature
+      };
+      
+      sessionStorage.setItem('podoc_payload', JSON.stringify(payloadData));
+      console.log('Updated sessionStorage with saved signature:', payloadData);
 
       // Log the request data for debugging
       const requestData = {
@@ -270,6 +360,7 @@ const PurchaseOrderDocument = () => {
       })
       const data = await authme.json();
       setUserID(data.user.id);
+      setUserInfo(data.user); // Store user info for signature name
       if (authme.status === 401 || authme.status === 403) {
         navigate('/login');
         return;
@@ -286,13 +377,21 @@ const PurchaseOrderDocument = () => {
   useEffect(() => {
     checkme()
     countDoc()
+    fetchLatestSignature() // Fetch signature from database
+    
     // Console log the data being used in PODoc
     console.log('PODoc received data:', {
       selectedItems: items,
       supplierDetails: supplier,
       transformedItems,
-      orderData
+      orderData,
+      signatureData: signatureData
     });
+    
+    // Check if signatureFromDB is available
+    if (fallbackData?.signatureFromDB) {
+      console.log('Found signature from database:', fallbackData.signatureFromDB);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -618,7 +717,21 @@ const PurchaseOrderDocument = () => {
                     <div className="text-center text-sm">
                       <div className="mb-1">ผู้ซื้อ / Purchaser</div>
                       <div>
-                        วันที่ / Date: {signatureData.signedAt ? signatureData.signedAt.toLocaleDateString() : (signatureData.purchaser ? new Date().toLocaleDateString() : '................................................')}
+                        วันที่ / Date: {signatureData.signedAt ? 
+                          signatureData.signedAt.toLocaleDateString('th-TH', {
+                            year: 'numeric',
+                            month: '2-digit', 
+                            day: '2-digit'
+                          }) : 
+                          (signatureData.purchaser ? 
+                            new Date().toLocaleDateString('th-TH', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit'
+                            }) : 
+                            '................................................'
+                          )
+                        }
                       </div>
                     </div>
                   </div>

@@ -30,13 +30,24 @@ const signatureService = {
   // Create a new signature with image conversion
   add: async (data: SignatureData) => {
     try {
+      const currentTime = new Date();
+      console.log(`💾 Creating new signature for "${data.signer_name}" at ${currentTime.toISOString()}`);
+      
       const newSignature = await prisma.po_signature.create({
         data: {
           signer_name: data.signer_name,
           signature_image: data.signature_image,
-          signed_at: data.signed_at || new Date(),
+          signed_at: currentTime, // Always use current timestamp
         },
       });
+      
+      console.log(`✅ New signature created:`, {
+        id: newSignature.id,
+        signer_name: newSignature.signer_name,
+        signed_at: newSignature.signed_at,
+        timestamp: currentTime.toISOString()
+      });
+      
       return newSignature;
     } catch (error: any) {
       console.error("Error in signatureService.add():", error.message);
@@ -70,12 +81,23 @@ const signatureService = {
         imageUrl = `http://localhost:5000/uploads/signatures/${fileName}`;
       }
 
+      const currentTime = new Date();
+      console.log(`💾 Creating new signature with image for "${data.signer_name}" at ${currentTime.toISOString()}`);
+
       const newSignature = await prisma.po_signature.create({
         data: {
           signer_name: data.signer_name,
           signature_image: imageUrl,
-          signed_at: data.signed_at || new Date(),
+          signed_at: currentTime, // Always use current timestamp
         },
+      });
+      
+      console.log(`✅ New signature with image created:`, {
+        id: newSignature.id,
+        signer_name: newSignature.signer_name,
+        signed_at: newSignature.signed_at,
+        signature_image: newSignature.signature_image,
+        timestamp: currentTime.toISOString()
       });
       
       return newSignature;
@@ -291,6 +313,51 @@ const signatureService = {
       };
     } catch (error: any) {
       console.error("Error in signatureService.verifySignature():", error.message);
+      throw error;
+    }
+  },
+
+  // Get latest signature by signer name
+  getLatestBySignerName: async (signerName: string) => {
+    try {
+      console.log(`🔍 Searching for latest signature by signer: "${signerName}"`);
+      
+      // First, let's see all signatures for this signer for debugging
+      const allSignatures = await prisma.po_signature.findMany({
+        where: { 
+          signer_name: signerName 
+        },
+        orderBy: [
+          { signed_at: 'desc' },
+          { id: 'desc' } // Use ID as secondary sort to ensure newest comes first
+        ]
+      });
+
+      console.log(`📝 Found ${allSignatures.length} signatures for "${signerName}":`, 
+        allSignatures.map(sig => ({
+          id: sig.id,
+          signed_at: sig.signed_at,
+          created: new Date(sig.signed_at || '').toISOString()
+        }))
+      );
+
+      // Get the most recent one
+      const latestSignature = allSignatures[0] || null;
+      
+      if (latestSignature) {
+        console.log(`✅ Latest signature found:`, {
+          id: latestSignature.id,
+          signer_name: latestSignature.signer_name,
+          signed_at: latestSignature.signed_at,
+          signature_image: latestSignature.signature_image ? 'Has image' : 'No image'
+        });
+      } else {
+        console.log(`❌ No signatures found for signer: "${signerName}"`);
+      }
+
+      return latestSignature;
+    } catch (error: any) {
+      console.error("Error in signatureService.getLatestBySignerName():", error.message);
       throw error;
     }
   }

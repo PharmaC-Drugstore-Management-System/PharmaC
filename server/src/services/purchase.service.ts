@@ -50,7 +50,8 @@ const purchaseService = {
           signatureFromDB: signatureData // Add signature data from database
         };
         
-        console.log('Injecting PODoc data with signature:', enhancedPodocData);
+        console.log('Enhanced PODoc data with signature:', enhancedPodocData);
+        console.log('Signature data being injected:', signatureData);
         
         // Inject the data into sessionStorage
         await page.evaluate((data) => {
@@ -63,8 +64,8 @@ const purchaseService = {
         // Wait for the page to render with the new data
         await page.waitForSelector('.printable-content', { timeout: 10000 });
         
-        // Wait a bit for React to render with the new data
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Wait longer for React to render with the new data including signature
+        await new Promise(resolve => setTimeout(resolve, 5000));
       }
 
       // Generate PDF

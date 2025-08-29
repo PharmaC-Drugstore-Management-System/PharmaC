@@ -402,7 +402,6 @@ const SupplierDetailsForm = () => {
                         onSignatureChange={(sig) => handleSignatureChange('purchaser', sig)}
                         signerName={supplierDetails.preparedBy || username}
                         signerRole="Purchaser"
-                        required={true}
                         value={signatures.purchaser}
                       />
                       {touched.purchaserSignature && !validate.purchaserSignature && (

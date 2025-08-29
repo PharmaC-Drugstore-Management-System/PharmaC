@@ -85,8 +85,21 @@ const controller = {
             }
 
             const file = req.file;
-            const userId = req.user.id;
-            const userName = req.user.name || req.user.employee_name || 'Unknown User';
+            const user = req.user; // Get user data from JWT token
+            const userId = user.employee_id || user.id;
+            
+            // Create full name from JWT token data
+            let userName = 'Unknown User';
+            if (user.firstname && user.lastname) {
+                userName = `${user.firstname} ${user.lastname}`;
+            } else if (user.firstname) {
+                userName = user.firstname;
+            } else if (user.email) {
+                userName = user.email;
+            }
+
+            console.log('User from JWT:', user);
+            console.log('Signer name:', userName);
 
             // Create signature image URL using the actual filename from multer
             const signatureImageUrl = `http://localhost:5000/uploads/signatures/${file.filename}`;
@@ -103,7 +116,9 @@ const controller = {
 
             const savedSignature = await signatureService.add(signatureData);
 
-            console.log(`✅ Signature saved for user ${userName} (ID: ${userId}): ${signatureImageUrl}`);
+            console.log('✅ Signature saved for user:', userName, 'ID:', userId);
+            console.log('✅ Signature URL:', signatureImageUrl);
+            console.log('✅ File saved as:', file.filename);
 
             res.status(201).json({
                 success: true,
@@ -119,6 +134,54 @@ const controller = {
 
         } catch (error: any) {
             console.error("Error in controller.uploadSignature():", error.message);
+            res.status(500).json({ 
+                success: false,
+                error: "Internal Server Error",
+                message: error.message 
+            });
+        }
+    },
+
+    // Get latest signature for logged-in user
+    getLatestSignature: async (req: any, res: any) => {
+        try {
+            // Check if user is authenticated
+            if (!req.user) {
+                return res.status(401).json({ error: "Authentication required" });
+            }
+
+            const user = req.user; // Get user data from JWT token
+            
+            // Create full name from JWT token data
+            let userName = 'Unknown User';
+            if (user.firstname && user.lastname) {
+                userName = `${user.firstname} ${user.lastname}`;
+            } else if (user.firstname) {
+                userName = user.firstname;
+            } else if (user.email) {
+                userName = user.email;
+            }
+
+            console.log('Getting latest signature for user:', userName);
+
+            const latestSignature = await signatureService.getLatestBySignerName(userName);
+            
+            if (!latestSignature) {
+                return res.status(404).json({ 
+                    success: false,
+                    message: 'No signature found for this user' 
+                });
+            }
+
+            console.log('✅ Found latest signature for:', userName);
+
+            res.status(200).json({
+                success: true,
+                data: latestSignature
+            });
+
+        } catch (error: any) {
+            console.error("Error in controller.getLatestSignature():", error.message);
             res.status(500).json({ 
                 success: false,
                 error: "Internal Server Error",
