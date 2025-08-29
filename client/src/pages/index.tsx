@@ -14,6 +14,7 @@ import {
 } from "recharts";
 
 import { ShoppingCart } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 
 export default function PharmaDashboard() {
@@ -33,6 +34,7 @@ export default function PharmaDashboard() {
       console.error(error)
     }
   }
+  const { t } = useTranslation();
 
   // Sample data for the charts
 
@@ -56,10 +58,10 @@ export default function PharmaDashboard() {
   ];
 
   const inventoryData = [
-    { id: 1, name: "Amoxilin", amount: "15 pcs", status: "In Stock" },
-    { id: 2, name: "Amoxilin", amount: "15 pcs", status: "In Stock" },
-    { id: 3, name: "Amoxilin", amount: "15 pcs", status: "In Stock" },
-    { id: 4, name: "Amoxilin", amount: "0 pcs", status: "Out of Stock" },
+    { id: 1, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
+    { id: 2, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
+    { id: 3, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
+    { id: 4, name: "Amoxilin", amount: "0 pcs", status: t('out_of_stock') },
   ];
 
   const COLORS = ["#79e2f2", "#7ab8f2", "#4d82bf", "#38618c", "#213559"];
@@ -98,7 +100,7 @@ export default function PharmaDashboard() {
   };
 
   const renderInventoryItem = ((item: InventoryItem) => {
-    const isInStock = item.status === "In Stock";
+    const isInStock = item.status === t('in_stock');
 
     return (
       <div key={item.id} className="border-t border-gray-200  py-3">
@@ -156,7 +158,7 @@ export default function PharmaDashboard() {
           <div className="lg:col-span-2">
             <Link to="/RevenueDetail">
               <div className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow ">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900">Revenue</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('revenue')}</h3>
                 <div className="flex justify-center">
                   <LineChart width={600} height={250} data={revenueChartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -216,7 +218,7 @@ export default function PharmaDashboard() {
           {/* Left Column - Sales Stats */}
           <div className="flex flex-col gap-4 h-full">
             <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">Amount Sales</h3>
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">{t('amount_sales')}</h3>
               <div className="text-4xl font-bold text-center text-gray-900">200</div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
@@ -224,7 +226,7 @@ export default function PharmaDashboard() {
             </div>
 
             <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col ">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">Total Sales</h3>
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">{t('total_sales')}</h3>
               <div className="text-4xl font-bold text-center text-gray-900">70,000</div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
@@ -236,18 +238,18 @@ export default function PharmaDashboard() {
           <div className="flex flex-col gap-4 h-full">
             <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col ">
               <h3 className="text-lg font-semibold mb-1 text-gray-900">
-                Total Items in stock
+                {t('total_items_in_stock')}
               </h3>
               <div className="text-4xl font-bold text-center text-gray-900">1,500</div>
             </div>
 
             <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-1 text-gray-900">Total Items sales</h3>
+              <h3 className="text-lg font-semibold mb-1 text-gray-900">{t('total_items_sales')}</h3>
               <div className="text-4xl font-bold text-center text-gray-900">10,000</div>
             </div>
 
             <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col ">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">Profit</h3>
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">{t('profit')}</h3>
               <div className="text-4xl font-bold text-center text-gray-900">50,000</div>
             </div>
           </div>
@@ -255,12 +257,12 @@ export default function PharmaDashboard() {
 
         {/* Inventory Shortage Section */}
         <div className="bg-white p-4 rounded-lg shadow mt-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">Inventory Shortage</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('inventory_shortage')}</h3>
           <div>
             <div className="flex font-semibold py-3 border-b border-gray-200 text-gray-900">
-              <div className="flex-1">Product Name</div>
-              <div className="w-24 text-center">Amount</div>
-              <div className="w-32 text-center">Status</div>
+              <div className="flex-1">{t('product_name')}</div>
+              <div className="w-24 text-center">{t('amount')}</div>
+              <div className="w-32 text-center">{t('status')}</div>
             </div>
             {inventoryData.map((item) => renderInventoryItem(item))}
           </div>

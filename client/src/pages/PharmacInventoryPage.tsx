@@ -27,45 +27,66 @@ type MedicineItem = {
 
 export default function PharmacInventoryPage() {
   const navigate = useNavigate();
+  const openItem = (id: number) => {
+    navigate(`/inventory/${id}`);
+  };
   const [items, setItems] = useState<MedicineItem[]>([]);
   const [editMode, setEditMode] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
+  // const loadData = async () => {
+  //   try {
+  //     const res = await fetch("http://localhost:5000/inventory/get-medicine", {
+  //       method: "GET",
+  //       credentials: "include",
+  //     });
+  //     const result = await res.json();
+  //     const data = result?.data || [];
+  //     const formattedItems = data.map(
+  //       (item: any): MedicineItem => ({
+  //         id: item.product_id,
+  //         name: item.product_name || "-",
+  //         brand: item.brand || "-",
+  //         price: item.price ?? 0,
+  //         image: item.image || null,
+  //         productType: item.producttype ?? null,
+  //         unit: item.unit ?? item.unit_name ?? item.unitName ?? null,
+  //         isControlled:
+  //           item.iscontrolled ??
+  //           item.isControlled ??
+  //           item.is_controlled ??
+  //           item.controlled ??
+  //           false,
+  //         expiredDate:
+  //           (item.lot && item.lot[0] && item.lot[0].expired_date) || "-",
+  //         amount:
+  //           item.stock && item.stock.length > 0 && item.stock[0].quantity_id_fk
+  //             ? item.stock[0].quantity_id_fk
+  //             : item.amount ?? 0,
+  //       })
+  //     );
+  //     setItems(formattedItems);
+  //   } catch (error) {
+  //     console.log("Error", error);
+  //   }
+  // };
   const loadData = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/inventory/get-medicine", {
-        method: "GET",
-        credentials: "include",
-      });
-      const result = await res.json();
-      const data = result?.data || [];
-      const formattedItems = data.map(
-        (item: any): MedicineItem => ({
-          id: item.product_id,
-          name: item.product_name || "-",
-          brand: item.brand || "-",
-          price: item.price ?? 0,
-          image: item.image || null,
-          productType: item.producttype ?? null,
-          unit: item.unit ?? item.unit_name ?? item.unitName ?? null,
-          isControlled:
-            item.iscontrolled ??
-            item.isControlled ??
-            item.is_controlled ??
-            item.controlled ??
-            false,
-          expiredDate:
-            (item.lot && item.lot[0] && item.lot[0].expired_date) || "-",
-          amount:
-            item.stock && item.stock.length > 0 && item.stock[0].quantity_id_fk
-              ? item.stock[0].quantity_id_fk
-              : item.amount ?? 0,
-        })
-      );
-      setItems(formattedItems);
-    } catch (error) {
-      console.log("Error", error);
-    }
+    // Instead of fetching, just mock one item
+    const mockData: MedicineItem[] = [
+      {
+        id: 1,
+        name: "Paracetamol",
+        brand: "Tylenol",
+        price: 50,
+        image: null,
+        productType: "Tablet",
+        unit: "Box",
+        isControlled: false,
+        expiredDate: "2025-12-31",
+        amount: 25,
+      },
+    ];
+    setItems(mockData);
   };
 
   const checkme = async () => {
@@ -184,35 +205,31 @@ export default function PharmacInventoryPage() {
         {/* Expire Soon */}
         <div
           onClick={() => navigate("/expiry-monitor")}
-          className={`p-6 rounded-lg shadow-md border cursor-pointer transition-all duration-300 transform max-h-[100px] ${
-            expireSoonItems.length > 0
-              ? "bg-gradient-to-r from-orange-500 to-red-500 border-orange-200 hover:shadow-lg hover:scale-[1.02]"
-              : "bg-white border-gray-200 hover:shadow-md"
-          }`}
+          className={`p-6 rounded-lg shadow-md border cursor-pointer transition-all duration-300 transform max-h-[100px] ${expireSoonItems.length > 0
+            ? "bg-gradient-to-r from-orange-500 to-red-500 border-orange-200 hover:shadow-lg hover:scale-[1.02]"
+            : "bg-white border-gray-200 hover:shadow-md"
+            }`}
         >
           <div className="flex justify-between items-start">
             <div className="flex items-center">
               <Clock
-                className={`w-10 h-10 ${
-                  expireSoonItems.length > 0
-                    ? "text-white animate-pulse"
-                    : "text-gray-400"
-                }`}
+                className={`w-10 h-10 ${expireSoonItems.length > 0
+                  ? "text-white animate-pulse"
+                  : "text-gray-400"
+                  }`}
               />
               <div className="ml-4">
                 <p
-                  className={`text-sm font-medium ${
-                    expireSoonItems.length > 0
-                      ? "text-orange-100"
-                      : "text-gray-500"
-                  }`}
+                  className={`text-sm font-medium ${expireSoonItems.length > 0
+                    ? "text-orange-100"
+                    : "text-gray-500"
+                    }`}
                 >
                   Expire Soon
                 </p>
                 <p
-                  className={`text-3xl font-bold ${
-                    expireSoonItems.length > 0 ? "text-white" : "text-gray-900"
-                  }`}
+                  className={`text-3xl font-bold ${expireSoonItems.length > 0 ? "text-white" : "text-gray-900"
+                    }`}
                 >
                   {expireSoonItems.length}
                 </p>
@@ -297,9 +314,9 @@ export default function PharmacInventoryPage() {
             return (
               <div
                 key={item.id}
-                className={`grid grid-cols-8 gap-4 px-6 py-4 hover:bg-gray-50 transition-all duration-300 ${
-                  isDimmed ? "opacity-50" : "opacity-100"
-                }`}
+                onClick={() => !editMode && openItem(item.id)}   // ✅ navigate to /inventory/:id
+                className={`grid grid-cols-8 gap-4 px-6 py-4 hover:bg-gray-50 transition-all duration-300 ${isDimmed ? "opacity-50" : "opacity-100"
+                  } ${!editMode ? "cursor-pointer" : "cursor-default"}`}
               >
                 {/* Image cell */}
                 <div className="flex items-center">
@@ -415,11 +432,10 @@ export default function PharmacInventoryPage() {
         {editMode ? (
           <button
             onClick={handleDeleteItem}
-            className={`ml-2 px-3 py-2 bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 flex items-center transition-all duration-500 transform ${
-              selectedItemId
-                ? "scale-100 opacity-100"
-                : "scale-90 opacity-50 cursor-not-allowed"
-            }`}
+            className={`ml-2 px-3 py-2 bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 flex items-center transition-all duration-500 transform ${selectedItemId
+              ? "scale-100 opacity-100"
+              : "scale-90 opacity-50 cursor-not-allowed"
+              }`}
             disabled={!selectedItemId}
           >
             <X className="h-7 w-5" />
