@@ -21,7 +21,6 @@ import { useTranslation } from "react-i18next";
 export default function PharmaDashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-
   // Define the chart data type
   type ChartDataPoint = {
     name: string;
@@ -155,7 +154,7 @@ export default function PharmaDashboard() {
 
   const inventoryData = [
     { id: 1, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
-    { id: 2, name: "Amoxilin", amount: "15 pcs", status:t('in_stock') },
+    { id: 2, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
     { id: 3, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
     { id: 4, name: "Amoxilin", amount: "0 pcs", status: t('out_of_stock') },
   ];
