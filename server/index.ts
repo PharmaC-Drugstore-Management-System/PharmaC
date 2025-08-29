@@ -8,7 +8,6 @@ import { initWebSocket } from './ws';
 const PORT = process.env.PORT || 5000;
 
 const server = createServer(app);
-initWebSocket(server); // <-- attach WS to the server that will listen
 
 // Initialize WebSocket
 const io = initWebSocket(server);
