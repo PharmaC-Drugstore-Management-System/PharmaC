@@ -7,7 +7,6 @@ import {
   FileText,
   Settings,
   ClipboardCheck,
-  Trophy,
   ShoppingCart
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // <-- Add this line

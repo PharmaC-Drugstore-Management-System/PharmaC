@@ -56,6 +56,8 @@ const paymentService = {
   check: async (pi: any) => {
     try {
       const retrieveIntent = await stripe.paymentIntents.retrieve(`${pi}`);
+      if(retrieveIntent)
+        
       return retrieveIntent.status;
     } catch (error) {}
   },

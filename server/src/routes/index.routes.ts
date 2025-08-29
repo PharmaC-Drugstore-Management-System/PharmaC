@@ -28,6 +28,8 @@ router.use("/customer", customerRoute);
 
 import signatureRoute from "./signature.routes.ts"
 router.use("/signature", signatureRoute);
+import revenueRoute from "./revenue.routes.ts"
+router.use("/revenue",revenueRoute)
 
 import paymentRoute from "./payment.routes.ts"
 router.use("/payment", paymentRoute)

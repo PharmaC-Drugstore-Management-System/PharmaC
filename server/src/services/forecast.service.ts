@@ -30,7 +30,7 @@ const forecast_service = {
   getForecastService: async (
     historicalData: HistoricalData[],
     forecastPeriods: number = 12,
-    testSizeMonths: number = 6
+    testSizeMonths: number = 6,
   ): Promise<ForecastResult> => {
     return new Promise((resolve, reject) => {
       const inputData = JSON.stringify({
