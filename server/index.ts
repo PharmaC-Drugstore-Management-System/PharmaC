@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 import { createServer } from 'http';
@@ -7,8 +7,8 @@ import { initWebSocket } from './ws';
 
 const PORT = process.env.PORT || 5000;
 
-// Create HTTP server instead of using app.listen()
 const server = createServer(app);
+initWebSocket(server); // <-- attach WS to the server that will listen
 
 // Initialize WebSocket
 const io = initWebSocket(server);
@@ -23,11 +23,10 @@ server.listen(PORT, () => {
   console.log(`📱 Customer Display: http://localhost:5173/customer-payment`);
 });
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n👋 Shutting down server...');
+process.on("SIGINT", () => {
+  console.log("\n👋 Shutting down server...");
   server.close(() => {
-    console.log('✅ Server closed successfully');
+    console.log("✅ Server closed successfully");
     process.exit(0);
   });
 });

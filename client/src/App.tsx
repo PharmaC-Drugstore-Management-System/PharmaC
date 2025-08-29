@@ -26,6 +26,7 @@ import POSPage from "./pages/POSPage.tsx";
 import TermsConditionsPage from "./pages/TermConditionPage.tsx";
 import ContactUsPage from "./pages/ContactUsPage.tsx";
 import { useEffect } from 'react';
+import LotPage from "./pages/InventoryLotPage.tsx";
 
 function AppContent() {
   const location = useLocation();
@@ -68,7 +69,7 @@ function AppContent() {
     <div className="flex h-screen bg-[#FAF9F8]">
       {/* Conditionally render Navbar */}
       {!hideNavAndHeader && <Navbar />}
-      
+
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Conditionally render Header */}
@@ -77,13 +78,13 @@ function AppContent() {
             <Header />
           </div>
         )}
-        
+
         {/* Page content */}
         <div className={`flex-1 overflow-y-auto ${!hideNavAndHeader ? 'p-6' : ''}`}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            
+
             {/* Protected Routes for Admin/Staff */}
             <Route path="/" element={
               <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
@@ -91,14 +92,19 @@ function AppContent() {
               </ProtectedRoute>
             } />
             <Route path="/add-medicine" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
-                <AddMedicinePage />
-              </ProtectedRoute>
+              // <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <AddMedicinePage />
+              // </ProtectedRoute>
             } />
             <Route path="/inventory" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
-                <PharmacInventoryPage />
-              </ProtectedRoute>
+              // <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <PharmacInventoryPage />
+              // </ProtectedRoute>
+            } />
+            <Route path="/inventory/:id" element={
+              // <ProtectedRoute allowedRoles={['Owner','Staff']}>
+              <LotPage />
+              // </ProtectedRoute>
             } />
             <Route path="/settings" element={
               <ProtectedRoute allowedRoles={['Owner']}>
@@ -170,14 +176,14 @@ function AppContent() {
                 <ContactUsPage />
               </ProtectedRoute>
             } />
-            
+
             {/* POS accessible by Owner and Staff only */}
             <Route path="/pos" element={
               <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
                 <POSPage />
               </ProtectedRoute>
             } />
-            
+
             {/* Customer Payment Page - Customer only */}
             <Route path="/customer-payment" element={
               <ProtectedRoute allowedRoles={['Customer']}>
