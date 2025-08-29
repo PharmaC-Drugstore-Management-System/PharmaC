@@ -298,7 +298,7 @@ const PurchaseOrderDocument = () => {
         userID: userID,
         description: `Purchase Order ${orderData.orderNumber}`,
         frontendURL: window.location.href, 
-        issueDate: orderData.issueDate,
+        issueDate: new Date().toISOString(), // Use current timestamp
         preparedBy: orderData.preparedBy,
         signatureId: savedSignature?.id, // Include signature ID for reference
         // Send the data that should appear in the PDF

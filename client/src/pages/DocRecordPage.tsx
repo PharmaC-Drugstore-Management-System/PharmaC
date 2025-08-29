@@ -190,7 +190,12 @@ export default function DocumentRecord() {
                     <p className="text-xs text-gray-400">
                       {new Date(doc.issue_date).toLocaleDateString('en-US', {
                         month: 'short',
-                        day: 'numeric'
+                        day: 'numeric',
+                        year: 'numeric'
+                      })} • {new Date(doc.issue_date).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
                       })}
                     </p>
                     <p className="text-xs text-blue-600 truncate" title={doc.pdf_filename}>

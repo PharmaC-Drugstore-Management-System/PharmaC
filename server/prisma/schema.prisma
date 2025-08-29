@@ -207,7 +207,7 @@ model product {
 
 model purchase_document {
   description          String?       @db.VarChar
-  issue_date           DateTime?     @db.Date
+  issue_date           DateTime?     @db.Timestamp(6)
   document_id          Int?
   employee_id          Int?
   pdf_file             Bytes?
