@@ -329,4 +329,6 @@ model po_signature {
   id                Int                 @id(map: "po_signature_pk") @default(autoincrement())
   signature_image   String?             @db.VarChar(500)
   purchase_document purchase_document[]
+
+  @@map("po_signature")
 }

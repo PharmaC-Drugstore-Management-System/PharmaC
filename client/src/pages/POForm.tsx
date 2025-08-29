@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Upload, Image } from 'lucide-react';
 import { useNavigate} from 'react-router-dom';
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom';
+import SignaturePad from '../components/SignaturePad';
 
 const SupplierDetailsForm = () => {
   const location = useLocation();
@@ -28,10 +29,25 @@ const SupplierDetailsForm = () => {
     comments: ''
   });
 
+  // State for signatures
+  const [signatures, setSignatures] = useState<{
+    purchaser: string | null;
+  }>({
+    purchaser: null
+  });
+
   const handleInputChange = (field: string, value: string | null) => {
     setSupplierDetails(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  // Handler for signature changes
+  const handleSignatureChange = (type: 'purchaser', signature: string | null) => {
+    setSignatures(prev => ({
+      ...prev,
+      [type]: signature
     }));
   };
 
@@ -73,6 +89,7 @@ const SupplierDetailsForm = () => {
     address: (supplierDetails.address || '').toString().trim().length > 0,
     issueDate: (supplierDetails.issueDate || '').toString().trim().length > 0,
     preparedBy: (supplierDetails.preparedBy || '').toString().trim().length > 0,
+    purchaserSignature: signatures.purchaser !== null,
   };
 
   const isFormValid = Object.values(validate).every(Boolean);
@@ -85,6 +102,7 @@ const SupplierDetailsForm = () => {
       address: true,
       issueDate: true,
       preparedBy: true,
+      purchaserSignature: true,
     });
   };
 
@@ -95,7 +113,12 @@ const SupplierDetailsForm = () => {
       markTouchedAll();
       return;
     }
-    const payload = { items: location.state?.selectedOrderItems || [], supplierDetails, total: 0 };
+    const payload = { 
+      items: location.state?.selectedOrderItems || [], 
+      supplierDetails, 
+      signatures,
+      total: 0 
+    };
     payload.total = payload.items.reduce((s:any,it:any)=> s + ((it.price||it.unitPrice||0) * (it.amount||it.quantity||0)), 0);
 
     // persist locally so PODoc can show immediately
@@ -106,7 +129,13 @@ const SupplierDetailsForm = () => {
     }
 
   // navigate directly to PODoc (remove server PDF save)
-  navigate('/podoc', { state: { selectedItems: payload.items, supplierDetails: payload.supplierDetails } });
+  navigate('/podoc', { 
+    state: { 
+      selectedItems: payload.items, 
+      supplierDetails: payload.supplierDetails,
+      signatures: payload.signatures
+    } 
+  });
 
   };
 
@@ -360,6 +389,25 @@ const SupplierDetailsForm = () => {
                       rows={2}
                       className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-400 resize-none"
                     />
+                  </div>
+                </div>
+
+                {/* Signatures Section */}
+                <div className="mt-8">
+                  <h3 className="text-lg font-medium text-gray-700 mb-6">Digital Signature</h3>
+                  <div className="w-full">
+                    {/* Purchaser Signature Only */}
+                    <div>
+                      <SignaturePad
+                        onSignatureChange={(sig) => handleSignatureChange('purchaser', sig)}
+                        signerName={supplierDetails.preparedBy || username}
+                        signerRole="Purchaser"
+                        value={signatures.purchaser}
+                      />
+                      {touched.purchaserSignature && !validate.purchaserSignature && (
+                        <p className="mt-1 text-sm text-red-600">Purchaser signature is required</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
