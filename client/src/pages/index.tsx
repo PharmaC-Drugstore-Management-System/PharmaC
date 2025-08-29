@@ -17,24 +17,32 @@ import { ShoppingCart } from "lucide-react";
 
 
 export default function PharmaDashboard() {
+  const forecastRevenue = async () => {
+    try {
+      const info = await fetch('http://localhost:5000/arima/forecast', {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({
+          forecastPeriods: 6,
+          testSizeMonths: 6,
+        }),
+      })
+      const data = await info.json()
+      console.log("DATA ->", data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   // Sample data for the charts
-  // const forecastMonthly = async () => {
-  //   try {
-  //     const info =  await fetch('http://localhost:5000/arima/forecast', {
-  //       method: 'GET',
-  //       credentials: 'include'
-  //     })
-  //   } catch (error) {
-  //       console.error('Error fetching forecast data:', error);
-  //   }
-  // }
+
   const navigate = useNavigate();
   const revenueChartData = [
     { name: "Jan", actual: 26000, },
     { name: "Feb", actual: 27000, },
     { name: "Mar", actual: 28000, },
     { name: "Apr", actual: 22000, },
-    { name: "May", actual: 30000,  },
+    { name: "May", actual: 30000, },
     { name: "Jun", actual: 32000, projected: 32000 },
     { name: "Aug", projected: 29500 },
   ];
@@ -78,6 +86,7 @@ export default function PharmaDashboard() {
 
   useEffect(() => {
     checkme()
+    forecastRevenue()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
