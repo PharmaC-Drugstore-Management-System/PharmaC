@@ -37,11 +37,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const mapRoleIdToRoleName = (roleId: number | string): 'Owner' | 'Staff' | 'Customer' => {
     const id = typeof roleId === 'string' ? parseInt(roleId) : roleId;
     switch (id) {
-      case 1: return 'Staff'; // Admin -> Staff
+      case 1: return 'Customer'; // Admin -> Staff
       case 2: return 'Owner'; // Owner -> Owner
       case 3: return 'Staff'; // Employee -> Staff
       case 4: return 'Staff'; // Pharmacist -> Staff
-      case 8: return 'Customer'; // Customer -> Customer
+      // case 8: return 'Customer'; // Customer -> Customer
       default: return 'Customer'; // Default fallback
     }
   };

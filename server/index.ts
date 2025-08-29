@@ -3,18 +3,22 @@ dotenv.config();
 
 import { createServer } from 'http';
 import app from './src/app'; 
+import { initWebSocket } from './ws';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // Create HTTP server instead of using app.listen()
 const server = createServer(app);
+
+// Initialize WebSocket
+const io = initWebSocket(server);
 
 
 // Start server with Socket.IO
 server.listen(PORT, () => {
   console.log(`✅ Server is running on PORT ${PORT}`);
   console.log(`🔗 Access at http://localhost:${PORT}`);
-  console.log(`🔌 Socket.IO server initialized`);
+  console.log(`🔌 Socket.IO server initialized ${io}`);
   console.log(`🌐 Frontend URL: http://localhost:5173`);
   console.log(`📱 Customer Display: http://localhost:5173/customer-payment`);
 });
@@ -27,3 +31,4 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
+ 
