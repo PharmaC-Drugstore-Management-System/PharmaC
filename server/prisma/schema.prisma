@@ -206,20 +206,22 @@ model product {
 }
 
 model purchase_document {
-  description          String?   @db.VarChar
-  issue_date           DateTime? @db.Date
+  description          String?       @db.VarChar
+  issue_date           DateTime?     @db.Timestamp(6)
   document_id          Int?
   employee_id          Int?
   pdf_file             Bytes?
-  pdf_filename         String?   @db.VarChar(100)
-  pdf_mime             String?   @db.VarChar(100)
-  purchase_document_id Int       @id @default(autoincrement())
+  pdf_filename         String?       @db.VarChar(100)
+  pdf_mime             String?       @db.VarChar(100)
+  purchase_document_id Int           @id @default(autoincrement())
   store_id             Int?
   suplier_id           Int?
-  document             document? @relation(fields: [document_id], references: [document_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_document_fk")
-  employee             employee? @relation(fields: [employee_id], references: [employee_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_employee_fk")
-  store                store?    @relation(fields: [store_id], references: [store_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_store_fk")
-  supplier             supplier? @relation(fields: [suplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_supplier_fk")
+  signature_fk         Int?
+  document             document?     @relation(fields: [document_id], references: [document_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_document_fk")
+  employee             employee?     @relation(fields: [employee_id], references: [employee_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_employee_fk")
+  po_signature         po_signature? @relation(fields: [signature_fk], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_po_signature_fk")
+  store                store?        @relation(fields: [store_id], references: [store_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_store_fk")
+  supplier             supplier?     @relation(fields: [suplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_supplier_fk")
 }
 
 model quantity {
@@ -319,4 +321,12 @@ model trend {
   metrics           metrics?     @relation(fields: [metric_id_fk], references: [metrics_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_metrics_fk")
   product           product?     @relation(fields: [product_id_fk], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_product_fk")
   time_period       time_period? @relation(fields: [time_id_fk], references: [time_period_id], onDelete: NoAction, onUpdate: NoAction, map: "trend_time_period_fk")
+}
+
+model po_signature {
+  signer_name       String              @db.VarChar(255)
+  signed_at         DateTime?           @db.Timestamp(6)
+  id                Int                 @id(map: "po_signature_pk") @default(autoincrement())
+  signature_image   String?             @db.VarChar(500)
+  purchase_document purchase_document[]
 }
