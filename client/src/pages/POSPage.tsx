@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, Plus, Minus, ShoppingCart,  Banknote, Trash2, X, User, Star, QrCode } from "lucide-react";
 import "../styles/pos.css";
 import { useNavigate } from "react-router-dom";
+import { io } from 'socket.io-client';
 
 interface Product {
   product_id: number;
@@ -54,6 +55,10 @@ export default function POSPage() {
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
   const [showRequiresActionModal, setShowRequiresActionModal] = useState(false);
   
+  // Auto verification states
+  const [isAutoVerifying, setIsAutoVerifying] = useState(false);
+  const [autoVerifyInterval, setAutoVerifyInterval] = useState<NodeJS.Timeout | null>(null);
+  
   // Member System States
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberPhone, setMemberPhone] = useState("");
@@ -79,7 +84,60 @@ export default function POSPage() {
     fetchProducts();
     checkme();
     loadQuickCustomers();
-  }, []);
+
+    // Initialize socket connection
+    const socket = io('http://localhost:5000');
+
+    // Listen for payment status updates
+    socket.on('payment-status-update', (data: any) => {
+      console.log('💳 Payment status update received:', data);
+      console.log('🔍 Current paymentIntentId:', paymentIntentId);
+      console.log('🔍 Received paymentIntentId:', data.paymentIntentId);
+
+      // Check if this payment update is for current order
+      if (paymentIntentId && data.paymentIntentId === paymentIntentId) {
+        console.log('📦 Payment update matches current order');
+
+        // Stop auto verification when status update received
+        if (autoVerifyInterval) {
+          clearInterval(autoVerifyInterval);
+          setAutoVerifyInterval(null);
+          setIsAutoVerifying(false);
+          console.log('🛑 Auto verification stopped due to status update');
+        }
+
+        if (data.status === 'completed' || data.status === 'succeeded') {
+          console.log('✅ Payment completed - showing success modal');
+          setQrPaymentStatus('success');
+          setShowRequiresActionModal(false);
+          setShowPaymentSuccessModal(true);
+          
+          // Call API to update database status without emitting WebSocket
+          console.log('🔄 Updating database status...');
+          updateDatabaseStatus();
+          
+          // Add points if member exists
+          if (currentMember) {
+            addPoints();
+            console.log("Adding points automatically after payment success");
+          }
+        } else if (data.status === 'failed' || data.status === 'canceled') {
+          console.log('❌ Payment failed');
+          setQrPaymentStatus('failed');
+          setShowPaymentSuccessModal(false);
+          setShowRequiresActionModal(false);
+          setErrorMessage(`Payment ${data.status} - Please try again`);
+          setShowErrorPopup(true);
+          setTimeout(() => setShowErrorPopup(false), 5000);
+        }
+      }
+    });
+
+    // Cleanup socket connection on unmount
+    return () => {
+      socket.disconnect();
+    };
+  }, [paymentIntentId, currentMember]);
 
   const loadQuickCustomers = async () => {
     try {
@@ -431,6 +489,13 @@ export default function POSPage() {
         console.log('Stored Order ID:', result.data.order_id);
         console.log('Stored Payment Intent ID:', result.data.pi);
         
+        // Start auto verification after QR Code is sent successfully
+        setTimeout(() => {
+          console.log('🎯 Attempting to start auto verification...');
+          console.log('📋 Current states:', { orderId, paymentIntentId, isAutoVerifying });
+          startAutoVerification();
+        }, 2000); // Wait 2 seconds before starting auto verification
+        
         // Auto-hide success popup after 3 seconds
         setTimeout(() => {
           setShowSuccessPopup(false);
@@ -499,6 +564,14 @@ export default function POSPage() {
       setShowErrorPopup(true);
       setTimeout(() => setShowErrorPopup(false), 5000);
       return;
+    }
+
+    // Stop auto verification when manual verification is triggered
+    if (autoVerifyInterval) {
+      clearInterval(autoVerifyInterval);
+      setAutoVerifyInterval(null);
+      setIsAutoVerifying(false);
+      console.log('🛑 Auto verification stopped - manual verification initiated');
     }
 
     setIsVerifyingPayment(true);
@@ -583,6 +656,162 @@ export default function POSPage() {
       setTimeout(() => setShowErrorPopup(false), 5000);
     } finally {
       setIsVerifyingPayment(false);
+    }
+  };
+
+  // Update database status without WebSocket emission (for WebSocket events)
+  const updateDatabaseStatus = async () => {
+    if (!orderId || !paymentIntentId) {
+      console.log('❌ Missing orderId or paymentIntentId for database update');
+      return;
+    }
+
+    try {
+      console.log('📊 Updating database status for order:', orderId);
+      
+      const response = await fetch('http://localhost:5000/payment/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          order_id: orderId,
+          pi: paymentIntentId,
+          skipWebSocket: true  // Skip WebSocket emission to prevent loop
+        })
+      });
+
+      const result = await response.json();
+      console.log('📊 Database status update result:', result);
+      
+      if (result.success && result.status === 'succeeded') {
+        console.log('✅ Database status updated successfully');
+      }
+    } catch (error) {
+      console.error('❌ Error updating database status:', error);
+    }
+  };
+
+  // Start auto verification with polling
+  const startAutoVerification = () => {
+    console.log('🎯 startAutoVerification called');
+    console.log('📋 Validation check:', { 
+      orderId: !!orderId, 
+      paymentIntentId: !!paymentIntentId, 
+      isAutoVerifying,
+      orderIdValue: orderId,
+      paymentIntentIdValue: paymentIntentId 
+    });
+    
+    if (!orderId || !paymentIntentId || isAutoVerifying) {
+      console.log('❌ Cannot start auto verification:', { orderId, paymentIntentId, isAutoVerifying });
+      return;
+    }
+
+    console.log('🚀 Starting auto verification for order:', orderId);
+    setIsAutoVerifying(true);
+
+    const interval = setInterval(async () => {
+      try {
+        console.log('🔍 Auto verification check...');
+        
+        const response = await fetch('http://localhost:5000/payment/check', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            order_id: orderId,
+            pi: paymentIntentId
+          })
+        });
+
+        const result = await response.json();
+        console.log('🔍 Auto verification result:', result);
+        
+        if (result.success && result.status === 'succeeded') {
+          console.log('✅ Auto verification success!');
+          clearInterval(interval);
+          setAutoVerifyInterval(null);
+          setIsAutoVerifying(false);
+          setQrPaymentStatus('success');
+          
+          if (currentMember) {
+            addPoints();
+          }
+          setShowRequiresActionModal(false);
+          setShowPaymentSuccessModal(true);
+        } else if (result.status === 'failed' || result.status === 'canceled') {
+          console.log('❌ Auto verification failed');
+          clearInterval(interval);
+          setAutoVerifyInterval(null);
+          setIsAutoVerifying(false);
+          setQrPaymentStatus('failed');
+          setErrorMessage(`Payment ${result.status} - Please try again`);
+          setShowErrorPopup(true);
+          setTimeout(() => setShowErrorPopup(false), 5000);
+        }
+        // Continue polling for pending status
+      } catch (error) {
+        console.error('Auto verification error:', error);
+      }
+    }, 3000); // Check every 3 seconds
+
+    setAutoVerifyInterval(interval);
+
+    // Stop auto verification after 5 minutes
+    setTimeout(() => {
+      if (interval) {
+        console.log('⏱️ Auto verification timeout after 5 minutes');
+        clearInterval(interval);
+        setAutoVerifyInterval(null);
+        setIsAutoVerifying(false);
+      }
+    }, 300000); // 5 minutes
+  };
+
+  // Handle new transaction - reset all states including auto verification
+  const handleNewTransaction = () => {
+    // Stop auto verification
+    if (autoVerifyInterval) {
+      clearInterval(autoVerifyInterval);
+      setAutoVerifyInterval(null);
+      setIsAutoVerifying(false);
+    }
+
+    // Reset all payment states
+    setShowPaymentSuccessModal(false);
+    setShowQRConfirmModal(false);
+    setCart([]);
+    setQrSentToDisplay(false);
+    setOrderId(null);
+    setPaymentIntentId(null);
+    setQrPaymentStatus('pending');
+    setQrCodeData(null);
+    setSelectedPayment('cash');
+    setIsVerifyingPayment(false);
+    
+    console.log('🔄 New transaction started, all states reset');
+  };
+
+  // Get dynamic button text based on verification state
+  const getPaymentButtonText = () => {
+    if (qrSentToDisplay && selectedPayment === "promptpay") {
+      if (isAutoVerifying) {
+        return "กำลังตรวจสอบอัตโนมัติ...";
+      } else if (isVerifyingPayment) {
+        return "กำลังตรวจสอบ...";
+      } else {
+        return "ตรวจสอบการชำระเงิน";
+      }
+    } else {
+      if (isProcessing) {
+        return "กำลังประมวลผล...";
+      } else {
+        return "ชำระเงิน";
+      }
     }
   };
 
@@ -800,14 +1029,7 @@ export default function POSPage() {
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
                 >
-                  {qrSentToDisplay && selectedPayment === "promptpay"
-                    ? isVerifyingPayment
-                      ? "Verifying..."
-                      : "Verify Payment"
-                    : isProcessing
-                    ? "กำลังประมวลผล..."
-                    : "ชำระเงิน"
-                  }
+                  {getPaymentButtonText()}
                 </button>
               </>
             )}
@@ -1415,25 +1637,7 @@ export default function POSPage() {
                 Print Receipt
               </button>
               <button
-                onClick={() => {
-                  // Reset all states and prepare for new transaction
-                  setShowPaymentSuccessModal(false);
-                  setShowQRConfirmModal(false);
-                  setCart([]);
-                  setQrSentToDisplay(false);
-                  setOrderId(null);
-                  setPaymentIntentId(null);
-                  setQrPaymentStatus('pending');
-                  setQrCodeData(null);
-                  setSelectedPayment('cash');
-                  
-                  // Refresh notifications to show latest orders
-                  if ((window as any).refreshNotifications) {
-                    (window as any).refreshNotifications();
-                  }
-                  
-                  window.location.reload();
-                }}
+                onClick={handleNewTransaction}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium"
               >
                 New Transaction

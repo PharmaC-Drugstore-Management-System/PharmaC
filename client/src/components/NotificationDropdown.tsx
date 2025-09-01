@@ -1,4 +1,4 @@
-import { Clock, Package, User, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { Clock, Package, User, X, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -19,6 +19,7 @@ interface NotificationDropdownProps {
   onMarkAsRead: (id: string) => void;
   onMarkAllAsRead: () => void;
   onNotificationClick: (notification: Notification) => void;
+  socketConnected?: boolean; // เพิ่มสถานะ WebSocket connection
 }
 
 export default function NotificationDropdown({
@@ -27,7 +28,8 @@ export default function NotificationDropdown({
   onClose,
   onMarkAsRead,
   onMarkAllAsRead,
-  onNotificationClick
+  onNotificationClick,
+  socketConnected = false
 }: NotificationDropdownProps) {
   if (!isOpen) return null;
 
@@ -114,8 +116,24 @@ export default function NotificationDropdown({
       <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-96 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-          <h3 className="text-lg font-semibold text-gray-800">การแจ้งเตือน</h3>
           <div className="flex items-center space-x-2">
+            <h3 className="text-lg font-semibold text-gray-800">การแจ้งเตือน</h3>
+            <div className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`} 
+                 title={socketConnected ? 'Real-time connected' : 'Real-time disconnected'}></div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => {
+                console.log('🔄 Manual refresh notifications clicked');
+                if ((window as any).refreshNotifications) {
+                  (window as any).refreshNotifications();
+                }
+              }}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center space-x-1"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>รีเฟรช</span>
+            </button>
             {unreadCount > 0 && (
               <button
                 onClick={onMarkAllAsRead}

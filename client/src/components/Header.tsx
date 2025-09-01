@@ -315,11 +315,46 @@ export default function Header() {
       });
     });
     
+    // ฟัง payment status update เพื่ออัปเดต notification status
+    socketConnection.on('payment-status-update', (data: any) => {
+      console.log('💳 Payment status update received for notifications:', data);
+      
+      if (data.order_id && data.status) {
+        setNotifications(prev => {
+          return prev.map(notification => {
+            if (notification.orderId === data.order_id) {
+              const updatedStatus = data.status === 'completed' ? 'PAID' : 
+                                  data.status === 'failed' ? 'FAILED' : 
+                                  data.status === 'canceled' ? 'CANCELLED' : 
+                                  data.status.toUpperCase();
+              
+              console.log(`📋 Updating notification for order ${data.order_id}: ${notification.orderStatus} → ${updatedStatus}`);
+              
+              return {
+                ...notification,
+                orderStatus: updatedStatus,
+                message: notification.message.replace(
+                  /\([^)]*\)$/,
+                  `(${updatedStatus === 'PAID' ? 'ชำระแล้ว' : 
+                      updatedStatus === 'FAILED' ? 'ล้มเหลว' : 
+                      updatedStatus === 'CANCELLED' ? 'ยกเลิก' : 
+                      updatedStatus})`
+                ),
+                timestamp: data.timestamp || new Date().toISOString()
+              };
+            }
+            return notification;
+          });
+        });
+      }
+    });
+    
     socketConnection.on('disconnect', () => {
       console.log('Socket.IO disconnected');
     });
     
     setSocket(socketConnection);
+
     
     // Listen for page visibility change to refresh notifications
     const handleVisibilityChange = () => {
