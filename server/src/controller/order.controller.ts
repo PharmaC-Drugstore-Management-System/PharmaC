@@ -75,6 +75,13 @@ const controller = {
       };
 
       // Emit order to customer display via Socket.IO
+      console.log('📤 Emitting new order via WebSocket:', {
+        order_id: response.order?.order_id,
+        total_amount: response.order?.total_amount,
+        customer_id: response.order?.customer_id,
+        customer_name: response.order?.customer?.name || 'ลูกค้าทั่วไป'
+      });
+      
       emitOrderToCustomerDisplay({
         order: response.order,
         qrCode: qrcode.next_action?.promptpay_display_qr_code?.image_url_png,
@@ -96,10 +103,50 @@ const controller = {
         console.log("Error", error.message);
       return res.status(500).json({ status: false, error: error.message });
     }
+  },
 
+  getRecentOrders: async (req: any, res: any) => {
+    try {
+      // Get orders from last 24 hours
+      const twentyFourHoursAgo = new Date();
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
 
+      const response = await orderService.getRecentOrders(twentyFourHoursAgo);
+      
+      return res.status(200).json({
+        success: true, 
+        orders: response,
+        count: response?.length || 0
+      });
+    } catch (error: any) {
+      console.log("Error getting recent orders:", error.message);
+      return res.status(500).json({ 
+        success: false, 
+        error: error.message 
+      });
+    }
+  },
 
+  // เพิ่ม endpoint ใหม่สำหรับ latest orders โดยไม่จำกัดวันที่
+  getLatestOrders: async (req: any, res: any) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 20;
+      console.log('🔍 Getting latest orders with limit:', limit);
 
+      const response = await orderService.getLatestOrders(limit);
+      
+      return res.status(200).json({
+        success: true, 
+        orders: response,
+        count: response?.length || 0
+      });
+    } catch (error: any) {
+      console.log("Error getting latest orders:", error.message);
+      return res.status(500).json({ 
+        success: false, 
+        error: error.message 
+      });
+    }
   },
 
 
