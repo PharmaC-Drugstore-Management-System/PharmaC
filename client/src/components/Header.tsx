@@ -117,6 +117,9 @@ export default function Header() {
                               order.status === 'PENDING' ? 'รอชำระ' : 
                               order.status || 'ไม่ระบุ';
             
+            // Debug: log timestamp from order
+            console.log('📅 Order timestamp from API:', order.order_id, '→', order.date);
+            
             // ตรวจสอบว่า notification นี้เป็น unread อยู่แล้วหรือไม่
             const existingUnread = currentUnreadNotifications.find(n => n.orderId === order.order_id);
             const shouldBeRead = existingUnread ? false : markAsRead;
@@ -125,8 +128,8 @@ export default function Header() {
               id: `initial-${order.order_id}-${Date.now()}`,
               type: 'order' as const,
               title: 'Order ในระบบ',
-              message: `Order #${order.order_id} มีมูลค่า ฿${order.total_amount} (${statusText})`,
-              timestamp: order.date,
+              message: `Order #${order.order_id} มีมูลค่า ฿${order.total_amount}`,
+              timestamp: order.date || new Date().toISOString(), // ใช้ timestamp แทน date
               isRead: shouldBeRead, // คงสถานะ unread ถ้าเป็น notification ใหม่
               orderId: order.order_id,
               customerName: order.customer?.name || 'ลูกค้าทั่วไป',

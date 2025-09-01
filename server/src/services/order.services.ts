@@ -36,8 +36,7 @@ const orderService = {
                     customer_id:customer_id,
                     total_amount: total_amount,
                     total_price: total_price,
-                    date: new Date(),
-                    time: new Date(),
+                    date: new Date(), // ใช้ timestamp แทน time+date แยก
                     status: 'PENDING'
                 }
             });

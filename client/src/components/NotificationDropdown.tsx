@@ -93,6 +93,10 @@ export default function NotificationDropdown({
   const formatTime = (timestamp: string) => {
     const now = new Date();
     const time = new Date(timestamp);
+    
+    // Debug: log timestamp conversion
+    console.log('🕐 Formatting timestamp:', timestamp, '→', time.toLocaleString());
+    
     const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / 60000);
     
     if (diffInMinutes < 1) return 'เมื่อสักครู่';

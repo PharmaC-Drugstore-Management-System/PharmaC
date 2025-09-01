@@ -152,8 +152,7 @@ model model {
 }
 
 model order {
-  time              DateTime?       @db.Date
-  date              DateTime?       @db.Date
+  date              DateTime?       @db.Timestamp(6)
   total_amount      Int?
   total_price       Float?          @db.Real
   vat               Float?          @db.Real

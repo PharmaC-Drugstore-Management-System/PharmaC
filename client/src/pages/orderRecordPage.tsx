@@ -222,6 +222,9 @@ export default function OrderRecord() {
                       <div className="text-sm text-gray-900">
                         {order.date ? new Date(order.date).toLocaleDateString() : 'N/A'}
                       </div>
+                      <div className="text-xs text-gray-500">
+                        {order.date ? `(${new Date(order.date).toLocaleTimeString()})` : ''}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status || 'Pending')}`}>
