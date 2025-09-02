@@ -462,7 +462,7 @@ export default function Header() {
             }}
           >
             <Plus className="w-5 h-5 mr-2" />
-            สั่งซื้อยา
+           Buy Medicine
           </button>
 
           <div className="relative">

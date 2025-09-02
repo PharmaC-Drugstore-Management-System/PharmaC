@@ -296,7 +296,7 @@ export default function PharmaDashboard() {
             className="bg-green-600 hover:bg-green-700  text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
           >
             <ShoppingCart className="w-5 h-5" />
-            <span>เปิดขาย (POS)</span>
+            <span>Open Sale (POS)</span>
           </button>
         </div>
         {/* Charts Section */}

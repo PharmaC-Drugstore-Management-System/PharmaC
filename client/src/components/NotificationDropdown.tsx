@@ -29,6 +29,9 @@ export default function NotificationDropdown({
 }: NotificationDropdownProps) {
   if (!isOpen) return null;
 
+  // Check if dark mode is enabled
+  const isDark = document.documentElement.classList.contains('dark');
+
   // Debug: log notifications เมื่อ dropdown เปิด
   console.log('🔔 NotificationDropdown received notifications:', notifications.length);
   console.log('📋 First 3 notification order IDs:', notifications.slice(0, 3).map(n => n.orderId));
@@ -37,11 +40,14 @@ export default function NotificationDropdown({
   const getIcon = (type: string) => {
     switch (type) {
       case 'order':
-        return <Package className="w-8 h-8 text-blue-500 bg-blue-100 rounded-full p-1.5" />;
+        return <Package className="w-8 h-8 text-blue-500 rounded-full p-1.5"
+                        style={{backgroundColor: isDark ? '#1e3a8a' : '#dbeafe'}} />;
       case 'user':
-        return <User className="w-8 h-8 text-green-500 bg-green-100 rounded-full p-1.5" />;
+        return <User className="w-8 h-8 text-green-500 rounded-full p-1.5"
+                     style={{backgroundColor: isDark ? '#166534' : '#dcfce7'}} />;
       default:
-        return <Clock className="w-8 h-8 text-gray-500 bg-gray-100 rounded-full p-1.5" />;
+        return <Clock className="w-8 h-8 text-gray-500 rounded-full p-1.5"
+                      style={{backgroundColor: isDark ? '#4b5563' : '#f3f4f6'}} />;
     }
   };
 
@@ -54,7 +60,8 @@ export default function NotificationDropdown({
         return (
           <div className="flex items-center space-x-1">
             <CheckCircle className="w-4 h-4 text-green-500" />
-            <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-green-600 px-2 py-1 rounded-full"
+                  style={{backgroundColor: isDark ? '#166534' : '#dcfce7'}}>
               ชำระแล้ว
             </span>
           </div>
@@ -63,7 +70,8 @@ export default function NotificationDropdown({
         return (
           <div className="flex items-center space-x-1">
             <AlertCircle className="w-4 h-4 text-orange-500" />
-            <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-orange-600 px-2 py-1 rounded-full"
+                  style={{backgroundColor: isDark ? '#ea580c' : '#fed7aa'}}>
               รอชำระ
             </span>
           </div>
@@ -73,14 +81,19 @@ export default function NotificationDropdown({
         return (
           <div className="flex items-center space-x-1">
             <X className="w-4 h-4 text-red-500" />
-            <span className="text-xs font-medium text-red-600 bg-red-100 px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-red-600 px-2 py-1 rounded-full"
+                  style={{backgroundColor: isDark ? '#dc2626' : '#fecaca'}}>
               ยกเลิก
             </span>
           </div>
         );
       default:
         return (
-          <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+          <span className="text-xs font-medium px-2 py-1 rounded-full"
+                style={{
+                  color: isDark ? '#d1d5db' : '#4b5563',
+                  backgroundColor: isDark ? '#4b5563' : '#f3f4f6'
+                }}>
             {status}
           </span>
         );
@@ -108,11 +121,20 @@ export default function NotificationDropdown({
       <div className="fixed inset-0 z-40" onClick={onClose}></div>
       
       {/* Dropdown */}
-      <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-96 overflow-hidden">
+      <div className="absolute right-0 mt-2 w-80 rounded-lg shadow-2xl border z-50 max-h-96 overflow-hidden transition-colors duration-300"
+           style={{
+             backgroundColor: isDark ? '#374151' : 'white',
+             borderColor: isDark ? '#4b5563' : '#e5e7eb'
+           }}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-between p-4 border-b transition-colors duration-300"
+             style={{
+               borderColor: isDark ? '#4b5563' : '#e5e7eb',
+               backgroundColor: isDark ? '#4b5563' : '#f9fafb'
+             }}>
           <div className="flex items-center space-x-2">
-            <h3 className="text-lg font-semibold text-gray-800">การแจ้งเตือน</h3>
+            <h3 className="text-lg font-semibold transition-colors duration-300"
+                style={{color: isDark ? 'white' : '#1f2937'}}>การแจ้งเตือน</h3>
             <div className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`} 
                  title={socketConnected ? 'Real-time connected' : 'Real-time disconnected'}></div>
           </div>
@@ -124,7 +146,16 @@ export default function NotificationDropdown({
                   (window as any).refreshNotifications();
                 }
               }}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center space-x-1"
+              className="text-sm font-medium flex items-center space-x-1 transition-colors duration-200"
+              style={{color: isDark ? '#60a5fa' : '#2563eb'}}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = isDark ? '#93c5fd' : '#1d4ed8';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = isDark ? '#60a5fa' : '#2563eb';
+              }}
             >
               <RefreshCw className="w-3 h-3" />
               <span>รีเฟรช</span>
@@ -132,7 +163,16 @@ export default function NotificationDropdown({
           
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="transition-colors duration-200"
+              style={{color: isDark ? '#9ca3af' : '#6b7280'}}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = isDark ? '#d1d5db' : '#4b5563';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = isDark ? '#9ca3af' : '#6b7280';
+              }}
             >
               <X className="w-5 h-5" />
             </button>
@@ -142,9 +182,11 @@ export default function NotificationDropdown({
         {/* Notifications List */}
         <div className="max-h-80 overflow-y-auto">
           {notifications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm">ไม่มีการแจ้งเตือน</p>
+            <div className="p-8 text-center">
+              <Clock className="w-12 h-12 mx-auto mb-3 transition-colors duration-300"
+                     style={{color: isDark ? '#6b7280' : '#d1d5db'}} />
+              <p className="text-sm transition-colors duration-300"
+                 style={{color: isDark ? '#9ca3af' : '#6b7280'}}>ไม่มีการแจ้งเตือน</p>
             </div>
           ) : (
             notifications.map((notification) => (
@@ -154,9 +196,25 @@ export default function NotificationDropdown({
                   onNotificationClick(notification);
                  
                 }}
-                className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                  !notification.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                className={`p-4 border-b cursor-pointer transition-colors duration-200 ${
+                  !notification.isRead ? 'border-l-4 border-l-blue-500' : ''
                 }`}
+                style={{
+                  borderColor: isDark ? '#4b5563' : '#f3f4f6',
+                  backgroundColor: !notification.isRead 
+                    ? (isDark ? '#1e3a8a' : '#eff6ff')
+                    : 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  const target = e.target as HTMLDivElement;
+                  if (!notification.isRead) return;
+                  target.style.backgroundColor = isDark ? '#4b5563' : '#f9fafb';
+                }}
+                onMouseLeave={(e) => {
+                  const target = e.target as HTMLDivElement;
+                  if (!notification.isRead) return;
+                  target.style.backgroundColor = 'transparent';
+                }}
               >
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
@@ -165,20 +223,31 @@ export default function NotificationDropdown({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className={`text-sm font-medium ${
-                          !notification.isRead ? 'text-gray-900' : 'text-gray-700'
-                        }`}>
+                        <h4 className={`text-sm font-medium transition-colors duration-300 ${
+                          !notification.isRead ? '' : ''
+                        }`}
+                            style={{
+                              color: !notification.isRead 
+                                ? (isDark ? 'white' : '#111827')
+                                : (isDark ? '#e5e7eb' : '#374151')
+                            }}>
                           {notification.title}
                         </h4>
-                        <p className={`text-sm mt-1 ${
-                          !notification.isRead ? 'text-gray-800' : 'text-gray-600'
-                        }`}>
+                        <p className={`text-sm mt-1 transition-colors duration-300 ${
+                          !notification.isRead ? '' : ''
+                        }`}
+                           style={{
+                             color: !notification.isRead 
+                               ? (isDark ? '#d1d5db' : '#1f2937')
+                               : (isDark ? '#9ca3af' : '#4b5563')
+                           }}>
                           {notification.message}
                         </p>
                         
                         {/* แสดงชื่อลูกค้า */}
                         {notification.customerName && (
-                          <p className="text-xs text-blue-600 mt-1">
+                          <p className="text-xs mt-1 transition-colors duration-300"
+                             style={{color: isDark ? '#60a5fa' : '#2563eb'}}>
                             ลูกค้า: {notification.customerName}
                           </p>
                         )}
@@ -194,7 +263,8 @@ export default function NotificationDropdown({
                         <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-2"></div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs mt-2 transition-colors duration-300"
+                       style={{color: isDark ? '#6b7280' : '#9ca3af'}}>
                       {formatTime(notification.timestamp)}
                     </p>
                   </div>
@@ -206,8 +276,21 @@ export default function NotificationDropdown({
 
         {/* Footer */}
         {notifications.length > 0 && (
-          <div className="p-3 bg-gray-50 border-t border-gray-200">
-            <button className="w-full text-sm text-blue-600 hover:text-blue-800 font-medium py-2">
+          <div className="p-3 border-t transition-colors duration-300"
+               style={{
+                 backgroundColor: isDark ? '#4b5563' : '#f9fafb',
+                 borderColor: isDark ? '#4b5563' : '#e5e7eb'
+               }}>
+            <button className="w-full text-sm font-medium py-2 transition-colors duration-200"
+                    style={{color: isDark ? '#60a5fa' : '#2563eb'}}
+                    onMouseEnter={(e) => {
+                      const target = e.target as HTMLButtonElement;
+                      target.style.color = isDark ? '#93c5fd' : '#1d4ed8';
+                    }}
+                    onMouseLeave={(e) => {
+                      const target = e.target as HTMLButtonElement;
+                      target.style.color = isDark ? '#60a5fa' : '#2563eb';
+                    }}>
               ดูการแจ้งเตือนทั้งหมด
             </button>
           </div>

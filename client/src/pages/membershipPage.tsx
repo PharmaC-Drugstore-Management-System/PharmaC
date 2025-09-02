@@ -349,18 +349,18 @@ export default function MemberManagementPage() {
           <div className="flex items-center">
             <div className="w-1 h-8 bg-green-600 mr-2"></div>
             <h2 className="text-xl font-bold"
-                style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>จัดการสมาชิก</h2>
+                style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Membership Management</h2>
           </div>
           <button
             onClick={() => setShowAddMemberModal(true)}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <UserPlus className="w-4 h-4" />
-            เพิ่มสมาชิกใหม่
+            Add New Member
           </button>
         </div>
         <p className="mt-1"
-           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>รายชื่อลูกค้าที่เป็นสมาชิกทั้งหมด</p>
+           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Complete list of all member customers</p>
       </div>
 
       {/* Stats Cards */}
@@ -375,7 +375,7 @@ export default function MemberManagementPage() {
               <Users className="w-8 h-8 text-blue-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">สมาชิกทั้งหมด</p>
+              <p className="text-sm font-medium text-gray-500">Total Members</p>
               <p className="text-2xl font-bold text-gray-900" style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {members.length}
               </p>
@@ -417,7 +417,7 @@ export default function MemberManagementPage() {
             <div className="ml-3">
               <p className="text-sm font-medium"
                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                สมาชิกใหม่เดือนนี้
+                New Members This Month
               </p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
@@ -444,7 +444,7 @@ export default function MemberManagementPage() {
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium"
-                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>คะแนนรวม</p>
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Total Points</p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {members.reduce((sum, m) => sum + m.score, 0)}
@@ -461,7 +461,7 @@ export default function MemberManagementPage() {
                   style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}} />
           <input
             type="text"
-            placeholder="ค้นหาสมาชิก (ชื่อ, เบอร์โทร, อีเมล)..."
+            placeholder="Search members (name, phone, email)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -485,19 +485,19 @@ export default function MemberManagementPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold"
                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-              รายชื่อสมาชิก
+              Member List
             </h2>
             <div className="flex items-center space-x-4">
               <span className="text-sm"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                ทั้งหมด {filteredMembers.length} คน
+                Total {filteredMembers.length} members
               </span>
               <button
                 onClick={() => setShowRankingSection(!showRankingSection)}
                 className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
               >
                 <Trophy className="w-4 h-4" />
-                {showRankingSection ? "ซ่อน" : "แสดง"}อันดับ
+                {showRankingSection ? "Hide" : "Show"} Rankings
               </button>
             </div>
           </div>
@@ -509,33 +509,33 @@ export default function MemberManagementPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  สมาชิก
+                  Member
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  เพศ
+                  Gender
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  ข้อมูลติดต่อ
+                  Contact Info
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  วันเกิด
+                  Birthday
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  ระดับสมาชิก
+                  Membership Level
                 </th>
                 {showRankingSection && (
                   <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                    คะแนน/อันดับ
+                    Points/Rank
                   </th>
                 )}
                 <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  จัดการ
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -570,7 +570,7 @@ export default function MemberManagementPage() {
                              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                           <Calendar className="w-3 h-3"
                                     style={{color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'}} />
-                          สมัคร:{" "}
+                          Joined:{" "}
                           {new Date(member.joinDate).toLocaleDateString(
                             "th-TH"
                           )}
@@ -602,7 +602,7 @@ export default function MemberManagementPage() {
                          style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                       {member.birthday
                         ? new Date(member.birthday).toLocaleDateString("th-TH")
-                        : "ไม่ระบุ"}
+                        : "Not specified"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -619,11 +619,11 @@ export default function MemberManagementPage() {
                       <div className="text-sm">
                         <div className="font-semibold"
                              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                          {member.score} คะแนน
+                          {member.score} Points
                         </div>
                         <div className="text-xs"
                              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                          อันดับ #{member.rank}
+                          Rank #{member.rank}
                         </div>
                       </div>
                     </td>

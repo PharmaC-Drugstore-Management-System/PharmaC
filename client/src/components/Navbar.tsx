@@ -46,15 +46,15 @@ export default function NavbarComponent() {
   const navigate = useNavigate(); // <-- Add this line
 
   const navigationItems = [
-    { name: 'หน้าหลัก', icon: LayoutGrid, path: '/' },
-    { name: 'คลังสินค้า', icon: Inbox, path: '/inventory' },
-    { name: 'จุดขาย', icon: ShoppingCart, path: '/pos' },
-    { name: 'สถิติ', icon: BarChart3, path: '/statistic' },
-    { name: 'ติดตามหมดอายุ', icon: Clock, path: '/expiry-monitor' },
-    { name: 'บันทึกเอกสาร', icon: FileText, path: '/doc-record' },
-    { name: 'บันทึกคำสั่งซื้อ', icon: ClipboardCheck, path: '/order-record' },
-    { name: 'จัดการสมาชิก', icon: null, path: '/membership' }, // Custom icon
-    { name: 'ตั้งค่า', icon: Settings, path: '/settings' }
+    { name: 'Home', icon: LayoutGrid, path: '/' },
+    { name: 'Inventory', icon: Inbox, path: '/inventory' },
+    { name: 'Point of Sale', icon: ShoppingCart, path: '/pos' },
+    { name: 'Statistics', icon: BarChart3, path: '/statistic' },
+    { name: 'Expiry Monitor', icon: Clock, path: '/expiry-monitor' },
+    { name: 'Document Records', icon: FileText, path: '/doc-record' },
+    { name: 'Order Records', icon: ClipboardCheck, path: '/order-record' },
+    { name: 'Membership Management', icon: null, path: '/membership' }, // Custom icon
+    { name: 'Settings', icon: Settings, path: '/settings' }
   ];
 
   const handleTabClick = (index: number): void => {

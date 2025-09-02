@@ -412,7 +412,7 @@ export default function POSPage() {
       } else {
         console.error("Payment processing error:", error);
       }
-      alert("เกิดข้อผิดพลาดในการชำระเงิน");
+      alert("Payment processing error occurred");
     } finally {
       setIsProcessing(false);
     }
@@ -506,10 +506,10 @@ export default function POSPage() {
     } catch (error) {
       if (error instanceof Error) {
         console.error("Payment processing error:", error.message);
-        setErrorMessage(`เกิดข้อผิดพลาดในการชำระเงิน: ${error.message}`);
+        setErrorMessage(`Payment processing error: ${error.message}`);
       } else {
         console.error("Payment processing error:", error);
-        setErrorMessage("เกิดข้อผิดพลาดในการชำระเงิน");
+        setErrorMessage("Payment processing error occurred");
       }
       
       setShowErrorPopup(true);
@@ -800,17 +800,17 @@ export default function POSPage() {
   const getPaymentButtonText = () => {
     if (qrSentToDisplay && selectedPayment === "promptpay") {
       if (isAutoVerifying) {
-        return "กำลังตรวจสอบอัตโนมัติ...";
+        return "Auto Verifying...";
       } else if (isVerifyingPayment) {
-        return "กำลังตรวจสอบ...";
+        return "Verifying...";
       } else {
-        return "ตรวจสอบการชำระเงิน";
+        return "Verify Payment";
       }
     } else {
       if (isProcessing) {
-        return "กำลังประมวลผล...";
+        return "Processing...";
       } else {
-        return "ชำระเงิน";
+        return "Pay";
       }
     }
   };
@@ -820,7 +820,7 @@ export default function POSPage() {
          style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6"
-            style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>ระบบขายหน้าร้าน (POS)</h1>
+            style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Point of Sale (POS) System</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Product Search & List */}
@@ -832,7 +832,7 @@ export default function POSPage() {
                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af'}} />
                 <input
                   type="text"
-                  placeholder="ค้นหาสินค้า (ชื่อ, แบรนด์, บาร์โค้ด)..."
+                  placeholder="Search products (name, brand, barcode)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -863,7 +863,7 @@ export default function POSPage() {
                     </h3>
                     <span className="text-xs"
                           style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280'}}>
-                      คงเหลือ: {product.stock}
+                      Stock: {product.stock}
                     </span>
                   </div>
                   <p className="text-xs mb-2"
@@ -886,7 +886,7 @@ export default function POSPage() {
             <h2 className="text-xl font-bold mb-4 flex items-center"
                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
               <ShoppingCart className="mr-2" />
-              รายการสินค้า
+              Cart Items
             </h2>
 
             {/* Member Section */}
@@ -902,7 +902,7 @@ export default function POSPage() {
                       <p className="text-xs"
                          style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                         <Star size={12} className="inline mr-1" />
-                        {currentMember.points} แต้ม | {currentMember.level}
+                        {currentMember.points} Points | {currentMember.level}
                       </p>
                     </div>
                   </div>
@@ -931,14 +931,14 @@ export default function POSPage() {
                   }}
                 >
                   <User size={20} />
-                  <span>เพิ่มสมาชิก</span>
+                  <span>Add Member</span>
                 </button>
               )}
             </div>
 
             <div className="mb-4 max-h-64 overflow-y-auto">
               {cart.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">ไม่มีสินค้าในรายการ</p>
+                <p className="text-gray-500 text-center py-8">No items in cart</p>
               ) : (
                 cart.map((item) => (
                   <div key={item.product_id} className="border-b border-gray-200 py-3">
@@ -981,7 +981,7 @@ export default function POSPage() {
                 <div className="border-t pt-4 mb-4"
                      style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
                   <div className="flex justify-between items-center text-xl font-bold mb-2">
-                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รวม:</span>
+                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Total:</span>
                     <span className="text-green-600">฿{getTotalAmount().toFixed(2)}</span>
                   </div>
                   
@@ -991,9 +991,9 @@ export default function POSPage() {
                          style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}}>
                       <span className="flex items-center">
                         <Star size={16} className="mr-1" />
-                        แต้มที่จะได้รับ:
+                        Points to Earn:
                       </span>
-                      <span className="font-medium">+{calculatePoints()} แต้ม</span>
+                      <span className="font-medium">+{calculatePoints()} Points</span>
                     </div>
                   )}
                 </div>
@@ -1001,7 +1001,7 @@ export default function POSPage() {
                 {/* Payment Method */}
                 <div className="mb-4">
                   <h3 className="font-medium mb-2"
-                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>วิธีการชำระเงิน</h3>
+                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Payment Method</h3>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => setSelectedPayment("cash")}
@@ -1016,7 +1016,7 @@ export default function POSPage() {
                       }}
                     >
                       <Banknote size={20} />
-                      <span>เงินสด</span>
+                      <span>Cash</span>
                     </button>
                     <button
                       onClick={() => setSelectedPayment("promptpay")}
@@ -1031,7 +1031,7 @@ export default function POSPage() {
                       }}
                     >
                       <QrCode size={20} />
-                      <span>จ่ายด้วย QR</span>
+                      <span>Pay with QR</span>
                     </button>
                   </div>
                 </div>
@@ -1040,7 +1040,7 @@ export default function POSPage() {
                   <div className="mb-4">
                     <label className="block text-sm font-medium mb-2"
                            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
-                      จำนวนเงินที่รับ
+                      Amount Received
                     </label>
                     <input
                       type="number"
@@ -1056,12 +1056,12 @@ export default function POSPage() {
                     />
                     {customerPaid && getChange() >= 0 && (
                       <p className="text-sm text-green-600 mt-1">
-                        เงินทอน: ฿{getChange().toFixed(2)}
+                        Change: ฿{getChange().toFixed(2)}
                       </p>
                     )}
                     {customerPaid && getChange() < 0 && (
                       <p className="text-sm text-red-600 mt-1">
-                        เงินไม่เพียงพอ
+                        Insufficient Amount
                       </p>
                     )}
                   </div>
