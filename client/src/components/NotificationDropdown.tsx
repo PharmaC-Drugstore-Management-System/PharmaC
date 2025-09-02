@@ -16,8 +16,6 @@ interface NotificationDropdownProps {
   notifications: Notification[];
   isOpen: boolean;
   onClose: () => void;
-  onMarkAsRead: (id: string) => void;
-  onMarkAllAsRead: () => void;
   onNotificationClick: (notification: Notification) => void;
   socketConnected?: boolean; // เพิ่มสถานะ WebSocket connection
 }
@@ -26,8 +24,6 @@ export default function NotificationDropdown({
   notifications,
   isOpen,
   onClose,
-  onMarkAsRead,
-  onMarkAllAsRead,
   onNotificationClick,
   socketConnected = false
 }: NotificationDropdownProps) {
@@ -37,7 +33,6 @@ export default function NotificationDropdown({
   console.log('🔔 NotificationDropdown received notifications:', notifications.length);
   console.log('📋 First 3 notification order IDs:', notifications.slice(0, 3).map(n => n.orderId));
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -134,14 +129,7 @@ export default function NotificationDropdown({
               <RefreshCw className="w-3 h-3" />
               <span>รีเฟรช</span>
             </button>
-            {unreadCount > 0 && (
-              <button
-                onClick={onMarkAllAsRead}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                อ่านทั้งหมด
-              </button>
-            )}
+          
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
@@ -164,9 +152,7 @@ export default function NotificationDropdown({
                 key={notification.id}
                 onClick={() => {
                   onNotificationClick(notification);
-                  if (!notification.isRead) {
-                    onMarkAsRead(notification.id);
-                  }
+                 
                 }}
                 className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
                   !notification.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
