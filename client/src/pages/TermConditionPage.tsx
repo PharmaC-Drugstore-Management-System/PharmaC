@@ -7,73 +7,73 @@ export default function TermsConditionsPage() {
   const sections = [
     {
       id: 'acceptance',
-      title: 'การยอมรับข้อกำหนด',
+      title: 'Acceptance of Terms',
       icon: <FileText className="w-6 h-6" />,
       content: [
-        'การใช้งานระบบ PharmaC ถือว่าคุณได้ยอมรับข้อกำหนดและเงื่อนไขทั้งหมดนี้',
-        'หากคุณไม่ยอมรับข้อกำหนดใดๆ กรุณาหยุดการใช้งานระบบทันที',
-        'เราสงวนสิทธิ์ในการเปลี่ยนแปลงข้อกำหนดเหล่านี้โดยไม่ต้องแจ้งให้ทราบล่วงหน้า'
+        'By using the PharmaC system, you agree to accept all these terms and conditions',
+        'If you do not agree to any of these terms, please stop using the system immediately',
+        'We reserve the right to change these terms without prior notice'
       ]
     },
     {
       id: 'usage',
-      title: 'การใช้งานระบบ',
+      title: 'System Usage',
       icon: <Users className="w-6 h-6" />,
       content: [
-        'ระบบ PharmaC ออกแบบมาเพื่อการจัดการร้านขายยาและเภสัชกรรมเท่านั้น',
-        'ผู้ใช้งานต้องมีใบอนุญาตที่ถูกต้องตามกฎหมายในการขายยา',
-        'ห้ามใช้ระบบในการทำกิจกรรมที่ผิดกฎหมายหรือไม่เหมาะสม',
-        'ผู้ใช้งานต้องรับผิดชอบต่อการใช้งานบัญชีของตนเอง'
+        'PharmaC system is designed exclusively for pharmacy and pharmaceutical management',
+        'Users must have valid legal licenses to sell pharmaceuticals',
+        'Using the system for illegal or inappropriate activities is prohibited',
+        'Users are responsible for the security of their own accounts'
       ]
     },
     {
       id: 'data',
-      title: 'ความปลอดภัยของข้อมูล',
+      title: 'Data Security',
       icon: <Database className="w-6 h-6" />,
       content: [
-        'เราจะเก็บรักษาข้อมูลของคุณด้วยมาตรฐานความปลอดภัยสูงสุด',
-        'ข้อมูลส่วนบุคคลจะไม่ถูกเปิดเผยแก่บุคคลที่สามโดยไม่ได้รับอนุญาต',
-        'ระบบมีการสำรองข้อมูลและการเข้ารหัสเพื่อป้องกันการสูญหาย',
-        'ผู้ใช้งานมีสิทธิ์ในการเข้าถึง แก้ไข หรือลบข้อมูลส่วนบุคคล'
+        'We will protect your data with the highest security standards',
+        'Personal data will not be disclosed to third parties without authorization',
+        'The system includes data backup and encryption to prevent loss',
+        'Users have the right to access, modify, or delete personal data'
       ]
     },
     {
       id: 'privacy',
-      title: 'นโยบายความเป็นส่วนตัว',
+      title: 'Privacy Policy',
       icon: <Lock className="w-6 h-6" />,
       content: [
-        'เราเก็บรวบรวมข้อมูลที่จำเป็นสำหรับการให้บริการเท่านั้น',
-        'ข้อมูลการใช้งานอาจถูกนำมาวิเคราะห์เพื่อปรับปรุงระบบ',
-        'เราไม่ขายหรือให้เช่าข้อมูลส่วนบุคคลแก่บุคคลที่สาม',
-        'คุณสามารถขอดูหรือแก้ไขข้อมูลส่วนบุคคลได้ตลอดเวลา'
+        'We collect only data necessary for service provision',
+        'Usage data may be analyzed to improve the system',
+        'We do not sell or rent personal data to third parties',
+        'You can request to view or modify personal data at any time'
       ]
     },
     {
       id: 'liability',
-      title: 'ข้อจำกัดความรับผิดชอบ',
+      title: 'Limitation of Liability',
       icon: <AlertTriangle className="w-6 h-6" />,
       content: [
-        'PharmaC ไม่รับผิดชอบต่อความเสียหายที่เกิดจากการใช้งานระบบ',
-        'ผู้ใช้งานต้องตรวจสอบความถูกต้องของข้อมูลก่อนการใช้งาน',
-        'ระบบอาจมีการหยุดให้บริการชั่วคราวเพื่อการบำรุงรักษา',
-        'เราไม่รับประกันการทำงานของระบบที่ปราศจากข้อผิดพลาด 100%'
+        'PharmaC is not responsible for damages caused by system usage',
+        'Users must verify data accuracy before using the system',
+        'The system may have temporary service interruptions for maintenance',
+        'We do not guarantee 100% error-free system operation'
       ]
     },
     {
       id: 'updates',
-      title: 'การอัปเดตและการเปลี่ยนแปลง',
+      title: 'Updates and Changes',
       icon: <RefreshCw className="w-6 h-6" />,
       content: [
-        'ระบบจะมีการอัปเดตเป็นระยะๆ เพื่อปรับปรุงประสิทธิภาพ',
-        'ฟีเจอร์ใหม่อาจถูกเพิ่มเข้ามาหรือเปลี่ยนแปลงโดยไม่ต้องแจ้งล่วงหน้า',
-        'ผู้ใช้งานควรติดตามการเปลี่ยนแปลงและอัปเดตอย่างสม่ำเสมอ',
-        'การอัปเดตจะไม่ส่งผลกระทบต่อข้อมูลที่มีอยู่เดิม'
+        'The system will be updated periodically to improve performance',
+        'New features may be added or changed without prior notice',
+        'Users should regularly monitor changes and updates',
+        'Updates will not affect existing data'
       ]
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
@@ -85,7 +85,7 @@ export default function TermsConditionsPage() {
               <ChevronLeft className="w-5 h-5 text-white" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">ข้อกำหนดและเงื่อนไข</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Terms and Conditions</h1>
               <p className="text-sm text-gray-600 mt-1">Terms and Conditions - PharmaC System</p>
             </div>
           </div>
@@ -97,16 +97,16 @@ export default function TermsConditionsPage() {
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-blue-500">
           <div className="flex items-center mb-4">
             <Shield className="w-8 h-8 text-blue-600 mr-3" />
-            <h2 className="text-xl font-semibold text-gray-900">เกี่ยวกับข้อกำหนดนี้</h2>
+            <h2 className="text-xl font-semibold text-gray-900">About These Terms</h2>
           </div>
           <p className="text-gray-700 leading-relaxed">
-            ข้อกำหนดและเงื่อนไขนี้ใช้สำหรับการใช้งานระบบจัดการร้านขายยา PharmaC 
-            โปรดอ่านและทำความเข้าใจก่อนการใช้งาน การใช้งานระบบถือว่าคุณยอมรับข้อกำหนดทั้งหมด
+            These terms and conditions apply to the use of the PharmaC pharmacy management system. 
+            Please read and understand them before using the system. Using the system means you accept all these terms.
           </p>
           <div className="mt-4 p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>วันที่มีผลบังคับใช้:</strong> 26 สิงหาคม 2568<br />
-              <strong>เวอร์ชัน:</strong> 1.0
+              <strong>Effective Date:</strong> August 26, 2025<br />
+              <strong>Version:</strong> 1.0
             </p>
           </div>
         </div>
@@ -148,23 +148,23 @@ export default function TermsConditionsPage() {
 
         {/* Contact Information */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mt-8 border-l-4 border-green-500">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">การติดต่อ</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">ข้อมูลติดต่อ</h4>
+              <h4 className="font-medium text-gray-900 mb-2">Contact Details</h4>
               <p className="text-gray-700 text-sm leading-relaxed">
-                หากมีคำถามเกี่ยวกับข้อกำหนดและเงื่อนไข<br />
-                กรุณาติดต่อทีมพัฒนา PharmaC<br />
-                <strong>อีเมล:</strong> support@pharmac.com<br />
-                <strong>โทรศัพท์:</strong> 02-xxx-xxxx
+                If you have questions about these terms and conditions<br />
+                Please contact the PharmaC development team<br />
+                <strong>Email:</strong> support@pharmac.com<br />
+                <strong>Phone:</strong> 02-xxx-xxxx
               </p>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">การแจ้งปัญหา</h4>
+              <h4 className="font-medium text-gray-900 mb-2">Issue Reporting</h4>
               <p className="text-gray-700 text-sm leading-relaxed">
-                หากพบปัญหาการใช้งานหรือข้อผิดพลาด<br />
-                สามารถแจ้งได้ผ่านระบบ Support<br />
-                ทีมงานจะดำเนินการแก้ไขอย่างรวดเร็ว
+                If you encounter usage problems or errors<br />
+                You can report them through the Support system<br />
+                Our team will address issues promptly
               </p>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function TermsConditionsPage() {
             onClick={() => navigate('/settings')}
             className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            ฉันได้อ่านและยอมรับข้อกำหนดแล้ว
+            I have read and accept these terms
           </button>
         </div>
       </div>

@@ -10,36 +10,34 @@ export default function ContactUsPage() {
       name: 'Kampol Suwannatham',
       position: 'Full Stack Developer',
       role: 'Junior Developer',
-      image: '/api/placeholder/150/150', // placeholder until you add real photos
-      email: 'dev1@pharmac.com',
-      phone: '081-xxx-xxxx',
-      github: 'https://github.com/dev1',
-      linkedin: 'https://linkedin.com/in/dev1',
-      description: 'เชี่ยวชาญด้าน React, TypeScript และ UI/UX Design'
+      image: '/images/developers/mond_dev.png', 
+      email: 'kampol.suwannatham@gmail.com',
+      phone: '091-946-3346',
+      github: 'https://github.com/llSaiMonDll',
+      
+      description: 'Specialized in React, TypeScript and UI/UX Design'
     },
     {
       id: 2,
       name: 'Ratchada Prompong',
       position: 'Full Stack Developer',
       role: 'Junior Developer',
-      image: '/api/placeholder/150/150',
+      image: '/images/developers/ink_dev.png', 
       email: 'dev2@pharmac.com',
       phone: '082-xxx-xxxx',
-      github: 'https://github.com/dev2',
-      linkedin: 'https://linkedin.com/in/dev2',
-      description: 'เชี่ยวชาญด้าน Node.js, Database และ API Development'
+      github: '#',
+      description: 'Specialized in Node.js, Database and API Development'
     },
     {
       id: 3,
       name: 'Issadame Damero',
       position: 'Full Stack Developer',
       role: 'Junior Developer',
-      image: '/api/placeholder/150/150',
+      image: '/images/developers/neo_dev.png', 
       email: 'dev3@pharmac.com',
       phone: '083-xxx-xxxx',
-      github: 'https://github.com/dev3',
-      linkedin: 'https://linkedin.com/in/dev3',
-      description: 'เชี่ยวชาญด้าน Full Stack Development และ DevOps'
+      github: '#',
+      description: 'Specialized in Full Stack Development and DevOps'
     }
   ];
 
@@ -56,7 +54,7 @@ export default function ContactUsPage() {
               <ChevronLeft className="w-5 h-5 text-white" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">ติดต่อเรา</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Contact Us</h1>
               <p className="text-sm text-gray-600 mt-1">Contact Us - PharmaC Development Team</p>
             </div>
           </div>
@@ -68,11 +66,11 @@ export default function ContactUsPage() {
         <div className="bg-white rounded-lg shadow-md p-8 mb-8 text-center">
           <div className="flex items-center justify-center mb-4">
             <Code className="w-8 h-8 text-gray-600 mr-3" />
-            <h2 className="text-2xl font-bold text-gray-900">ทีมพัฒนา PharmaC</h2>
+            <h2 className="text-2xl font-bold text-gray-900">PharmaC Development Team</h2>
           </div>
           <p className="text-gray-700 leading-relaxed max-w-3xl mx-auto">
-            เราเป็นทีมนักพัฒนา 3 คนที่มุ่งมั่นในการสร้างระบบจัดการร้านขายยาที่ดีที่สุด 
-            ด้วยความเชี่ยวชาญและประสบการณ์ในการพัฒนาซอฟต์แวร์ เราพร้อมให้บริการและสนับสนุนคุณตลอดการใช้งาน
+            We are a team of 3 developers dedicated to creating the best pharmacy management system. 
+            With expertise and experience in software development, we are ready to serve and support you throughout your usage.
           </p>
         </div>
 
@@ -99,7 +97,7 @@ export default function ContactUsPage() {
                               <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-3">
                                 <span class="text-2xl font-bold">${dev.name.charAt(0)}</span>
                               </div>
-                              <p class="text-sm">รูปภาพจะมาภายหลัง</p>
+                              <p class="text-sm">Photo coming soon</p>
                             </div>
                           `;
                         }
@@ -139,14 +137,7 @@ export default function ContactUsPage() {
                     >
                       <Github className="w-4 h-4 text-gray-600" />
                     </a>
-                    <a
-                      href={dev.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-                    >
-                      <Linkedin className="w-4 h-4 text-gray-600" />
-                    </a>
+                  
                   </div>
                 </div>
               </div>
@@ -156,20 +147,20 @@ export default function ContactUsPage() {
 
         {/* Contact Information */}
         <div className="bg-white rounded-lg shadow-md p-8">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">ข้อมูลการติดต่อ</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">Contact Information</h3>
           <div className="grid md:grid-cols-2 gap-8">
             {/* Company Info */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">ข้อมูลบริษัท</h4>
+              <h4 className="font-semibold text-gray-900 mb-4">Company Information</h4>
               <div className="space-y-3">
                 <div className="flex items-start">
                   <MapPin className="w-5 h-5 text-gray-600 mr-3 mt-0.5" />
                   <div>
                     <p className="font-medium text-gray-900">PharmaC Development</p>
                     <p className="text-gray-700 text-sm">
-                      123 ถนนเทคโนโลยี<br />
-                      แขวงเทคโนโลยี เขตนวัตกรรม<br />
-                      กรุงเทพมหานคร 10400
+                      123 Technology Road<br />
+                      Technology District, Innovation Zone<br />
+                      Bangkok 10400, Thailand
                     </p>
                   </div>
                 </div>
@@ -186,21 +177,21 @@ export default function ContactUsPage() {
 
             {/* Support Info */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">การสนับสนุน</h4>
+              <h4 className="font-semibold text-gray-900 mb-4">Support</h4>
               <div className="space-y-3 text-sm text-gray-700">
                 <div>
-                  <p className="font-medium text-gray-900 mb-1">เวลาทำการ</p>
-                  <p>จันทร์ - ศุกร์: 9:00 - 18:00 น.</p>
-                  <p>เสาร์ - อาทิตย์: 9:00 - 17:00 น.</p>
+                  <p className="font-medium text-gray-900 mb-1">Business Hours</p>
+                  <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
+                  <p>Saturday - Sunday: 9:00 AM - 5:00 PM</p>
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 mb-1">การตอบกลับ</p>
-                  <p>อีเมล์: ภายใน 24 ชั่วโมง</p>
-                  <p>โทรศัพท์: ทันทีในเวลาทำการ</p>
+                  <p className="font-medium text-gray-900 mb-1">Response Time</p>
+                  <p>Email: Within 24 hours</p>
+                  <p>Phone: Immediate during business hours</p>
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 mb-1">ภาษาที่รองรับ</p>
-                  <p>ไทย, English</p>
+                  <p className="font-medium text-gray-900 mb-1">Supported Languages</p>
+                  <p>Thai, English</p>
                 </div>
               </div>
             </div>
@@ -213,7 +204,7 @@ export default function ContactUsPage() {
             onClick={() => navigate('/settings')}
             className="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
           >
-            กลับไปหน้าตั้งค่า
+            Back to Settings
           </button>
         </div>
       </div>
