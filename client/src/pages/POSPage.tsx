@@ -3,6 +3,7 @@ import { Search, Plus, Minus, ShoppingCart,  Banknote, Trash2, X, User, Star, Qr
 import "../styles/pos.css";
 import { useNavigate } from "react-router-dom";
 import { io } from 'socket.io-client';
+import { useTranslation } from 'react-i18next';
 
 interface Product {
   product_id: number;
@@ -29,6 +30,7 @@ interface Member {
 }
 
 export default function POSPage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -289,11 +291,11 @@ export default function POSPage() {
         setCurrentMember(convertedMember);
         setShowMemberModal(false);
       } else {
-        alert("Member not found");
+        alert(t('memberNotFound'));
       }
     } catch (error) {
       console.error("Error searching member:", error);
-      alert("Error occurred while searching for member");
+      alert(t('errorSearchingMember'));
     } finally {
       setMemberSearching(false);
     }
@@ -306,7 +308,7 @@ export default function POSPage() {
 
   const addNewMember = async () => {
     if (!newMemberData.name || !newMemberData.phone) {
-      alert('Please fill in name and phone number');
+      alert(t('pleaseProvideNameAndPhone'));
       return;
     }
 
@@ -800,17 +802,17 @@ export default function POSPage() {
   const getPaymentButtonText = () => {
     if (qrSentToDisplay && selectedPayment === "promptpay") {
       if (isAutoVerifying) {
-        return "Auto Verifying...";
+        return t('autoVerifying');
       } else if (isVerifyingPayment) {
-        return "Verifying...";
+        return t('verifying');
       } else {
-        return "Verify Payment";
+        return t('verifyPayment');
       }
     } else {
       if (isProcessing) {
-        return "Processing...";
+        return t('processing');
       } else {
-        return "Pay";
+        return t('pay');
       }
     }
   };
@@ -820,7 +822,7 @@ export default function POSPage() {
          style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6"
-            style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Point of Sale (POS) System</h1>
+            style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>{t('posSystem')}</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Product Search & List */}
@@ -832,7 +834,7 @@ export default function POSPage() {
                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af'}} />
                 <input
                   type="text"
-                  placeholder="Search products (name, brand, barcode)..."
+                  placeholder={t('searchProducts')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -863,7 +865,7 @@ export default function POSPage() {
                     </h3>
                     <span className="text-xs"
                           style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280'}}>
-                      Stock: {product.stock}
+                      {t('stock')}: {product.stock}
                     </span>
                   </div>
                   <p className="text-xs mb-2"
@@ -886,7 +888,7 @@ export default function POSPage() {
             <h2 className="text-xl font-bold mb-4 flex items-center"
                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
               <ShoppingCart className="mr-2" />
-              Cart Items
+              {t('cartItems')}
             </h2>
 
             {/* Member Section */}
@@ -902,7 +904,7 @@ export default function POSPage() {
                       <p className="text-xs"
                          style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                         <Star size={12} className="inline mr-1" />
-                        {currentMember.points} Points | {currentMember.level}
+                        {currentMember.points} {t('points')} | {currentMember.level}
                       </p>
                     </div>
                   </div>
@@ -931,14 +933,14 @@ export default function POSPage() {
                   }}
                 >
                   <User size={20} />
-                  <span>Add Member</span>
+                  <span>{t('addMember')}</span>
                 </button>
               )}
             </div>
 
             <div className="mb-4 max-h-64 overflow-y-auto">
               {cart.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No items in cart</p>
+                <p className="text-gray-500 text-center py-8">{t('noItemsInCart')}</p>
               ) : (
                 cart.map((item) => (
                   <div key={item.product_id} className="border-b border-gray-200 py-3">
@@ -981,7 +983,7 @@ export default function POSPage() {
                 <div className="border-t pt-4 mb-4"
                      style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
                   <div className="flex justify-between items-center text-xl font-bold mb-2">
-                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Total:</span>
+                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{t('total')}:</span>
                     <span className="text-green-600">฿{getTotalAmount().toFixed(2)}</span>
                   </div>
                   

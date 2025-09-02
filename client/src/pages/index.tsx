@@ -160,10 +160,10 @@ export default function PharmaDashboard() {
   ];
 
   const inventoryData = [
-    { id: 1, name: "Amoxilin", amount: "15 pcs", status: t("in_stock") },
-    { id: 2, name: "Amoxilin", amount: "15 pcs", status: t("in_stock") },
-    { id: 3, name: "Amoxilin", amount: "15 pcs", status: t("in_stock") },
-    { id: 4, name: "Amoxilin", amount: "0 pcs", status: t("out_of_stock") },
+    { id: 1, name: "Amoxilin", amount: "15 pcs", status: t("inStock") },
+    { id: 2, name: "Amoxilin", amount: "15 pcs", status: t("inStock") },
+    { id: 3, name: "Amoxilin", amount: "15 pcs", status: t("inStock") },
+    { id: 4, name: "Amoxilin", amount: "0 pcs", status: t("outOfStock") },
   ];
 
   const COLORS = ["#79e2f2", "#7ab8f2", "#4d82bf", "#38618c", "#213559"];
@@ -200,7 +200,7 @@ export default function PharmaDashboard() {
   };
 
   const renderInventoryItem = (item: InventoryItem) => {
-    const isInStock = item.status === t("in_stock");
+    const isInStock = item.status === t("inStock");
 
     return (
       <div
@@ -287,7 +287,7 @@ export default function PharmaDashboard() {
                   : "black",
               }}
             >
-              {t("main_menu")}
+              {t("menu")}
             </h2>
           </div>
           {/* Quick POS Access */}
@@ -296,7 +296,7 @@ export default function PharmaDashboard() {
             className="bg-green-600 hover:bg-green-700  text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
           >
             <ShoppingCart className="w-5 h-5" />
-            <span>Open Sale (POS)</span>
+            <span>{t("openSalePOS")}</span>
           </button>
         </div>
         {/* Charts Section */}
@@ -325,12 +325,12 @@ export default function PharmaDashboard() {
                       : "#111827",
                   }}
                 >
-                  Revenue Forecast
+                  {t("revenueForecast")}
                 </h3>
                 <div className="flex items-center space-x-3">
                   {isLoading && (
                     <span className="text-sm text-blue-600">
-                      Loading forecast...
+                      {t("loadingForecast")}
                     </span>
                   )}
 
@@ -432,8 +432,8 @@ export default function PharmaDashboard() {
                         formatter={(value, name) => [
                           `$${value?.toLocaleString() || 0}`,
                           name === "actual"
-                            ? "Historical Revenue"
-                            : "Forecast Revenue",
+                            ? t("historicalRevenue")
+                            : t("forecastRevenue"),
                         ]}
                       />
                       <Legend />
@@ -443,7 +443,7 @@ export default function PharmaDashboard() {
                         dataKey="actual"
                         stroke="#2563eb"
                         strokeWidth={3}
-                        name="Historical Revenue"
+                        name={t("historicalRevenue")}
                         dot={{ fill: "#2563eb", strokeWidth: 2, r: 4 }}
                       />
                       {/* Forecast Revenue Line */}
@@ -453,7 +453,7 @@ export default function PharmaDashboard() {
                         stroke="#dc2626"
                         strokeWidth={3}
                         strokeDasharray="5 5"
-                        name="Forecast Revenue"
+                        name={t("forecastRevenue")}
                         dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
                       />
                     </LineChart>
@@ -533,7 +533,7 @@ export default function PharmaDashboard() {
                     : "#111827",
                 }}
               >
-                {t("amount_sales")}
+                {t("amountSales")}
               </h3>
               <div
                 className="text-4xl font-bold text-center"
@@ -568,7 +568,7 @@ export default function PharmaDashboard() {
                     : "#111827",
                 }}
               >
-                {t("total_sales")}
+                {t("totalSales")}
               </h3>
               <div
                 className="text-4xl font-bold text-center"
@@ -606,7 +606,7 @@ export default function PharmaDashboard() {
                     : "#111827",
                 }}
               >
-                {t("total_items_in_stock")}
+                {t("totalItemsInStock")}
               </h3>
               <div
                 className="text-4xl font-bold text-center"
@@ -638,7 +638,7 @@ export default function PharmaDashboard() {
                     : "#111827",
                 }}
               >
-                {t("total_items_sales")}
+                {t("totalItemsSales")}
               </h3>
               <div
                 className="text-4xl font-bold text-center"
@@ -703,7 +703,7 @@ export default function PharmaDashboard() {
                 : "#111827",
             }}
           >
-            {t("inventory_shortage")}
+            {t("inventoryShortage")}
           </h3>
           <div>
             <div
@@ -717,7 +717,7 @@ export default function PharmaDashboard() {
                   : "#111827",
               }}
             >
-              <div className="flex-1">{t("product_name")}</div>
+              <div className="flex-1">{t("productName")}</div>
               <div className="w-24 text-center">{t("amount")}</div>
               <div className="w-32 text-center">{t("status")}</div>
             </div>

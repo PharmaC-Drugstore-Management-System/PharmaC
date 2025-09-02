@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   LineChart,
   Line,
@@ -144,6 +145,7 @@ const renderRevenueRow = (item: RevenueItem) => {
 };
 
 export default function RevenueDetail() {
+  const { t } = useTranslation();
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
     new Date("2025-05-01"),
     new Date("2025-05-31"),
@@ -185,7 +187,7 @@ export default function RevenueDetail() {
         <div className="w-1 h-8 bg-green-600 mr-2"></div>
         <h2 className="text-xl font-bold"
             style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
-          Statistics
+          {t('statistics')}
         </h2>
       </div>
 
@@ -196,7 +198,7 @@ export default function RevenueDetail() {
              borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
            }}>
         <h3 className="text-lg font-semibold mb-2"
-            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Trend</h3>
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{t('trend')}</h3>
         {/* Date Range Picker */}
         <div className="flex justify-between items-center mb-4">
           <div className="inline-flex items-center px-4 py-2 shadow rounded-full border"

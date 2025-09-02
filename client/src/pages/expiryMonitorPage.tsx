@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ExpiryMonitor() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [startDate, setStartDate] = useState("2025-05-01");
   const [filterStartDate, setFilterStartDate] = useState("2025-09-01");
@@ -64,19 +66,19 @@ export default function ExpiryMonitor() {
       <div className="flex items-center mb-6">
         <div className="w-1 h-8 bg-green-600 mr-2"></div>
         <h2 className="text-xl font-bold"
-            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Expiry Monitor</h2>
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{t('expiryMonitor')}</h2>
       </div>
 
       {/* Earliest to Expire Section */}
       <div className="mb-8">
         <h3 className="text-xl font-semibold mb-4"
             style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-          Earliest to Expire
+          {t('earliestToExpire')}
         </h3>
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2"
                  style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-            Start Date
+            {t('startDate')}
           </label>
           <div className="relative">
             <input
@@ -107,12 +109,12 @@ export default function ExpiryMonitor() {
                  borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
                  color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
                }}>
-            <div className="flex-1">Name</div>
-            <div className="flex-1 px-2">Brand</div>
-            <div className="w-16 text-center">Amount</div>
-            <div className="w-24 text-center">Expired Date</div>
-            <div className="w-16 text-center">Total</div>
-            <div className="w-20 text-center">Lot ID</div>
+            <div className="flex-1">{t('name')}</div>
+            <div className="flex-1 px-2">{t('brand')}</div>
+            <div className="w-16 text-center">{t('amount')}</div>
+            <div className="w-24 text-center">{t('expiredDate')}</div>
+            <div className="w-16 text-center">{t('total')}</div>
+            <div className="w-20 text-center">{t('lotId')}</div>
           </div>
           {allMedications
             .filter((med) => new Date(med.expiredDate.split("/").reverse().join("-")) >= new Date(startDate))
@@ -151,12 +153,12 @@ export default function ExpiryMonitor() {
       <div>
         <h3 className="text-xl font-semibold mb-4"
             style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-          Filter by Expiry Date
+          {t('filterByExpiryDate')}
         </h3>
         <div className="flex items-center space-x-4 mb-4">
           {[
-            { value: filterStartDate, setter: setFilterStartDate, label: 'Start Date' },
-            { value: filterEndDate, setter: setFilterEndDate, label: 'End Date' }
+            { value: filterStartDate, setter: setFilterStartDate, label: t('startDate') },
+            { value: filterEndDate, setter: setFilterEndDate, label: t('endDate') }
           ].map((dateField, i) => (
             <div className="relative flex-1" key={i}>
               <label className="block text-sm font-medium mb-1"
@@ -192,12 +194,12 @@ export default function ExpiryMonitor() {
                  borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
                  color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
                }}>
-            <div className="flex-1">Name</div>
-            <div className="flex-1 px-2">Brand</div>
-            <div className="w-16 text-center">Amount</div>
-            <div className="w-24 text-center">Expired Date</div>
-            <div className="w-16 text-center">Total</div>
-            <div className="w-20 text-center">Lot ID</div>
+            <div className="flex-1">{t('name')}</div>
+            <div className="flex-1 px-2">{t('brand')}</div>
+            <div className="w-16 text-center">{t('amount')}</div>
+            <div className="w-24 text-center">{t('expiredDate')}</div>
+            <div className="w-16 text-center">{t('total')}</div>
+            <div className="w-20 text-center">{t('lotId')}</div>
           </div>
           {allMedications
             .filter((med) => {

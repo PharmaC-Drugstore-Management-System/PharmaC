@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 type MedicineItem = {
   id: number;
@@ -27,6 +28,7 @@ type MedicineItem = {
 
 export default function PharmacInventoryPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const openItem = (id: number) => {
     navigate(`/inventory/${id}`);
   };
@@ -171,7 +173,7 @@ export default function PharmacInventoryPage() {
         <div className="w-1 h-8 bg-green-600 mr-2"></div>
         <h2 className="text-xl font-bold" 
             style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
-          Inventory
+          {t('inventory')}
         </h2>
       </div>
 
@@ -188,7 +190,7 @@ export default function PharmacInventoryPage() {
             <div className="ml-4 flex-1">
               <p className="text-sm font-medium"
                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                Total Medicines
+                {t('totalMedicines')}
               </p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{items.length}</p>
@@ -206,7 +208,7 @@ export default function PharmacInventoryPage() {
             <AlertTriangle className="w-8 h-8 text-red-600" />
             <div className="ml-3">
               <p className="text-sm font-medium"
-                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Low Stock</p>
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('lowStock')}</p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {lowStockItems.length}
@@ -238,7 +240,7 @@ export default function PharmacInventoryPage() {
                     : "text-gray-500"
                     }`}
                 >
-                  Expire Soon
+                  {t('expireSoon')}
                 </p>
                 <p
                   className={`text-3xl font-bold ${expireSoonItems.length > 0 ? "text-white" : "text-gray-900"
@@ -251,14 +253,14 @@ export default function PharmacInventoryPage() {
             <div className="text-right mt-5">
               {expireSoonItems.length > 0 ? (
                 <div className="text-sm font-medium text-white flex items-center justify-end">
-                  Click to Manage
+                  {t('clickToManage')}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </div>
               ) : (
                 <>
-                  <div className="text-xs text-gray-400 mb-1">All good</div>
+                  <div className="text-xs text-gray-400 mb-1">{t('allGood')}</div>
                   <div className="text-sm font-medium text-gray-600 flex items-center justify-end">
-                    View
+                    {t('view')}
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </div>
                 </>
@@ -277,13 +279,13 @@ export default function PharmacInventoryPage() {
           <div className="flex items-center mr-4 cursor-pointer"
                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
             <Search className="h-5 w-5 mr-2" />
-            <span>Sort by date</span>
+            <span>{t('sortByDate')}</span>
             <ChevronDown className="h-4 w-4 ml-1 text-green-600" />
           </div>
           <div className="relative flex-grow">
             <input
               type="text"
-              placeholder="Search"
+              placeholder={t('search')}
               className="pl-10 pr-4 py-2 w-full rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
                 backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
@@ -301,25 +303,25 @@ export default function PharmacInventoryPage() {
                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
              }}>
           <div className="font-medium"
-               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Image</div>
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>{t('image')}</div>
           <div className="font-medium flex items-center"
                style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-            <span>Name</span>
+            <span>{t('name')}</span>
           </div>
           <div className="font-medium"
-               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Brand</div>
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>{t('brand')}</div>
           <div className="font-medium"
-               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Type</div>
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>{t('type')}</div>
           <div className="font-medium"
-               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Unit</div>
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>{t('unit')}</div>
           <div className="font-medium"
-               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Controlled</div>
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>{t('controlled')}</div>
           <div className="font-medium"
-               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Price</div>
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>{t('price')}</div>
 
           <div className="flex items-center justify-between">
             <span className="font-semibold"
-                  style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Stock</span>
+                  style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>{t('stock')}</span>
             <button
               onClick={() => {
                 setEditMode(!editMode);
@@ -378,7 +380,7 @@ export default function PharmacInventoryPage() {
                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6',
                            color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
                          }}>
-                      No
+                      {t('noImage')}
                     </div>
                   )}
                 </div>
@@ -484,7 +486,7 @@ export default function PharmacInventoryPage() {
                     </div>
                     <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>{item.unit ?? "-"}</div>
                     <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>
-                      {item.isControlled ? "Yes" : "No"}
+                      {item.isControlled ? t('yes') : t('no')}
                     </div>
                     <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>{item.price}</div>
                     <div

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Trophy,
   Crown,
@@ -27,6 +28,7 @@ interface Member {
 }
 
 export default function MemberManagementPage() {
+  const { t } = useTranslation();
   const [members, setMembers] = useState<Member[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -349,18 +351,18 @@ export default function MemberManagementPage() {
           <div className="flex items-center">
             <div className="w-1 h-8 bg-green-600 mr-2"></div>
             <h2 className="text-xl font-bold"
-                style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Membership Management</h2>
+                style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{t('membershipManagement')}</h2>
           </div>
           <button
             onClick={() => setShowAddMemberModal(true)}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <UserPlus className="w-4 h-4" />
-            Add New Member
+            {t('addNewMember')}
           </button>
         </div>
         <p className="mt-1"
-           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Complete list of all member customers</p>
+           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('completeMemberList')}</p>
       </div>
 
       {/* Stats Cards */}
@@ -375,7 +377,7 @@ export default function MemberManagementPage() {
               <Users className="w-8 h-8 text-blue-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Total Members</p>
+              <p className="text-sm font-medium text-gray-500">{t('totalMembers')}</p>
               <p className="text-2xl font-bold text-gray-900" style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {members.length}
               </p>
@@ -395,7 +397,7 @@ export default function MemberManagementPage() {
             <div className="ml-3">
               <p className="text-sm font-medium"
                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                Platinum Members
+                {t('platinumMembers')}
               </p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
@@ -417,7 +419,7 @@ export default function MemberManagementPage() {
             <div className="ml-3">
               <p className="text-sm font-medium"
                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                New Members This Month
+                {t('newMembersThisMonth')}
               </p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
@@ -444,7 +446,7 @@ export default function MemberManagementPage() {
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium"
-                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Total Points</p>
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('totalPoints')}</p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {members.reduce((sum, m) => sum + m.score, 0)}
@@ -461,7 +463,7 @@ export default function MemberManagementPage() {
                   style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}} />
           <input
             type="text"
-            placeholder="Search members (name, phone, email)..."
+            placeholder={t('searchMembers')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -485,19 +487,19 @@ export default function MemberManagementPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold"
                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-              Member List
+              {t('memberList')}
             </h2>
             <div className="flex items-center space-x-4">
               <span className="text-sm"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                Total {filteredMembers.length} members
+                {t('totalMembersCount', { count: filteredMembers.length })}
               </span>
               <button
                 onClick={() => setShowRankingSection(!showRankingSection)}
                 className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
               >
                 <Trophy className="w-4 h-4" />
-                {showRankingSection ? "Hide" : "Show"} Rankings
+                {showRankingSection ? t('hideRankings') : t('showRankings')}
               </button>
             </div>
           </div>
@@ -509,33 +511,33 @@ export default function MemberManagementPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Member
+                  {t('member')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Gender
+                  {t('gender')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Contact Info
+                  {t('contactInfo')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Birthday
+                  {t('birthday')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Membership Level
+                  {t('membershipLevel')}
                 </th>
                 {showRankingSection && (
                   <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                    Points/Rank
+                    {t('pointsRank')}
                   </th>
                 )}
                 <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Actions
+                  {t('actions')}
                 </th>
               </tr>
             </thead>
@@ -653,7 +655,7 @@ export default function MemberManagementPage() {
           <h3 className="text-md font-semibold mb-4 flex items-center gap-2"
               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
             <Trophy className="w-5 h-5 text-yellow-500" />
-            อันดับสมาชิกยอดเยี่ยม
+            Top Members Ranking
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {members.slice(0, 3).map((member, index) => (

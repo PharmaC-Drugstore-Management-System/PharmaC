@@ -9,7 +9,8 @@ import {
   ClipboardCheck,
   ShoppingCart
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // <-- Add this line
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // Tooltip Component
 interface TooltipProps {
@@ -42,19 +43,20 @@ const Tooltip: React.FC<TooltipProps> = ({ children, text }) => {
 };
 
 export default function NavbarComponent() {
-  const [activeTab, setActiveTab] = useState(0); // Set default
-  const navigate = useNavigate(); // <-- Add this line
+  const [activeTab, setActiveTab] = useState(0);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const navigationItems = [
-    { name: 'Home', icon: LayoutGrid, path: '/' },
-    { name: 'Inventory', icon: Inbox, path: '/inventory' },
-    { name: 'Point of Sale', icon: ShoppingCart, path: '/pos' },
-    { name: 'Statistics', icon: BarChart3, path: '/statistic' },
-    { name: 'Expiry Monitor', icon: Clock, path: '/expiry-monitor' },
-    { name: 'Document Records', icon: FileText, path: '/doc-record' },
-    { name: 'Order Records', icon: ClipboardCheck, path: '/order-record' },
-    { name: 'Membership Management', icon: null, path: '/membership' }, // Custom icon
-    { name: 'Settings', icon: Settings, path: '/settings' }
+    { name: t('home'), icon: LayoutGrid, path: '/' },
+    { name: t('inventory'), icon: Inbox, path: '/inventory' },
+    { name: t('pointOfSale'), icon: ShoppingCart, path: '/pos' },
+    { name: 'Statistics', icon: BarChart3, path: '/statistic' }, // Keep as is for now
+    { name: 'Expiry Monitor', icon: Clock, path: '/expiry-monitor' }, // Keep as is for now
+    { name: 'Document Records', icon: FileText, path: '/doc-record' }, // Keep as is for now
+    { name: 'Order Records', icon: ClipboardCheck, path: '/order-record' }, // Keep as is for now
+    { name: t('memberManagement'), icon: null, path: '/membership' },
+    { name: t('settings'), icon: Settings, path: '/settings' }
   ];
 
   const handleTabClick = (index: number): void => {

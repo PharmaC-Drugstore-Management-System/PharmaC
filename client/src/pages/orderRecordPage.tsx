@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Edit, Package, User, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 
 export default function OrderRecord() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +115,7 @@ export default function OrderRecord() {
           <div className="w-1 h-8 bg-green-600 mr-2"></div>
           <h2 className="text-xl font-bold"
               style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
-            Order Records
+            {t('orderRecords')}
           </h2>
         </div>
       </div>
@@ -131,7 +133,7 @@ export default function OrderRecord() {
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium"
-                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Completed Orders</p>
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('completedOrders')}</p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {orders.filter(order =>
@@ -155,7 +157,7 @@ export default function OrderRecord() {
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium"
-                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Cancelled Orders</p>
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('cancelledOrders')}</p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {orders.filter(order => order.status?.toUpperCase() === 'CANCELLED' || order.status?.toUpperCase() === 'FAILED').length}
@@ -175,7 +177,7 @@ export default function OrderRecord() {
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium"
-                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Total Orders</p>
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('totalOrders')}</p>
               <p className="text-2xl font-bold"
                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{orders.length}</p>
             </div>
@@ -198,23 +200,23 @@ export default function OrderRecord() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Order ID
+                  {t('orderId')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Customer Name
+                  {t('customerName')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Order Date
+                  {t('orderDate')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Status
+                  {t('status')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Actions
+                  {t('actions')}
                 </th>
               </tr>
             </thead>
@@ -227,14 +229,14 @@ export default function OrderRecord() {
                 <tr>
                   <td colSpan={5} className="px-6 py-4 text-center"
                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                    Loading orders...
+                    {t('loadingOrders')}
                   </td>
                 </tr>
               ) : currentOrders.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-4 text-center"
                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                    No orders found
+                    {t('noOrdersFound')}
                   </td>
                 </tr>
               ) : (
@@ -263,7 +265,7 @@ export default function OrderRecord() {
                         <div className="ml-3">
                           <div className="text-sm font-medium"
                                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                            {order.customer?.name || 'Walk-in Customer'}
+                            {order.customer?.name || t('walkInCustomer')}
                           </div>
                         </div>
                       </div>
@@ -281,7 +283,7 @@ export default function OrderRecord() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status || 'Pending')}`}>
                         {getStatusIcon(order.status || 'Pending')}
-                        <span className="ml-2">{order.status || 'Pending'}</span>
+                        <span className="ml-2">{order.status || t('pending')}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -301,7 +303,7 @@ export default function OrderRecord() {
         {/* Records info */}
         <div className="text-sm"
              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#374151'}}>
-          Showing {startIndex + 1} to {Math.min(endIndex, orders.length)} of {orders.length} orders
+          {t('showingOrders', { start: startIndex + 1, end: Math.min(endIndex, orders.length), total: orders.length })}
         </div>
 
         {/* Pagination controls */}
@@ -330,7 +332,7 @@ export default function OrderRecord() {
               }
             }}
           >
-            <span className="sr-only">Previous</span>
+            <span className="sr-only">{t('previous')}</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -366,7 +368,7 @@ export default function OrderRecord() {
               }
             }}
           >
-            <span className="sr-only">Next</span>
+            <span className="sr-only">{t('next')}</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

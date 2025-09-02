@@ -1,19 +1,24 @@
 import { useEffect } from 'react';
-import { Sun, Moon, ChevronLeft, Monitor } from 'lucide-react';
+import { Sun, Moon, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeProvider';
 
 export default function SettingsToggles() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 
   // Helper function to determine if current theme is dark
-  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const isDark = theme === 'dark';
 
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
+    
+    // Force reload page for immediate language update
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const checkAuth = async () => {
@@ -64,11 +69,11 @@ export default function SettingsToggles() {
           <div>
             <h2 className="text-lg font-medium"
                 style={{color: isDark ? '#d1d5db' : '#4b5563'}}>
-              PharmaC
+              {t('pharmaC')}
             </h2>
             <h1 className="text-2xl font-semibold"
                 style={{color: isDark ? 'white' : '#111827'}}>
-              Page Settings
+              {t('pageSettings')}
             </h1>
           </div>
         </div>
@@ -83,7 +88,7 @@ export default function SettingsToggles() {
           <div className="flex items-center justify-between mb-8">
             <span className="text-xl"
                   style={{color: isDark ? 'white' : '#111827'}}>
-              Language
+              {t('language')}
             </span>
             <div className="flex rounded-full p-0.5"
                  style={{backgroundColor: isDark ? '#4b5563' : '#e5e7eb'}}>
@@ -148,12 +153,18 @@ export default function SettingsToggles() {
           <div className="flex items-center justify-between">
             <span className="text-xl"
                   style={{color: isDark ? 'white' : '#111827'}}>
-              Theme
+              {t('theme')}
             </span>
             <div className="flex rounded-full p-0.5"
                  style={{backgroundColor: isDark ? '#4b5563' : '#e5e7eb'}}>
               <button
-                onClick={() => setTheme('light')}
+                onClick={() => {
+                  setTheme('light');
+                  // Force reload page for immediate theme update
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 100);
+                }}
                 className="p-1.5 rounded-full transition-all duration-200"
                 style={{
                   backgroundColor: theme === 'light' 
@@ -180,34 +191,13 @@ export default function SettingsToggles() {
                 <Sun size={16} />
               </button>
               <button
-                onClick={() => setTheme('system')}
-                className="p-1.5 rounded-full transition-all duration-200"
-                style={{
-                  backgroundColor: theme === 'system' 
-                    ? (isDark ? '#14b8a6' : '#14b8a6')
-                    : 'transparent',
-                  color: theme === 'system' 
-                    ? 'white' 
-                    : (isDark ? '#d1d5db' : '#4b5563'),
-                  boxShadow: theme === 'system' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+                onClick={() => {
+                  setTheme('dark');
+                  // Force reload page for immediate theme update
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 100);
                 }}
-                onMouseEnter={(e) => {
-                  if (theme !== 'system') {
-                    const target = e.target as HTMLButtonElement;
-                    target.style.color = isDark ? 'white' : '#111827';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (theme !== 'system') {
-                    const target = e.target as HTMLButtonElement;
-                    target.style.color = isDark ? '#d1d5db' : '#4b5563';
-                  }
-                }}
-              >
-                <Monitor size={16} />
-              </button>
-              <button
-                onClick={() => setTheme('dark')}
                 className="p-1.5 rounded-full transition-all duration-200"
                 style={{
                   backgroundColor: theme === 'dark' 
@@ -241,7 +231,7 @@ export default function SettingsToggles() {
                style={{backgroundColor: isDark ? '#4b5563' : '#f9fafb'}}>
             <div className="text-sm text-center"
                  style={{color: isDark ? '#d1d5db' : '#4b5563'}}>
-              <p>Language: {i18n.language.toUpperCase()} | Mode: {theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'System'}</p>
+              <p>{t('language')}: {i18n.language.toUpperCase()} | {t('theme')}: {theme === 'dark' ? t('darkMode') : t('lightMode')}</p>
             </div>
           </div>
 

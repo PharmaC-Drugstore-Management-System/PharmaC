@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 interface Document {
@@ -22,18 +23,12 @@ interface Document {
 }
 
 export default function DocumentRecord() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPDF, setSelectedPDF] = useState<number | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [showSignatureModal, setShowSignatureModal] = useState(false);
-  const [selectedDocumentForSignature, setSelectedDocumentForSignature] = useState<number | null>(null);
-  const [signatureData, setSignatureData] = useState({
-    signer_name: '',
-    cert_serial_number: '',
-    signature_hash: ''
-  });
 
   const checkme = async () => {
     try {
@@ -116,8 +111,8 @@ export default function DocumentRecord() {
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2"
-              style={{color: document.documentElement.classList.contains('dark') ? '#10b981' : '#065f46'}}>Document Records</h1>
-          <p style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>All purchase order documents in the system</p>
+              style={{color: document.documentElement.classList.contains('dark') ? '#10b981' : '#065f46'}}>{t('documentRecords')}</h1>
+          <p style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('allPurchaseOrderDocuments')}</p>
         </div>
         
         {isLoading ? (
@@ -125,7 +120,7 @@ export default function DocumentRecord() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
                    style={{borderColor: document.documentElement.classList.contains('dark') ? '#10b981' : '#065f46'}}></div>
-              <span style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Loading documents...</span>
+              <span style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('loadingDocuments')}</span>
             </div>
           </div>
         ) : (
@@ -134,7 +129,7 @@ export default function DocumentRecord() {
               <div className="mb-4">
                 <p className="text-sm"
                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  Found {documents.length} document(s)
+                  {t('foundDocuments', { count: documents.length })}
                 </p>
               </div>
             )}
@@ -163,7 +158,7 @@ export default function DocumentRecord() {
                     
                     {/* Signature Indicator */}
                     {doc.po_signature && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1" title={`Signed by: ${doc.po_signature.signer_name}`}>
+                      <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1" title={t('signedBy', { name: doc.po_signature.signer_name })}>
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -180,7 +175,7 @@ export default function DocumentRecord() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                        Click to preview
+                        {t('clickToPreview')}
                       </div>
                     </div>
                   </div>
@@ -216,8 +211,8 @@ export default function DocumentRecord() {
                     {doc.po_signature && (
                       <p className="text-xs truncate"
                          style={{color: document.documentElement.classList.contains('dark') ? '#10b981' : '#059669'}}
-                         title={`Signed by: ${doc.po_signature.signer_name}`}>
-                        ✓ Signed by {doc.po_signature.signer_name}
+                         title={t('signedBy', { name: doc.po_signature.signer_name })}>
+                        ✓ {t('signedBy', { name: doc.po_signature.signer_name })}
                       </p>
                     )}
                   </div>
@@ -235,8 +230,8 @@ export default function DocumentRecord() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium mb-2"
-                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>No documents found</h3>
-                <p style={{color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'}}>New documents will appear here when created</p>
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('noDocumentsFound')}</h3>
+                <p style={{color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'}}>{t('newDocumentsWillAppear')}</p>
               </div>
             )}
           </>
@@ -257,13 +252,13 @@ export default function DocumentRecord() {
               <div className="flex justify-between items-center p-4 border-b"
                    style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
                 <h2 className="text-lg font-semibold"
-                    style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1f2937'}}>PDF Preview</h2>
+                    style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1f2937'}}>{t('pdfPreview')}</h2>
                 <div className="flex gap-2">
                   <button
                     onClick={() => window.open(`http://localhost:5000/purchase/pdf/${selectedPDF}`, '_blank')}
                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm transition-colors"
                   >
-                    Open in New Tab
+                    {t('openInNewTab')}
                   </button>
                   <button
                     onClick={closePDFPreview}
@@ -279,7 +274,7 @@ export default function DocumentRecord() {
                       e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af';
                     }}
                   >
-                    Close
+                    {t('close')}
                   </button>
                 </div>
               </div>

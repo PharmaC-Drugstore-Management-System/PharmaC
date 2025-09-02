@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Plus, User, Settings, ChevronDown, LogOut, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import NotificationDropdown from "./NotificationDropdown";
+import LanguageSwitcher from "./LanguageSwitcher";
+import ThemeSwitcher from "./ThemeSwitcher";
 import { io, Socket } from "socket.io-client";
 
 interface UserProfile {
@@ -25,6 +28,7 @@ interface Notification {
 
 export default function Header() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [employeeId, setEmployeeId] = useState<number | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -462,7 +466,7 @@ export default function Header() {
             }}
           >
             <Plus className="w-5 h-5 mr-2" />
-           Buy Medicine
+            {t('buyMedicine')}
           </button>
 
           <div className="relative">
@@ -504,6 +508,12 @@ export default function Header() {
               </div>
             )}
           </div>
+
+          {/* Language Switcher */}
+          <LanguageSwitcher showText={false} className="mr-2" />
+
+          {/* Theme Switcher */}
+          <ThemeSwitcher showText={false} className="mr-4" />
 
           {/* Profile Dropdown */}
           <div className="relative">
