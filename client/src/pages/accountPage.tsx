@@ -248,9 +248,14 @@ export default function AccountPage() {
 
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen"
+             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
             {/* Header */}
-            <div className="bg-white shadow-sm border-b">
+            <div className="shadow-sm border-b"
+                 style={{
+                   backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                   borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                 }}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center py-6">
                          <button
@@ -260,8 +265,10 @@ export default function AccountPage() {
                             <ChevronLeft className="w-6 h-6 text-white" />
                         </button>
                         <div>
-                            <h2 className="text-lg font-medium text-gray-600">PharmaC</h2>
-                            <h1 className="text-2xl font-bold text-gray-900">Account Management</h1>
+                            <h2 className="text-lg font-medium"
+                                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>PharmaC</h2>
+                            <h1 className="text-2xl font-bold"
+                                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>Account Management</h1>
                         </div>
                     </div>
                 </div>
@@ -269,14 +276,20 @@ export default function AccountPage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Profile Header Card */}
-                <div className="bg-white rounded-2xl shadow-lg mb-8 overflow-hidden border border-gray-200">
-                    <div className="bg-gray-800 px-8 py-6">
+                <div className="rounded-2xl shadow-lg mb-8 overflow-hidden border"
+                     style={{
+                       backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                       borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                     }}>
+                    <div className="px-8 py-6"
+                         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151'}}>
                         <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
 
                             {/* Profile Image */}
                             <div className="relative">
                                 <div className="w-32 h-32 rounded-full overflow-hidden bg-white p-1 shadow-lg">
-                                    <div className="w-full h-full rounded-full overflow-hidden bg-gray-200 group cursor-pointer relative">
+                                    <div className="w-full h-full rounded-full overflow-hidden group cursor-pointer relative"
+                                         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
                                         <img
                                             src={imageUrl}
                                             alt="Profile"
@@ -305,14 +318,24 @@ export default function AccountPage() {
                                     <div className="space-y-2">
                                         <input
                                             type="text"
-                                            className="text-2xl font-bold bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-lg px-4 py-2 w-full"
+                                            className="text-2xl font-bold placeholder-gray-500 border rounded-lg px-4 py-2 w-full"
+                                            style={{
+                                              backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                              borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                                              color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                            }}
                                             value={firstname}
                                             onChange={(e) => setFirstname(e.target.value)}
                                             placeholder="First name"
                                         />
                                         <input
                                             type="text"
-                                            className="text-2xl font-bold bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-lg px-4 py-2 w-full"
+                                            className="text-2xl font-bold placeholder-gray-500 border rounded-lg px-4 py-2 w-full"
+                                            style={{
+                                              backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                              borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                                              color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                            }}
                                             value={lastname}
                                             onChange={(e) => setLastname(e.target.value)}
                                             placeholder="Last name"
@@ -322,7 +345,8 @@ export default function AccountPage() {
                                     <h1 className="text-3xl font-bold mb-2">{`${firstname} ${lastname}`}</h1>
                                 )}
                                 <div className="flex items-center justify-center md:justify-start space-x-2">
-                                    <span className="px-3 py-1 bg-gray-700 rounded-full text-sm font-medium">
+                                    <span className="px-3 py-1 rounded-full text-sm font-medium"
+                                          style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#374151'}}>
                                         Employee ID: #10001
                                     </span>
                                 </div>
@@ -334,28 +358,64 @@ export default function AccountPage() {
                 {/* Information Cards Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     {/* Personal Information Card */}
-                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-                        <div className="bg-gray-700 px-6 py-4">
+                    <div className="rounded-2xl shadow-lg overflow-hidden border"
+                         style={{
+                           backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                           borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                         }}>
+                        <div className="px-6 py-4"
+                             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151'}}>
                             <h2 className="text-xl font-bold text-white">Personal Information</h2>
                         </div>
                         <div className="p-6 space-y-4">
                             {userInfo.slice(0, 5).map((item, index) => (
                                 <div key={index} className="group">
                                     <div className="flex flex-col space-y-2">
-                                        <label className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                        <label className="text-sm font-semibold uppercase tracking-wide"
+                                               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                                             {item.label}
                                         </label>
                                         {isEditing ? (
                                             <input
                                                 type={item.label === 'Email' ? 'email' : item.label === 'Phone' ? 'tel' : 'text'}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-gray-600 focus:outline-none transition-colors duration-200 bg-white hover:border-gray-400"
+                                                className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors duration-200"
+                                                style={{
+                                                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                                  borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                                                  color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                                }}
+                                                onFocus={(e) => {
+                                                  const target = e.target as HTMLInputElement;
+                                                  target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280';
+                                                }}
+                                                onBlur={(e) => {
+                                                  const target = e.target as HTMLInputElement;
+                                                  target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                  const target = e.target as HTMLInputElement;
+                                                  if (target !== document.activeElement) {
+                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af';
+                                                  }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                  const target = e.target as HTMLInputElement;
+                                                  if (target !== document.activeElement) {
+                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
+                                                  }
+                                                }}
                                                 value={item.value}
                                                 onChange={(e) => handleInputChange(index, e.target.value)}
                                                 placeholder={`Enter ${item.label.toLowerCase()}`}
                                             />
                                         ) : (
-                                            <div className="px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
-                                                <span className="text-gray-900 font-medium">
+                                            <div className="px-4 py-3 rounded-xl border"
+                                                 style={{
+                                                   backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                                                   borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
+                                                 }}>
+                                                <span className="font-medium"
+                                                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                                                     {item.value || 'Not specified'}
                                                 </span>
                                             </div>
@@ -367,28 +427,64 @@ export default function AccountPage() {
                     </div>
 
                     {/* Address & Work Information Card */}
-                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-                        <div className="bg-gray-700 px-6 py-4">
+                    <div className="rounded-2xl shadow-lg overflow-hidden border"
+                         style={{
+                           backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                           borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                         }}>
+                        <div className="px-6 py-4"
+                             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151'}}>
                             <h2 className="text-xl font-bold text-white">Address & Work Information</h2>
                         </div>
                         <div className="p-6 space-y-4">
                             {userInfo.slice(5).map((item, index) => (
                                 <div key={index + 5} className="group">
                                     <div className="flex flex-col space-y-2">
-                                        <label className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                        <label className="text-sm font-semibold uppercase tracking-wide"
+                                               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                                             {item.label}
                                         </label>
                                         {isEditing ? (
                                             <input
                                                 type="text"
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-gray-600 focus:outline-none transition-colors duration-200 bg-white hover:border-gray-400"
+                                                className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors duration-200"
+                                                style={{
+                                                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                                  borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                                                  color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                                }}
+                                                onFocus={(e) => {
+                                                  const target = e.target as HTMLInputElement;
+                                                  target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280';
+                                                }}
+                                                onBlur={(e) => {
+                                                  const target = e.target as HTMLInputElement;
+                                                  target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                  const target = e.target as HTMLInputElement;
+                                                  if (target !== document.activeElement) {
+                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af';
+                                                  }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                  const target = e.target as HTMLInputElement;
+                                                  if (target !== document.activeElement) {
+                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
+                                                  }
+                                                }}
                                                 value={item.value}
                                                 onChange={(e) => handleInputChange(index + 5, e.target.value)}
                                                 placeholder={`Enter ${item.label.toLowerCase()}`}
                                             />
                                         ) : (
-                                            <div className="px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
-                                                <span className="text-gray-900 font-medium">
+                                            <div className="px-4 py-3 rounded-xl border"
+                                                 style={{
+                                                   backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                                                   borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
+                                                 }}>
+                                                <span className="font-medium"
+                                                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                                                     {item.value || 'Not specified'}
                                                 </span>
                                             </div>
@@ -403,7 +499,19 @@ export default function AccountPage() {
                 {/* Action Button */}
                 <div className="flex justify-center">
                     <button
-                        className="px-12 py-4 rounded-2xl text-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gray-800 hover:bg-gray-700 text-white"
+                        className="px-12 py-4 rounded-2xl text-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
+                        style={{
+                          backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151',
+                          color: 'white'
+                        }}
+                        onMouseEnter={(e) => {
+                          const target = e.target as HTMLButtonElement;
+                          target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#374151' : '#4b5563';
+                        }}
+                        onMouseLeave={(e) => {
+                          const target = e.target as HTMLButtonElement;
+                          target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151';
+                        }}
                         onClick={() => {
                             if (isEditing) {
                                 handleEdit();

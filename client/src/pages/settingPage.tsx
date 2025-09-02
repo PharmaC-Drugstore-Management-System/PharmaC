@@ -37,9 +37,19 @@ export default function SettingsPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br"
+         style={{
+           background: document.documentElement.classList.contains('dark') 
+             ? 'linear-gradient(to bottom right, #111827, #374151)' 
+             : 'linear-gradient(to bottom right, #f9fafb, white)'
+         }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-8 ">
+      <div className="px-6 py-8"
+           style={{
+             background: document.documentElement.classList.contains('dark')
+               ? 'linear-gradient(to right, #047857, #065f46)'
+               : 'linear-gradient(to right, #0d9488, #0f766e)'
+           }}>
         <div className="flex items-center max-w-6xl mx-auto">
           <button 
             className="flex items-center justify-center w-12 h-12 bg-white bg-opacity-20 rounded-full mr-4 hover:bg-opacity-30 transition-all duration-200" 
@@ -56,17 +66,39 @@ export default function SettingsPage() {
 
       {/* Settings Menu */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="divide-y divide-gray-100">
+        <div className="rounded-2xl border overflow-hidden"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
+          <div className="divide-y"
+               style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6'}}>
             {settingsItems.map((item, index) => (
               <div key={index} className="group">
                 <a
                   href={item.href}
-                  className="flex items-center justify-between px-8 py-6 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-all duration-200"
+                  className="flex items-center justify-between px-8 py-6 transition-all duration-200"
+                  style={{
+                    color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') 
+                      ? 'rgba(6, 78, 59, 0.2)' : '#f0fdfa';
+                    e.currentTarget.style.color = document.documentElement.classList.contains('dark') 
+                      ? '#5eead4' : '#0f766e';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = document.documentElement.classList.contains('dark') 
+                      ? '#d1d5db' : '#374151';
+                  }}
                 >
                   <span className="text-lg font-medium">{item.label}</span>
                   <div className="flex items-center">
-                    <ChevronLeft className="w-5 h-5 rotate-180 text-gray-400 group-hover:text-teal-500 transition-colors duration-200" />
+                    <ChevronLeft className="w-5 h-5 rotate-180 transition-colors duration-200"
+                                 style={{
+                                   color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'
+                                 }} />
                   </div>
                 </a>
               </div>
@@ -75,7 +107,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Footer Info */}
-        <div className="text-center text-sm text-gray-500 mt-8">
+        <div className="text-center text-sm mt-8"
+             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
           <p>PharmaC Management System</p>
           <p className="mt-1">Version 1.0.0</p>
         </div>

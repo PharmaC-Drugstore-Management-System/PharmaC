@@ -64,13 +64,13 @@ export default function NavbarComponent() {
 
    return (
     <div className="h-screen flex items-center">
-      <div className="bg-teal-600 flex flex-col items-center rounded-[20px]" style={{ width: '60px', height: '85vh', marginLeft: '20px', marginRight: '20px' }}>
+      <div className="bg-teal-600 dark:bg-teal-700 flex flex-col items-center rounded-[20px]" style={{ width: '60px', height: '85vh', marginLeft: '20px', marginRight: '20px' }}>
         <div className="flex flex-col items-center justify-between h-full py-8">
           <div className="flex flex-col space-y-6">
             {navigationItems.map((item, index) => (
               <Tooltip key={index} text={item.name}>
                 <div 
-                  className={`flex items-center justify-center w-10 h-10 ${activeTab === index ? 'bg-white rounded-full' : ''} cursor-pointer transition-all duration-200 hover:scale-110`}
+                  className={`flex items-center justify-center w-10 h-10 ${activeTab === index ? 'bg-white dark:bg-gray-200 rounded-full' : ''} cursor-pointer transition-all duration-200 hover:scale-110`}
                   onClick={() => handleTabClick(index)}
                 >
                   {item.icon ? (

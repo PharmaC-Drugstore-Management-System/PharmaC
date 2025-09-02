@@ -816,22 +816,31 @@ export default function POSPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4"
+         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">ระบบขายหน้าร้าน (POS)</h1>
+        <h1 className="text-3xl font-bold mb-6"
+            style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>ระบบขายหน้าร้าน (POS)</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Product Search & List */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+          <div className="lg:col-span-2 rounded-lg shadow-md p-6"
+               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
             <div className="mb-4">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-5 w-5"
+                        style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af'}} />
                 <input
                   type="text"
                   placeholder="ค้นหาสินค้า (ชื่อ, แบรนด์, บาร์โค้ด)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                  }}
                 />
               </div>
             </div>
@@ -840,23 +849,31 @@ export default function POSPage() {
               {filteredProducts.map((product) => (
                 <div
                   key={product.product_id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                  style={{
+                    borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white'
+                  }}
                   onClick={() => addToCart(product)}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-sm text-gray-800 truncate">
+                    <h3 className="font-medium text-sm truncate"
+                        style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1f2937'}}>
                       {product.product_name}
                     </h3>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs"
+                          style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280'}}>
                       คงเหลือ: {product.stock}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 mb-2">{product.brand}</p>
+                  <p className="text-xs mb-2"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{product.brand}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-green-600">
                       ฿{product.price?.toFixed(2)}
                     </span>
-                    <span className="text-xs text-gray-500">{product.unit}</span>
+                    <span className="text-xs"
+                          style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280'}}>{product.unit}</span>
                   </div>
                 </div>
               ))}
@@ -864,21 +881,26 @@ export default function POSPage() {
           </div>
 
           {/* Cart & Payment */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4 flex items-center">
+          <div className="rounded-lg shadow-md p-6"
+               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+            <h2 className="text-xl font-bold mb-4 flex items-center"
+                style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
               <ShoppingCart className="mr-2" />
               รายการสินค้า
             </h2>
 
             {/* Member Section */}
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <div className="mb-4 p-3 rounded-lg"
+                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb'}}>
               {currentMember ? (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <User size={20} className="text-blue-600" />
                     <div>
-                      <p className="font-medium text-sm">{currentMember.name}</p>
-                      <p className="text-xs text-gray-600">
+                      <p className="font-medium text-sm"
+                         style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{currentMember.name}</p>
+                      <p className="text-xs"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                         <Star size={12} className="inline mr-1" />
                         {currentMember.points} แต้ม | {currentMember.level}
                       </p>
@@ -894,7 +916,19 @@ export default function POSPage() {
               ) : (
                 <button
                   onClick={() => setShowMemberModal(true)}
-                  className="w-full flex items-center justify-center space-x-2 py-2 border-2 border-dashed border-gray-300 hover:border-blue-400 text-gray-600 hover:text-blue-600 transition-colors"
+                  className="w-full flex items-center justify-center space-x-2 py-2 border-2 border-dashed hover:border-blue-400 transition-colors"
+                  style={{
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#60a5fa';
+                    e.currentTarget.style.color = '#2563eb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
+                    e.currentTarget.style.color = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280';
+                  }}
                 >
                   <User size={20} />
                   <span>เพิ่มสมาชิก</span>
@@ -909,7 +943,7 @@ export default function POSPage() {
                 cart.map((item) => (
                   <div key={item.product_id} className="border-b border-gray-200 py-3">
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-sm">{item.product_name}</h4>
+                      <h4 className="font-medium text-sm"  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{item.product_name}</h4>
                       <button
                         onClick={() => removeFromCart(item.product_id)}
                         className="text-red-500 hover:text-red-700"
@@ -925,7 +959,7 @@ export default function POSPage() {
                         >
                           <Minus size={16} />
                         </button>
-                        <span className="font-medium">{item.quantity}</span>
+                        <span className="font-medium" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
                           className="bg-gray-200 hover:bg-gray-300 rounded px-2 py-1"
@@ -944,15 +978,17 @@ export default function POSPage() {
 
             {cart.length > 0 && (
               <>
-                <div className="border-t border-gray-200 pt-4 mb-4">
+                <div className="border-t pt-4 mb-4"
+                     style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
                   <div className="flex justify-between items-center text-xl font-bold mb-2">
-                    <span>รวม:</span>
+                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รวม:</span>
                     <span className="text-green-600">฿{getTotalAmount().toFixed(2)}</span>
                   </div>
                   
                   {/* Points Section */}
                   {currentMember && (
-                    <div className="flex justify-between items-center text-sm text-blue-600 mb-2">
+                    <div className="flex justify-between items-center text-sm mb-2"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}}>
                       <span className="flex items-center">
                         <Star size={16} className="mr-1" />
                         แต้มที่จะได้รับ:
@@ -964,26 +1000,35 @@ export default function POSPage() {
 
                 {/* Payment Method */}
                 <div className="mb-4">
-                  <h3 className="font-medium mb-2">วิธีการชำระเงิน</h3>
+                  <h3 className="font-medium mb-2"
+                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>วิธีการชำระเงิน</h3>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => setSelectedPayment("cash")}
-                      className={`p-2 rounded text-sm flex flex-col items-center ${
-                        selectedPayment === "cash"
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      }`}
+                      className="p-2 rounded text-sm flex flex-col items-center"
+                      style={{
+                        backgroundColor: selectedPayment === "cash" 
+                          ? "#3b82f6" 
+                          : document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
+                        color: selectedPayment === "cash" 
+                          ? "white" 
+                          : document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                      }}
                     >
                       <Banknote size={20} />
                       <span>เงินสด</span>
                     </button>
                     <button
                       onClick={() => setSelectedPayment("promptpay")}
-                      className={`p-2 rounded text-sm flex flex-col items-center ${
-                        selectedPayment === "promptpay"
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      }`}
+                      className="p-2 rounded text-sm flex flex-col items-center"
+                      style={{
+                        backgroundColor: selectedPayment === "promptpay" 
+                          ? "#3b82f6" 
+                          : document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
+                        color: selectedPayment === "promptpay" 
+                          ? "white" 
+                          : document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                      }}
                     >
                       <QrCode size={20} />
                       <span>จ่ายด้วย QR</span>
@@ -993,7 +1038,8 @@ export default function POSPage() {
 
                 {selectedPayment === "cash" && (
                   <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-sm font-medium mb-2"
+                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
                       จำนวนเงินที่รับ
                     </label>
                     <input
@@ -1001,7 +1047,12 @@ export default function POSPage() {
                       value={customerPaid}
                       onChange={(e) => setCustomerPaid(e.target.value)}
                       placeholder="0.00"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                      }}
                     />
                     {customerPaid && getChange() >= 0 && (
                       <p className="text-sm text-green-600 mt-1">
@@ -1040,9 +1091,15 @@ export default function POSPage() {
       {/* Member Search Modal */}
       {showMemberModal && (
         <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-lg w-full mx-4 border border-blue-300 shadow-lg overflow-y-auto" style={{ maxHeight: '90vh' }}>
+            <div className="rounded-lg p-8 max-w-lg w-full mx-4 border shadow-lg overflow-y-auto" 
+                 style={{ 
+                   maxHeight: '90vh',
+                   backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                   borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#60a5fa'
+                 }}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold flex items-center">
+              <h3 className="text-xl font-bold flex items-center"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
                 <User className="mr-2" />
                 {memberModalMode === 'search' ? 'Search Member' : 'Add New Member'}
               </h3>
@@ -1052,31 +1109,43 @@ export default function POSPage() {
                   setMemberModalMode('search');
                   setNewMemberData({ name: '', phone: '', email: '', address: '' });
                 }}
-                className="text-gray-500 hover:text-gray-700"
+                className="hover:text-gray-700"
+                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}
               >
                 <X size={24} />
               </button>
             </div>
 
             {/* Mode Toggle */}
-            <div className="flex mb-4 bg-gray-100 rounded-lg p-1">
+            <div className="flex mb-4 rounded-lg p-1"
+                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6'}}>
               <button
                 onClick={() => setMemberModalMode('search')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  memberModalMode === 'search'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
+                className="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: memberModalMode === 'search' 
+                    ? (document.documentElement.classList.contains('dark') ? '#374151' : 'white')
+                    : 'transparent',
+                  color: memberModalMode === 'search'
+                    ? '#2563eb'
+                    : document.documentElement.classList.contains('dark') ? '#d1d5db' : '#4b5563',
+                  boxShadow: memberModalMode === 'search' ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)' : 'none'
+                }}
               >
                 Search Member
               </button>
               <button
                 onClick={() => setMemberModalMode('add')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  memberModalMode === 'add'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
+                className="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: memberModalMode === 'add' 
+                    ? (document.documentElement.classList.contains('dark') ? '#374151' : 'white')
+                    : 'transparent',
+                  color: memberModalMode === 'add'
+                    ? '#2563eb'
+                    : document.documentElement.classList.contains('dark') ? '#d1d5db' : '#4b5563',
+                  boxShadow: memberModalMode === 'add' ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)' : 'none'
+                }}
               >
                 Add New Member
               </button>
@@ -1086,7 +1155,8 @@ export default function POSPage() {
               // Search Member Mode
               <>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-sm font-medium mb-2"
+                         style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
                     Phone Number
                   </label>
                   <input
@@ -1094,7 +1164,12 @@ export default function POSPage() {
                     value={memberPhone}
                     onChange={(e) => setMemberPhone(e.target.value)}
                     placeholder="Enter phone number..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{
+                      backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                      borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                      color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                    }}
                     maxLength={10}
                   />
                 </div>
@@ -1116,15 +1191,21 @@ export default function POSPage() {
                       setShowMemberModal(false);
                       setMemberPhone("");
                     }}
-                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
+                    className="flex-1 py-2 rounded-lg"
+                    style={{
+                      backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
+                      color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                    }}
                   >
                     Cancel
                   </button>
                 </div>
 
                 {/* Quick Member Selection */}
-                <div className="pt-4 border-t border-gray-200">
-                  <p className="text-sm text-gray-600 mb-3">Quick Access Customers:</p>
+                <div className="pt-4 border-t"
+                     style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
+                  <p className="text-sm mb-3"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Quick Access Customers:</p>
                   <div className="space-y-2">
                     {quickMembers.length > 0 ? quickMembers.map((customer, index) => (
                       <button
@@ -1142,13 +1223,16 @@ export default function POSPage() {
                           setMemberPhone(customer.phone_number);
                           setShowMemberModal(false);
                         }}
-                        className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded text-sm"
+                        className="w-full text-left p-2 hover:bg-gray-100 rounded text-sm"
+                        style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb'}}
                       >
-                        <div className="font-medium">{customer.name}</div>
-                        <div className="text-gray-600">{customer.phone_number}</div>
+                        <div className="font-medium"
+                             style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{customer.name}</div>
+                        <div style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{customer.phone_number}</div>
                       </button>
                     )) : (
-                      <p className="text-sm text-gray-500 text-center py-2">No customers found</p>
+                      <p className="text-sm text-center py-2"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>No customers found</p>
                     )}
                   </div>
                 </div>
@@ -1158,7 +1242,8 @@ export default function POSPage() {
               <>
                 <div className="space-y-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-sm font-medium mb-2"
+                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
                       Full Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1166,12 +1251,18 @@ export default function POSPage() {
                       value={newMemberData.name}
                       onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})}
                       placeholder="Enter full name"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                      }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-sm font-medium mb-2"
+                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
                       Phone Number <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1179,13 +1270,19 @@ export default function POSPage() {
                       value={newMemberData.phone}
                       onChange={(e) => setNewMemberData({...newMemberData, phone: e.target.value})}
                       placeholder="08X-XXX-XXXX"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                      }}
                       maxLength={10}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-sm font-medium mb-2"
+                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
                       Email
                     </label>
                     <input
@@ -1193,19 +1290,30 @@ export default function POSPage() {
                       value={newMemberData.email}
                       onChange={(e) => setNewMemberData({...newMemberData, email: e.target.value})}
                       placeholder="example@email.com"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                      }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-sm font-medium mb-2"
+                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
                       Address
                     </label>
                     <textarea
                       value={newMemberData.address}
                       onChange={(e) => setNewMemberData({...newMemberData, address: e.target.value})}
                       placeholder="Enter address"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                      }}
                       rows={3}
                     />
                   </div>
@@ -1229,14 +1337,20 @@ export default function POSPage() {
                       setMemberModalMode('search');
                       setNewMemberData({ name: '', phone: '', email: '', address: '' });
                     }}
-                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
+                    className="flex-1 py-2 rounded-lg"
+                    style={{
+                      backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
+                      color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                    }}
                   >
                     Cancel
                   </button>
                 </div>
 
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-700">
+                <div className="mt-4 p-3 rounded-lg"
+                     style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe'}}>
+                  <p className="text-sm"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#93c5fd' : '#1d4ed8'}}>
                     💡 <strong>Note:</strong> New members will start at Bronze level with 0 points
                   </p>
                 </div>
@@ -1249,67 +1363,82 @@ export default function POSPage() {
       {/* Receipt Modal */}
       {showReceipt && receiptData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="rounded-lg p-6 max-w-md w-full mx-4"
+               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">ใบเสร็จรับเงิน</h3>
+              <h3 className="text-xl font-bold"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>ใบเสร็จรับเงิน</h3>
               <button
                 onClick={() => setShowReceipt(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="hover:text-gray-700"
+                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}
               >
                 <X size={24} />
               </button>
             </div>
             
             <div className="text-center mb-4">
-              <h4 className="font-bold">ร้านขายยา PharmaC</h4>
-              <p className="text-sm text-gray-600">เลขที่: {receiptData.id}</p>
-              <p className="text-sm text-gray-600">{receiptData.date}</p>
+              <h4 className="font-bold"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>ร้านขายยา PharmaC</h4>
+              <p className="text-sm"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>เลขที่: {receiptData.id}</p>
+              <p className="text-sm"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{receiptData.date}</p>
             </div>
 
             {/* Member Info in Receipt */}
             {receiptData.member && (
-              <div className="border-t border-b border-gray-200 py-3 mb-4">
+              <div className="border-t border-b py-3 mb-4"
+                   style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
                 <div className="flex items-center justify-center space-x-2">
-                  <User size={16} />
-                  <span className="font-medium">สมาชิก: {receiptData.member.name}</span>
+                  <User size={16} style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}} />
+                  <span className="font-medium"
+                        style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>สมาชิก: {receiptData.member.name}</span>
                 </div>
-                <p className="text-center text-sm text-gray-600">
+                <p className="text-center text-sm"
+                   style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                   {receiptData.member.phone} | {receiptData.member.level}
                 </p>
               </div>
             )}
 
-            <div className="border-t border-b border-gray-200 py-4 mb-4">
+            <div className="border-t border-b py-4 mb-4"
+                 style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
               {receiptData.items.map((item: CartItem) => (
                 <div key={item.product_id} className="flex justify-between mb-2">
                   <div>
-                    <p className="font-medium text-sm">{item.product_name}</p>
-                    <p className="text-xs text-gray-600">
+                    <p className="font-medium text-sm"
+                       style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{item.product_name}</p>
+                    <p className="text-xs"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                       {item.quantity} x ฿{item.price?.toFixed(2)}
                     </p>
                   </div>
-                  <span className="font-medium">฿{item.total.toFixed(2)}</span>
+                  <span className="font-medium"
+                        style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{item.total.toFixed(2)}</span>
                 </div>
               ))}
             </div>
 
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
-                <span>รวม:</span>
-                <span className="font-bold">฿{receiptData.total.toFixed(2)}</span>
+                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รวม:</span>
+                <span className="font-bold"
+                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{receiptData.total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>รับเงิน:</span>
-                <span>฿{receiptData.amountPaid.toFixed(2)}</span>
+                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รับเงิน:</span>
+                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{receiptData.amountPaid.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>เงินทอน:</span>
-                <span>฿{receiptData.change.toFixed(2)}</span>
+                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>เงินทอน:</span>
+                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{receiptData.change.toFixed(2)}</span>
               </div>
               
               {/* Points Earned */}
               {receiptData.member && receiptData.pointsEarned > 0 && (
-                <div className="flex justify-between text-blue-600 font-medium">
+                <div className="flex justify-between font-medium"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}}>
                   <span className="flex items-center">
                     <Star size={16} className="mr-1" />
                     แต้มที่ได้รับ:
@@ -1328,7 +1457,11 @@ export default function POSPage() {
               </button>
               <button
                 onClick={() => setShowReceipt(false)}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
+                className="flex-1 py-2 rounded-lg"
+                style={{
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
+                  color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                }}
               >
                 ปิด
               </button>
@@ -1400,18 +1533,21 @@ export default function POSPage() {
               </div>
 
               {/* Order Details */}
-              <div className="text-left bg-gray-50 p-3 rounded-lg mb-4">
-                <p className="text-sm font-medium mb-2">รายการสินค้า:</p>
+              <div className="text-left p-3 rounded-lg mb-4"
+                   style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb'}}>
+                <p className="text-sm font-medium mb-2"
+                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รายการสินค้า:</p>
                 {cart.map((item, index) => (
                   <div key={index} className="flex justify-between text-sm mb-1">
-                    <span>{item.product_name} x{item.quantity}</span>
-                    <span>฿{item.total.toFixed(2)}</span>
+                    <span style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : 'black'}}>{item.product_name} x{item.quantity}</span>
+                    <span style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : 'black'}}>฿{item.total.toFixed(2)}</span>
                   </div>
                 ))}
-                <div className="border-t pt-2 mt-2">
+                <div className="border-t pt-2 mt-2"
+                     style={{borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'}}>
                   <div className="flex justify-between font-bold">
-                    <span>รวมทั้งหมด:</span>
-                    <span>฿{getTotalAmount().toFixed(2)}</span>
+                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รวมทั้งหมด:</span>
+                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{getTotalAmount().toFixed(2)}</span>
                   </div>
                 </div>
               </div>

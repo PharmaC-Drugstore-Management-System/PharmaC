@@ -23,27 +23,42 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
-  storageKey = 'ui-theme',
+  storageKey = 'pharmaC-theme',
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+    () => {
+      const stored = localStorage.getItem(storageKey) as Theme;
+      console.log('ThemeProvider init - storageKey:', storageKey, 'stored:', stored, 'defaultTheme:', defaultTheme);
+      return stored || defaultTheme;
+    }
   );
 
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
+    
+    console.log('ThemeProvider - Current theme:', theme);
+    console.log('HTML element classes before:', root.className);
 
     if (theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
         .matches
         ? 'dark'
         : 'light';
-      root.classList.add(systemTheme);
+      console.log('System theme detected:', systemTheme);
+      if (systemTheme === 'dark') {
+        root.classList.add('dark');
+      }
       return;
     }
 
-    root.classList.add(theme);
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      console.log('Dark mode applied, HTML classes after:', root.className);
+    } else {
+      console.log('Light mode applied, HTML classes after:', root.className);
+    }
   }, [theme]);
 
   const value = {

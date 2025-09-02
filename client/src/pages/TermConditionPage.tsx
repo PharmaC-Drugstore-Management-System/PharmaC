@@ -73,20 +73,43 @@ export default function TermsConditionsPage() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen"
+         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f3f4f6'}}>
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="shadow-sm border-b"
+           style={{
+             backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+             borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+           }}>
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center">
             <button
-              className="flex items-center justify-center w-10 h-10 bg-green-600 rounded-full mr-4 shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex items-center justify-center w-10 h-10 rounded-full mr-4 shadow-lg transition-all duration-200"
+              style={{
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#059669' : '#16a34a',
+                color: 'white'
+              }}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+              }}
               onClick={() => navigate('/settings')}
             >
               <ChevronLeft className="w-5 h-5 text-white" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Terms and Conditions</h1>
-              <p className="text-sm text-gray-600 mt-1">Terms and Conditions - PharmaC System</p>
+              <h1 className="text-2xl font-bold"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                Terms and Conditions
+              </h1>
+              <p className="text-sm mt-1"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}}>
+                Terms and Conditions - PharmaC System
+              </p>
             </div>
           </div>
         </div>
@@ -94,17 +117,28 @@ export default function TermsConditionsPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Introduction */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-blue-500">
+        <div className="rounded-2xl shadow-lg p-8 mb-8 border-l-4"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#3b82f6' : '#3b82f6'
+             }}>
           <div className="flex items-center mb-4">
-            <Shield className="w-8 h-8 text-blue-600 mr-3" />
-            <h2 className="text-xl font-semibold text-gray-900">About These Terms</h2>
+            <Shield className="w-8 h-8 mr-3"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}} />
+            <h2 className="text-xl font-semibold"
+                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+              About These Terms
+            </h2>
           </div>
-          <p className="text-gray-700 leading-relaxed">
+          <p className="leading-relaxed"
+             style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
             These terms and conditions apply to the use of the PharmaC pharmacy management system. 
             Please read and understand them before using the system. Using the system means you accept all these terms.
           </p>
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
+          <div className="mt-4 p-4 rounded-lg"
+               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe'}}>
+            <p className="text-sm"
+               style={{color: document.documentElement.classList.contains('dark') ? '#93c5fd' : '#1e40af'}}>
               <strong>Effective Date:</strong> August 26, 2025<br />
               <strong>Version:</strong> 1.0
             </p>
@@ -116,17 +150,38 @@ export default function TermsConditionsPage() {
           {sections.map((section, index) => (
             <div
               key={section.id}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
+              className="rounded-2xl shadow-lg overflow-hidden transition-all duration-300"
+              style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLDivElement;
+                target.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLDivElement;
+                target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+              }}
             >
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
+              <div className="px-6 py-4 border-b"
+                   style={{
+                     background: document.documentElement.classList.contains('dark') 
+                       ? 'linear-gradient(to right, #4b5563, #6b7280)' 
+                       : 'linear-gradient(to right, #f9fafb, #f3f4f6)',
+                     borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
+                   }}>
                 <div className="flex items-center">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full mr-4">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full mr-4"
+                       style={{
+                         background: document.documentElement.classList.contains('dark') 
+                           ? 'linear-gradient(to right, #3b82f6, #6366f1)' 
+                           : 'linear-gradient(to right, #3b82f6, #6366f1)'
+                       }}>
                     <div className="text-white">
                       {section.icon}
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold"
+                        style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                       {index + 1}. {section.title}
                     </h3>
                   </div>
@@ -136,8 +191,12 @@ export default function TermsConditionsPage() {
                 <ul className="space-y-3">
                   {section.content.map((item, itemIndex) => (
                     <li key={itemIndex} className="flex items-start">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                      <p className="text-gray-700 leading-relaxed">{item}</p>
+                      <div className="w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0"
+                           style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#3b82f6'}}></div>
+                      <p className="leading-relaxed"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+                        {item}
+                      </p>
                     </li>
                   ))}
                 </ul>
@@ -147,12 +206,23 @@ export default function TermsConditionsPage() {
         </div>
 
         {/* Contact Information */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mt-8 border-l-4 border-green-500">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h3>
+        <div className="rounded-2xl shadow-lg p-8 mt-8 border-l-4"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#10b981' : '#10b981'
+             }}>
+          <h3 className="text-xl font-semibold mb-4"
+              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+            Contact Information
+          </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Contact Details</h4>
-              <p className="text-gray-700 text-sm leading-relaxed">
+              <h4 className="font-medium mb-2"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                Contact Details
+              </h4>
+              <p className="text-sm leading-relaxed"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                 If you have questions about these terms and conditions<br />
                 Please contact the PharmaC development team<br />
                 <strong>Email:</strong> support@pharmac.com<br />
@@ -160,8 +230,12 @@ export default function TermsConditionsPage() {
               </p>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Issue Reporting</h4>
-              <p className="text-gray-700 text-sm leading-relaxed">
+              <h4 className="font-medium mb-2"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                Issue Reporting
+              </h4>
+              <p className="text-sm leading-relaxed"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                 If you encounter usage problems or errors<br />
                 You can report them through the Support system<br />
                 Our team will address issues promptly
@@ -174,7 +248,27 @@ export default function TermsConditionsPage() {
         <div className="mt-8 text-center">
           <button
             onClick={() => navigate('/settings')}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+            className="font-semibold px-8 py-3 rounded-xl shadow-lg transition-all duration-200"
+            style={{
+              background: document.documentElement.classList.contains('dark') 
+                ? 'linear-gradient(to right, #3b82f6, #6366f1)' 
+                : 'linear-gradient(to right, #2563eb, #6366f1)',
+              color: 'white'
+            }}
+            onMouseEnter={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.background = document.documentElement.classList.contains('dark') 
+                ? 'linear-gradient(to right, #1d4ed8, #4f46e5)' 
+                : 'linear-gradient(to right, #1d4ed8, #4f46e5)';
+              target.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+            }}
+            onMouseLeave={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.background = document.documentElement.classList.contains('dark') 
+                ? 'linear-gradient(to right, #3b82f6, #6366f1)' 
+                : 'linear-gradient(to right, #2563eb, #6366f1)';
+              target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            }}
           >
             I have read and accept these terms
           </button>

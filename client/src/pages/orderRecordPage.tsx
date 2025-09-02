@@ -103,14 +103,16 @@ export default function OrderRecord() {
 
 
   return (
-    <div className="bg-gray-50 min-h-screen " >
+    <div className="min-h-screen"
+         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
       <div className="p-4">
       {/* Header */}
       <div className="mb-8">
         {/* Inventory Title */}
         <div className="flex items-center mb-6">
           <div className="w-1 h-8 bg-green-600 mr-2"></div>
-          <h2 className="text-xl font-bold" style={{ color: "black" }}>
+          <h2 className="text-xl font-bold"
+              style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
             Order Records
           </h2>
         </div>
@@ -118,14 +120,20 @@ export default function OrderRecord() {
 
       {/* Summary Cards */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 mb-3">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 rounded-lg shadow-sm border"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Completed Orders</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Completed Orders</p>
+              <p className="text-2xl font-bold"
+                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {orders.filter(order =>
                   order.status?.toUpperCase() === 'COMPLETED' ||
                   order.status?.toUpperCase() === 'SUCCEEDED' ||
@@ -136,74 +144,115 @@ export default function OrderRecord() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 rounded-lg shadow-sm border"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <XCircle className="w-8 h-8 text-red-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Cancelled Orders</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Cancelled Orders</p>
+              <p className="text-2xl font-bold"
+                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {orders.filter(order => order.status?.toUpperCase() === 'CANCELLED' || order.status?.toUpperCase() === 'FAILED').length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 rounded-lg shadow-sm border"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Package className="w-8 h-8 text-blue-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Total Orders</p>
-              <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+              <p className="text-sm font-medium"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Total Orders</p>
+              <p className="text-2xl font-bold"
+                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{orders.length}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 ">
+      <div className="rounded-lg shadow-sm border"
+           style={{
+             backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+             borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+           }}>
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="border-b"
+                 style={{
+                   backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                   borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
+                 }}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                   Order ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                   Customer Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                   Order Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y"
+                   style={{
+                     backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                     borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                   }}>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 text-center"
+                      style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                     Loading orders...
                   </td>
                 </tr>
               ) : currentOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 text-center"
+                      style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                     No orders found
                   </td>
                 </tr>
               ) : (
                 currentOrders.map((order) => (
-                  <tr key={order.order_id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={order.order_id} className="transition-colors"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#374151' : 'white';
+                      }}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="text-sm font-medium text-gray-900">#{order.order_id}</div>
+                        <div className="text-sm font-medium"
+                             style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>#{order.order_id}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -212,17 +261,20 @@ export default function OrderRecord() {
                           <User className="w-4 h-4 text-blue-600" />
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium"
+                               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                             {order.customer?.name || 'Walk-in Customer'}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm"
+                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                         {order.date ? new Date(order.date).toLocaleDateString() : 'N/A'}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs"
+                           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                         {order.date ? `(${new Date(order.date).toLocaleTimeString()})` : ''}
                       </div>
                     </td>
@@ -247,7 +299,8 @@ export default function OrderRecord() {
       {/* Pagination */}
       <div className="mt-6 flex items-center justify-between">
         {/* Records info */}
-        <div className="text-sm text-gray-700">
+        <div className="text-sm"
+             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#374151'}}>
           Showing {startIndex + 1} to {Math.min(endIndex, orders.length)} of {orders.length} orders
         </div>
 
@@ -256,11 +309,26 @@ export default function OrderRecord() {
           <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className={`p-2 text-sm font-medium rounded-lg ${
+            className={`p-2 text-sm font-medium rounded-lg transition-colors ${
               currentPage === 1 
-                ? 'text-gray-400 cursor-not-allowed' 
-                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                ? 'cursor-not-allowed' 
+                : 'hover:bg-gray-100'
             }`}
+            style={{
+              color: currentPage === 1 
+                ? (document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af')
+                : (document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151')
+            }}
+            onMouseEnter={(e) => {
+              if (currentPage !== 1) {
+                e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage !== 1) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }
+            }}
           >
             <span className="sr-only">Previous</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,11 +345,26 @@ export default function OrderRecord() {
           <button
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className={`p-2 text-sm font-medium rounded-lg ${
+            className={`p-2 text-sm font-medium rounded-lg transition-colors ${
               currentPage === totalPages 
-                ? 'text-gray-400 cursor-not-allowed' 
-                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                ? 'cursor-not-allowed' 
+                : 'hover:bg-gray-100'
             }`}
+            style={{
+              color: currentPage === totalPages 
+                ? (document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af')
+                : (document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151')
+            }}
+            onMouseEnter={(e) => {
+              if (currentPage !== totalPages) {
+                e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage !== totalPages) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }
+            }}
           >
             <span className="sr-only">Next</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

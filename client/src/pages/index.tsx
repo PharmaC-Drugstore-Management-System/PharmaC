@@ -198,16 +198,19 @@ export default function PharmaDashboard() {
     const isInStock = item.status === t('in_stock');
 
     return (
-      <div key={item.id} className="border-t border-gray-200  py-3">
+      <div key={item.id} className="border-t py-3"
+           style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
         <div className="flex items-center">
-          <div className="w-16 h-16 bg-gray-200 rounded mr-4"></div>
+          <div className="w-16 h-16 rounded mr-4"
+               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}></div>
           <div className="flex-1">
-            <a href="#" className="text-xl hover:underline text-gray-900">
+            <a href="#" className="text-xl hover:underline"
+               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
               {item.name}
             </a>
           </div>
           <div className="w-24 text-center">
-            <div className="text-gray-900 ">{item.amount}</div>
+            <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{item.amount}</div>
           </div>
           <div className="flex justify-center items-center w-32">
             <span
@@ -225,7 +228,8 @@ export default function PharmaDashboard() {
   });
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen" 
+         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
 
       {/* Main Content */}
 
@@ -234,7 +238,8 @@ export default function PharmaDashboard() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="w-1 h-8 bg-green-600 mr-2"></div>
-            <h2 className="text-xl font-bold text-black">
+            <h2 className="text-xl font-bold"
+                style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
               {t('main_menu')}
             </h2>
           </div>
@@ -251,9 +256,12 @@ export default function PharmaDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Revenue Chart */}
           <div className="lg:col-span-2">
-            <div className="bg-white p-4 rounded-lg shadow">
+            <div className="bg-white p-4 rounded-lg shadow"
+                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                         color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Revenue Forecast</h3>
+                <h3 className="text-lg font-semibold"
+                    style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>Revenue Forecast</h3>
                 <div className="flex items-center space-x-3">
                   {isLoading && (
                     <span className="text-sm text-blue-600">Loading forecast...</span>
@@ -317,7 +325,8 @@ export default function PharmaDashboard() {
               </div>
 
               {/* Model Description */}
-              <div className="mb-3 text-sm text-gray-600">
+              <div className="mb-3 text-sm" 
+                   style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                 {forecastOptions.find(option => option.id === selectedModel)?.description}
               </div>
 
@@ -362,8 +371,10 @@ export default function PharmaDashboard() {
           </div>
 
           {/* Trend Pie Chart */}
-          <div className="bg-white p-4 rounded-lg shadow ">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('trend')}</h3>
+          <div className="p-4 rounded-lg shadow"
+               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+            <h3 className="text-lg font-semibold mb-4"
+                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('trend')}</h3>
             <div className="flex justify-center">
               <PieChart width={300} height={250}>
                 <Pie
@@ -395,17 +406,23 @@ export default function PharmaDashboard() {
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left Column - Sales Stats */}
           <div className="flex flex-col gap-4 h-full">
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">{t('amount_sales')}</h3>
-              <div className="text-4xl font-bold text-center text-gray-900">200</div>
+            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
+                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+              <h3 className="text-lg font-semibold mb-2"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('amount_sales')}</h3>
+              <div className="text-4xl font-bold text-center"
+                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>200</div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col ">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">{t('total_sales')}</h3>
-              <div className="text-4xl font-bold text-center text-gray-900">70,000</div>
+            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
+                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+              <h3 className="text-lg font-semibold mb-2"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('total_sales')}</h3>
+              <div className="text-4xl font-bold text-center"
+                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>70,000</div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
               </div>
@@ -414,30 +431,43 @@ export default function PharmaDashboard() {
 
           {/* Right Column - Inventory Stats */}
           <div className="flex flex-col gap-4 h-full">
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col ">
-              <h3 className="text-lg font-semibold mb-1 text-gray-900">
+            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
+                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+              <h3 className="text-lg font-semibold mb-1"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {t('total_items_in_stock')}
               </h3>
-              <div className="text-4xl font-bold text-center text-gray-900">1,500</div>
+              <div className="text-4xl font-bold text-center"
+                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>1,500</div>
             </div>
 
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-1 text-gray-900">{t('total_items_sales')}</h3>
-              <div className="text-4xl font-bold text-center text-gray-900">10,000</div>
+            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
+                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+              <h3 className="text-lg font-semibold mb-1"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('total_items_sales')}</h3>
+              <div className="text-4xl font-bold text-center"
+                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>10,000</div>
             </div>
 
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col ">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">{t('profit')}</h3>
-              <div className="text-4xl font-bold text-center text-gray-900">50,000</div>
+            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
+                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+              <h3 className="text-lg font-semibold mb-2"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('profit')}</h3>
+              <div className="text-4xl font-bold text-center"
+                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>50,000</div>
             </div>
           </div>
         </div>
 
         {/* Inventory Shortage Section */}
-        <div className="bg-white p-4 rounded-lg shadow mt-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('inventory_shortage')}</h3>
+        <div className="p-4 rounded-lg shadow mt-6"
+             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+          <h3 className="text-lg font-semibold mb-4"
+              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('inventory_shortage')}</h3>
           <div>
-            <div className="flex font-semibold py-3 border-b border-gray-200 text-gray-900">
+            <div className="flex font-semibold py-3 border-b"
+                 style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
+                         color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
               <div className="flex-1">{t('product_name')}</div>
               <div className="w-24 text-center">{t('amount')}</div>
               <div className="w-32 text-center">{t('status')}</div>

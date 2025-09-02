@@ -169,7 +169,8 @@ export default function PharmacInventoryPage() {
       {/* Header */}
       <div className="flex items-center mb-6">
         <div className="w-1 h-8 bg-green-600 mr-2"></div>
-        <h2 className="text-xl font-bold" style={{ color: "black" }}>
+        <h2 className="text-xl font-bold" 
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
           Inventory
         </h2>
       </div>
@@ -177,25 +178,37 @@ export default function PharmacInventoryPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {/* Total Medicines */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between max-h-[100px] w-full">
+        <div className="p-4 rounded-lg shadow-sm border flex items-center justify-between max-h-[100px] w-full"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           <div className="flex items-center w-full">
             <CheckCircle className="w-8 h-8 text-green-600 flex-shrink-0" />
             <div className="ml-4 flex-1">
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                 Total Medicines
               </p>
-              <p className="text-2xl font-bold text-gray-900">{items.length}</p>
+              <p className="text-2xl font-bold"
+                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{items.length}</p>
             </div>
           </div>
         </div>
 
         {/* Low Stock */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between max-h-[100px]">
+        <div className="p-6 rounded-lg shadow-sm border flex items-center justify-between max-h-[100px]"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           <div className="flex items-center">
             <AlertTriangle className="w-8 h-8 text-red-600" />
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Low Stock</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Low Stock</p>
+              <p className="text-2xl font-bold"
+                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {lowStockItems.length}
               </p>
             </div>
@@ -256,10 +269,13 @@ export default function PharmacInventoryPage() {
       </div>
 
       {/* Inventory Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden flex-1 flex flex-col">
+      <div className="rounded-lg shadow-sm overflow-hidden flex-1 flex flex-col"
+           style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
         {/* Header & Search */}
-        <div className="bg-white rounded-lg mb-2 p-4 flex items-center">
-          <div className="flex items-center text-gray-600 mr-4 cursor-pointer">
+        <div className="rounded-lg mb-2 p-4 flex items-center"
+             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+          <div className="flex items-center mr-4 cursor-pointer"
+               style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
             <Search className="h-5 w-5 mr-2" />
             <span>Sort by date</span>
             <ChevronDown className="h-4 w-4 ml-1 text-green-600" />
@@ -268,31 +284,49 @@ export default function PharmacInventoryPage() {
             <input
               type="text"
               placeholder="Search"
-              className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 w-full rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+              }}
             />
           </div>
         </div>
 
         {/* Table Head */}
-        <div className="grid grid-cols-8 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-200">
-          <div className="font-medium text-gray-700">Image</div>
-          <div className="font-medium text-gray-700 flex items-center">
+        <div className="grid grid-cols-8 gap-4 px-6 py-4 border-b"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6',
+               borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
+             }}>
+          <div className="font-medium"
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Image</div>
+          <div className="font-medium flex items-center"
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
             <span>Name</span>
           </div>
-          <div className="font-medium text-gray-700">Brand</div>
-          <div className="font-medium text-gray-700">Type</div>
-          <div className="font-medium text-gray-700">Unit</div>
-          <div className="font-medium text-gray-700">Controlled</div>
-          <div className="font-medium text-gray-700">Price</div>
+          <div className="font-medium"
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Brand</div>
+          <div className="font-medium"
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Type</div>
+          <div className="font-medium"
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Unit</div>
+          <div className="font-medium"
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Controlled</div>
+          <div className="font-medium"
+               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Price</div>
 
           <div className="flex items-center justify-between">
-            <span className="font-semibold">Stock</span>
+            <span className="font-semibold"
+                  style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>Stock</span>
             <button
               onClick={() => {
                 setEditMode(!editMode);
                 setSelectedItemId(null);
               }}
-              className="text-gray-500 cursor-pointer hover:scale-125 transition-transform duration-300"
+              className="cursor-pointer hover:scale-125 transition-transform duration-300"
+              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}
             >
               <Edit2 className="h-5 w-5" />
             </button>
@@ -300,7 +334,10 @@ export default function PharmacInventoryPage() {
         </div>
 
         {/* Table Body */}
-        <div className="divide-y divide-gray-200 overflow-y-auto flex-1">
+        <div className="divide-y overflow-y-auto flex-1"
+             style={{
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           {items.map((item) => {
             const isSelected = selectedItemId === item.id;
             const isDimmed = editMode && selectedItemId !== null && !isSelected;
@@ -315,8 +352,17 @@ export default function PharmacInventoryPage() {
               <div
                 key={item.id}
                 onClick={() => !editMode && openItem(item.id)}   // ✅ navigate to /inventory/:id
-                className={`grid grid-cols-8 gap-4 px-6 py-4 hover:bg-gray-50 transition-all duration-300 ${isDimmed ? "opacity-50" : "opacity-100"
+                className={`grid grid-cols-8 gap-4 px-6 py-4 transition-all duration-300 ${isDimmed ? "opacity-50" : "opacity-100"
                   } ${!editMode ? "cursor-pointer" : "cursor-default"}`}
+                style={{
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#374151' : 'white';
+                }}
               >
                 {/* Image cell */}
                 <div className="flex items-center">
@@ -327,7 +373,11 @@ export default function PharmacInventoryPage() {
                       className="h-12 w-12 object-cover rounded"
                     />
                   ) : (
-                    <div className="h-12 w-12 bg-gray-100 rounded flex items-center justify-center text-sm text-gray-400">
+                    <div className="h-12 w-12 rounded flex items-center justify-center text-sm"
+                         style={{
+                           backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6',
+                           color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
+                         }}>
                       No
                     </div>
                   )}
@@ -351,9 +401,14 @@ export default function PharmacInventoryPage() {
                         handleInputChange(item.id, "name", e.target.value)
                       }
                       className="border p-1 rounded"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                      }}
                     />
                   ) : (
-                    <div className="text-gray-700">{item.name}</div>
+                    <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>{item.name}</div>
                   )}
                 </div>
                 {isSelected ? (
@@ -365,6 +420,11 @@ export default function PharmacInventoryPage() {
                         handleInputChange(item.id, "brand", e.target.value)
                       }
                       className="border p-1 rounded"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                      }}
                     />
                     <input
                       type="text"
@@ -377,6 +437,11 @@ export default function PharmacInventoryPage() {
                         )
                       }
                       className="border p-1 rounded"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                      }}
                     />
                     <input
                       type="text"
@@ -385,9 +450,14 @@ export default function PharmacInventoryPage() {
                         handleInputChange(item.id, "unit", e.target.value)
                       }
                       className="border p-1 rounded"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                      }}
                     />
-                    <div className="text-gray-700">{item.price}</div>
-                    <div className="text-gray-700">{item.amount}</div>
+                    <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>{item.price}</div>
+                    <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>{item.amount}</div>
                     <input
                       type="text"
                       value={item.expiredDate}
@@ -399,19 +469,24 @@ export default function PharmacInventoryPage() {
                         )
                       }
                       className="border p-1 rounded"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                      }}
                     />
                   </>
                 ) : (
                   <>
-                    <div className="text-gray-700">{item.brand}</div>
-                    <div className="text-gray-700">
+                    <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>{item.brand}</div>
+                    <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>
                       {item.productType ?? "-"}
                     </div>
-                    <div className="text-gray-700">{item.unit ?? "-"}</div>
-                    <div className={`text-gray-700`}>
+                    <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>{item.unit ?? "-"}</div>
+                    <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>
                       {item.isControlled ? "Yes" : "No"}
                     </div>
-                    <div className="text-gray-700">{item.price}</div>
+                    <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>{item.price}</div>
                     <div
                       className={`font-semibold ${getAmountStatus(
                         item.amount
