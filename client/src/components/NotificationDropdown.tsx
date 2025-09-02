@@ -1,4 +1,5 @@
 import { Clock, Package, User, X, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Notification {
   id: string;
@@ -27,6 +28,8 @@ export default function NotificationDropdown({
   onNotificationClick,
   socketConnected = false
 }: NotificationDropdownProps) {
+  const { t } = useTranslation();
+  
   if (!isOpen) return null;
 
   // Check if dark mode is enabled
@@ -62,7 +65,7 @@ export default function NotificationDropdown({
             <CheckCircle className="w-4 h-4 text-green-500" />
             <span className="text-xs font-medium text-green-600 px-2 py-1 rounded-full"
                   style={{backgroundColor: isDark ? '#166534' : '#dcfce7'}}>
-              ชำระแล้ว
+              {t('paid')}
             </span>
           </div>
         );
@@ -72,7 +75,7 @@ export default function NotificationDropdown({
             <AlertCircle className="w-4 h-4 text-orange-500" />
             <span className="text-xs font-medium text-orange-600 px-2 py-1 rounded-full"
                   style={{backgroundColor: isDark ? '#ea580c' : '#fed7aa'}}>
-              รอชำระ
+              {t('pendingPayment')}
             </span>
           </div>
         );
@@ -83,7 +86,7 @@ export default function NotificationDropdown({
             <X className="w-4 h-4 text-red-500" />
             <span className="text-xs font-medium text-red-600 px-2 py-1 rounded-full"
                   style={{backgroundColor: isDark ? '#dc2626' : '#fecaca'}}>
-              ยกเลิก
+              {t('cancelled')}
             </span>
           </div>
         );
@@ -109,10 +112,10 @@ export default function NotificationDropdown({
     
     const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / 60000);
     
-    if (diffInMinutes < 1) return 'เมื่อสักครู่';
-    if (diffInMinutes < 60) return `${diffInMinutes} นาทีที่แล้ว`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} ชั่วโมงที่แล้ว`;
-    return `${Math.floor(diffInMinutes / 1440)} วันที่แล้ว`;
+    if (diffInMinutes < 1) return t('justNow');
+    if (diffInMinutes < 60) return t('minutesAgo', { count: diffInMinutes });
+    if (diffInMinutes < 1440) return t('hoursAgo', { count: Math.floor(diffInMinutes / 60) });
+    return t('daysAgo', { count: Math.floor(diffInMinutes / 1440) });
   };
 
   return (
@@ -134,7 +137,7 @@ export default function NotificationDropdown({
              }}>
           <div className="flex items-center space-x-2">
             <h3 className="text-lg font-semibold transition-colors duration-300"
-                style={{color: isDark ? 'white' : '#1f2937'}}>การแจ้งเตือน</h3>
+                style={{color: isDark ? 'white' : '#1f2937'}}>{t('notifications')}</h3>
             <div className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`} 
                  title={socketConnected ? 'Real-time connected' : 'Real-time disconnected'}></div>
           </div>
@@ -158,7 +161,7 @@ export default function NotificationDropdown({
               }}
             >
               <RefreshCw className="w-3 h-3" />
-              <span>รีเฟรช</span>
+              <span>{t('refresh')}</span>
             </button>
           
             <button
@@ -186,7 +189,7 @@ export default function NotificationDropdown({
               <Clock className="w-12 h-12 mx-auto mb-3 transition-colors duration-300"
                      style={{color: isDark ? '#6b7280' : '#d1d5db'}} />
               <p className="text-sm transition-colors duration-300"
-                 style={{color: isDark ? '#9ca3af' : '#6b7280'}}>ไม่มีการแจ้งเตือน</p>
+                 style={{color: isDark ? '#9ca3af' : '#6b7280'}}>{t('noNotifications')}</p>
             </div>
           ) : (
             notifications.map((notification) => (
@@ -248,7 +251,7 @@ export default function NotificationDropdown({
                         {notification.customerName && (
                           <p className="text-xs mt-1 transition-colors duration-300"
                              style={{color: isDark ? '#60a5fa' : '#2563eb'}}>
-                            ลูกค้า: {notification.customerName}
+                            {t('customer')}: {notification.customerName}
                           </p>
                         )}
                         
@@ -291,7 +294,7 @@ export default function NotificationDropdown({
                       const target = e.target as HTMLButtonElement;
                       target.style.color = isDark ? '#60a5fa' : '#2563eb';
                     }}>
-              ดูการแจ้งเตือนทั้งหมด
+              {t('viewAllNotifications')}
             </button>
           </div>
         )}

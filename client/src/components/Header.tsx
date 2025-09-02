@@ -137,10 +137,10 @@ export default function Header() {
             .map((order: any) => {
               const statusText =
                 order.status === "PAID"
-                  ? "ชำระแล้ว"
+                  ? t('paid')
                   : order.status === "PENDING"
-                  ? "รอชำระ"
-                  : order.status || "ไม่ระบุ";
+                  ? t('pendingPayment')
+                  : order.status || t('notSpecified');
 
               // Debug: log timestamp from order
               console.log(
@@ -159,12 +159,12 @@ export default function Header() {
               return {
                 id: `initial-${order.order_id}-${Date.now()}`,
                 type: "order" as const,
-                title: "Order ในระบบ",
-                message: `Order #${order.order_id} มีมูลค่า ฿${order.total_amount}`,
+                title: t('orderInSystem'),
+                message: t('orderValue', { orderId: order.order_id, amount: order.total_amount }),
                 timestamp: order.date || new Date().toISOString(), // ใช้ timestamp แทน date
                 isRead: shouldBeRead, // คงสถานะ unread ถ้าเป็น notification ใหม่
                 orderId: order.order_id,
-                customerName: order.customer?.name || "ลูกค้าทั่วไป",
+                customerName: order.customer?.name || t('walkInCustomer'),
                 orderStatus: order.status || "PENDING",
               };
             });
@@ -265,20 +265,24 @@ export default function Header() {
       if (data.type === "NEW_ORDER" && data.order) {
         const statusText =
           data.order.status === "PAID"
-            ? "ชำระแล้ว"
+            ? t('paid')
             : data.order.status === "PENDING"
-            ? "รอชำระ"
-            : data.order.status || "ไม่ระบุ";
+            ? t('pendingPayment')
+            : data.order.status || t('notSpecified');
 
         const newNotification: Notification = {
           id: `order-${data.order.order_id}-${Date.now()}`,
           type: "order",
-          title: "Order ใหม่เข้ามา!",
-          message: `Order #${data.order.order_id} มีมูลค่า ฿${data.order.total_amount} (${statusText})`,
+          title: t('newOrderReceived'),
+          message: t('orderValueWithStatus', { 
+            orderId: data.order.order_id, 
+            amount: data.order.total_amount, 
+            status: statusText 
+          }),
           timestamp: data.timestamp || new Date().toISOString(),
           isRead: false,
           orderId: data.order.order_id,
-          customerName: data.order.customer?.name || "ลูกค้าทั่วไป",
+          customerName: data.order.customer?.name || t('walkInCustomer'),
           orderStatus: data.order.status || "PENDING",
         };
 
@@ -325,20 +329,24 @@ export default function Header() {
 
       const statusText =
         data.order.status === "PAID"
-          ? "ชำระแล้ว"
+          ? t('paid')
           : data.order.status === "PENDING"
-          ? "รอชำระ"
-          : data.order.status || "ไม่ระบุ";
+          ? t('pendingPayment')
+          : data.order.status || t('notSpecified');
 
       const newNotification: Notification = {
         id: `order-${data.order.order_id}-${Date.now()}`,
         type: "order",
-        title: "Order ใหม่เข้ามา!",
-        message: `Order #${data.order.order_id} มีมูลค่า ฿${data.order.total_amount} (${statusText})`,
+        title: t('newOrderReceived'),
+        message: t('orderValueWithStatus', { 
+          orderId: data.order.order_id, 
+          amount: data.order.total_amount, 
+          status: statusText 
+        }),
         timestamp: data.timestamp || new Date().toISOString(),
         isRead: false,
         orderId: data.order.order_id,
-        customerName: data.order.customer?.name || "ลูกค้าทั่วไป",
+        customerName: data.order.customer?.name || t('walkInCustomer'),
         orderStatus: data.order.status || "PENDING",
       };
 
@@ -388,11 +396,11 @@ export default function Header() {
                   /\([^)]*\)$/,
                   `(${
                     updatedStatus === "PAID"
-                      ? "ชำระแล้ว"
+                      ? t('paid')
                       : updatedStatus === "FAILED"
-                      ? "ล้มเหลว"
+                      ? t('failed')
                       : updatedStatus === "CANCELLED"
-                      ? "ยกเลิก"
+                      ? t('cancelled')
                       : updatedStatus
                   })`
                 ),
@@ -608,7 +616,7 @@ export default function Header() {
                          style={{color: isDark ? 'white' : '#111827'}}>{fullName}</p>
                       <p className="text-sm transition-colors duration-300"
                          style={{color: isDark ? '#9ca3af' : '#6b7280'}}>
-                        {userProfile?.email || "No email"}
+                        {userProfile?.email || t('noEmail')}
                       </p>
                       <p className="text-xs transition-colors duration-300"
                          style={{color: isDark ? '#9ca3af' : '#9ca3af'}}>ID: #{employeeId}</p>
@@ -635,7 +643,7 @@ export default function Header() {
                     }}
                   >
                     <Settings className="w-4 h-4" />
-                    <span>Profile Settings</span>
+                    <span>{t('profileSettings')}</span>
                   </button>
 
                   {/* Logout Button */}
@@ -657,7 +665,7 @@ export default function Header() {
                       }}
                     >
                       <LogOut className="w-4 h-4" />
-                      <span>Logout</span>
+                      <span>{t('logout')}</span>
                     </button>
                   </div>
                 </div>

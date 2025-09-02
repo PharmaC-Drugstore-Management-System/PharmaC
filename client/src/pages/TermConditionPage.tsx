@@ -1,73 +1,75 @@
 import { ChevronLeft, Shield, FileText, AlertTriangle, Users, Database, Lock, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function TermsConditionsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const sections = [
     {
       id: 'acceptance',
-      title: 'Acceptance of Terms',
+      title: t('acceptanceOfTerms'),
       icon: <FileText className="w-6 h-6" />,
       content: [
-        'By using the PharmaC system, you agree to accept all these terms and conditions',
-        'If you do not agree to any of these terms, please stop using the system immediately',
-        'We reserve the right to change these terms without prior notice'
+        t('acceptanceContent1'),
+        t('acceptanceContent2'),
+        t('acceptanceContent3')
       ]
     },
     {
       id: 'usage',
-      title: 'System Usage',
+      title: t('systemUsage'),
       icon: <Users className="w-6 h-6" />,
       content: [
-        'PharmaC system is designed exclusively for pharmacy and pharmaceutical management',
-        'Users must have valid legal licenses to sell pharmaceuticals',
-        'Using the system for illegal or inappropriate activities is prohibited',
-        'Users are responsible for the security of their own accounts'
+        t('usageContent1'),
+        t('usageContent2'),
+        t('usageContent3'),
+        t('usageContent4')
       ]
     },
     {
       id: 'data',
-      title: 'Data Security',
+      title: t('dataSecurity'),
       icon: <Database className="w-6 h-6" />,
       content: [
-        'We will protect your data with the highest security standards',
-        'Personal data will not be disclosed to third parties without authorization',
-        'The system includes data backup and encryption to prevent loss',
-        'Users have the right to access, modify, or delete personal data'
+        t('dataContent1'),
+        t('dataContent2'),
+        t('dataContent3'),
+        t('dataContent4')
       ]
     },
     {
       id: 'privacy',
-      title: 'Privacy Policy',
+      title: t('privacyPolicy'),
       icon: <Lock className="w-6 h-6" />,
       content: [
-        'We collect only data necessary for service provision',
-        'Usage data may be analyzed to improve the system',
-        'We do not sell or rent personal data to third parties',
-        'You can request to view or modify personal data at any time'
+        t('privacyContent1'),
+        t('privacyContent2'),
+        t('privacyContent3'),
+        t('privacyContent4')
       ]
     },
     {
       id: 'liability',
-      title: 'Limitation of Liability',
+      title: t('limitationOfLiability'),
       icon: <AlertTriangle className="w-6 h-6" />,
       content: [
-        'PharmaC is not responsible for damages caused by system usage',
-        'Users must verify data accuracy before using the system',
-        'The system may have temporary service interruptions for maintenance',
-        'We do not guarantee 100% error-free system operation'
+        t('liabilityContent1'),
+        t('liabilityContent2'),
+        t('liabilityContent3'),
+        t('liabilityContent4')
       ]
     },
     {
       id: 'updates',
-      title: 'Updates and Changes',
+      title: t('updatesAndChanges'),
       icon: <RefreshCw className="w-6 h-6" />,
       content: [
-        'The system will be updated periodically to improve performance',
-        'New features may be added or changed without prior notice',
-        'Users should regularly monitor changes and updates',
-        'Updates will not affect existing data'
+        t('updatesContent1'),
+        t('updatesContent2'),
+        t('updatesContent3'),
+        t('updatesContent4')
       ]
     }
   ];
@@ -104,11 +106,11 @@ export default function TermsConditionsPage() {
             <div>
               <h1 className="text-2xl font-bold"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                Terms and Conditions
+                {t('termsAndConditions')}
               </h1>
               <p className="text-sm mt-1"
                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}}>
-                Terms and Conditions - PharmaC System
+                {t('termsSystemSubtitle')}
               </p>
             </div>
           </div>
@@ -127,20 +129,19 @@ export default function TermsConditionsPage() {
                     style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}} />
             <h2 className="text-xl font-semibold"
                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-              About These Terms
+              {t('aboutTheseTerms')}
             </h2>
           </div>
           <p className="leading-relaxed"
              style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-            These terms and conditions apply to the use of the PharmaC pharmacy management system. 
-            Please read and understand them before using the system. Using the system means you accept all these terms.
+            {t('termsIntroduction')}
           </p>
           <div className="mt-4 p-4 rounded-lg"
                style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe'}}>
             <p className="text-sm"
                style={{color: document.documentElement.classList.contains('dark') ? '#93c5fd' : '#1e40af'}}>
-              <strong>Effective Date:</strong> August 26, 2025<br />
-              <strong>Version:</strong> 1.0
+              <strong>{t('effectiveDate')}:</strong> August 26, 2025<br />
+              <strong>{t('termsVersion')}:</strong> 1.0
             </p>
           </div>
         </div>
@@ -213,32 +214,37 @@ export default function TermsConditionsPage() {
              }}>
           <h3 className="text-xl font-semibold mb-4"
               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-            Contact Information
+            {t('contactInformation')}
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h4 className="font-medium mb-2"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                Contact Details
+                {t('contactDetails')}
               </h4>
               <p className="text-sm leading-relaxed"
                  style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                If you have questions about these terms and conditions<br />
-                Please contact the PharmaC development team<br />
-                <strong>Email:</strong> support@pharmac.com<br />
-                <strong>Phone:</strong> 02-xxx-xxxx
+                {t('termsContactText').split('\n').map((line, index) => (
+                  <span key={index}>
+                    {line}
+                    {index < t('termsContactText').split('\n').length - 1 && <br />}
+                  </span>
+                ))}
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                Issue Reporting
+                {t('issueReporting')}
               </h4>
               <p className="text-sm leading-relaxed"
                  style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                If you encounter usage problems or errors<br />
-                You can report them through the Support system<br />
-                Our team will address issues promptly
+                {t('issueReportingText').split('\n').map((line, index) => (
+                  <span key={index}>
+                    {line}
+                    {index < t('issueReportingText').split('\n').length - 1 && <br />}
+                  </span>
+                ))}
               </p>
             </div>
           </div>
@@ -270,7 +276,7 @@ export default function TermsConditionsPage() {
               target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
             }}
           >
-            I have read and accept these terms
+            {t('readAndAcceptTerms')}
           </button>
         </div>
       </div>

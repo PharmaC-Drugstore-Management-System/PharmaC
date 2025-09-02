@@ -58,24 +58,24 @@ export default function PharmaDashboard() {
   const forecastOptions: ForecastOption[] = [
     {
       id: "short_term",
-      name: "Short Term (3 months)",
+      name: t('shortTerm'),
       forecastPeriods: 3,
       testSizeMonths: 6,
-      description: "Quick forecast for immediate planning",
+      description: t('quickForecast'),
     },
     {
       id: "medium_term",
-      name: "Medium Term (6 months)",
+      name: t('mediumTerm'),
       forecastPeriods: 6,
       testSizeMonths: 6,
-      description: "Balanced forecast for quarterly planning",
+      description: t('balancedForecast'),
     },
     {
       id: "long_term",
-      name: "Long Term (12 months)",
+      name: t('longTerm'),
       forecastPeriods: 12,
       testSizeMonths: 6,
-      description: "Extended forecast for annual planning",
+      description: t('extendedForecast'),
     },
   ];
 

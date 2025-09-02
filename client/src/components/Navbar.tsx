@@ -51,10 +51,10 @@ export default function NavbarComponent() {
     { name: t('home'), icon: LayoutGrid, path: '/' },
     { name: t('inventory'), icon: Inbox, path: '/inventory' },
     { name: t('pointOfSale'), icon: ShoppingCart, path: '/pos' },
-    { name: 'Statistics', icon: BarChart3, path: '/statistic' }, // Keep as is for now
-    { name: 'Expiry Monitor', icon: Clock, path: '/expiry-monitor' }, // Keep as is for now
-    { name: 'Document Records', icon: FileText, path: '/doc-record' }, // Keep as is for now
-    { name: 'Order Records', icon: ClipboardCheck, path: '/order-record' }, // Keep as is for now
+    { name: t('statistics'), icon: BarChart3, path: '/statistic' },
+    { name: t('expiryMonitor'), icon: Clock, path: '/expiry-monitor' },
+    { name: t('documentRecords'), icon: FileText, path: '/doc-record' },
+    { name: t('orderRecords'), icon: ClipboardCheck, path: '/order-record' },
     { name: t('memberManagement'), icon: null, path: '/membership' },
     { name: t('settings'), icon: Settings, path: '/settings' }
   ];

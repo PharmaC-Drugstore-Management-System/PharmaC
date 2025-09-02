@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChevronLeft, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface AccountDetailResponse {
     data: {
@@ -23,25 +24,28 @@ interface AccountDetailResponse {
 
 export default function AccountPage() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [isEditing, setIsEditing] = useState(false);
     const [firstname, setFirstname] = useState('');
     const [employeeid, setEmployeeId] = useState<number | null>(null);
     const [lastname, setLastname] = useState('');
 
-    const [userInfo, setUserInfo] = useState([
-        { label: 'Email', value: '' },
-        { label: 'Tax ID', value: '' },
-        { label: 'Gender', value: '' },
-        { label: 'Phone', value: '' },
-        { label: 'Birthdate', value: '' },
-        { label: 'Address', value: '' },
-        { label: 'Additional Info', value: '' },
-        { label: 'Country', value: '' },
-        { label: 'Province', value: '' },
-        { label: 'Store Code', value: '' },
-        { label: 'Zip Code', value: '' }
-    ]);
+    const getUserInfoLabels = () => [
+        { label: t('email'), value: '' },
+        { label: t('taxId'), value: '' },
+        { label: t('gender'), value: '' },
+        { label: t('phone'), value: '' },
+        { label: t('birthdate'), value: '' },
+        { label: t('address'), value: '' },
+        { label: t('additionalInfo'), value: '' },
+        { label: t('country'), value: '' },
+        { label: t('province'), value: '' },
+        { label: t('storeCode'), value: '' },
+        { label: t('zipCode'), value: '' }
+    ];
+
+    const [userInfo, setUserInfo] = useState(getUserInfoLabels());
 
     const [imageUrl, setImageUrl] = useState(
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'
@@ -170,29 +174,31 @@ export default function AccountPage() {
                 setImageUrl('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face');
             }
 
-            // Set user info fields
-            setUserInfo([
-                { label: 'Email', value: user.email || '' },
-                { label: 'Tax ID', value: user.tax_id || '' },
-                { label: 'Gender', value: user.gender || '' },
-                { label: 'Phone', value: user.phonenumber || '' },
-                {
-                    label: 'Birthdate',
-                    value: user.birthdate 
+            // Set user info fields with translated labels
+            const updatedUserInfo = getUserInfoLabels().map((item, index) => {
+                const values = [
+                    user.email || '',
+                    user.tax_id || '',
+                    user.gender || '',
+                    user.phonenumber || '',
+                    user.birthdate 
                         ? new Date(user.birthdate).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'numeric',
                             day: 'numeric',
                         })
-                        : ''
-                },
-                { label: 'Address', value: user.address || '' },
-                { label: 'Additional Info', value: user.additional_info || '' },
-                { label: 'Country', value: user.country || '' },
-                { label: 'Province', value: user.province || '' },
-                { label: 'Store Code', value: user.storecode || '' },
-                { label: 'Zip Code', value: user.zipcode || '' }
-            ]);
+                        : '',
+                    user.address || '',
+                    user.additional_info || '',
+                    user.country || '',
+                    user.province || '',
+                    user.storecode || '',
+                    user.zipcode || ''
+                ];
+                return { ...item, value: values[index] };
+            });
+            
+            setUserInfo(updatedUserInfo);
         } catch (error) {
             console.log('Error loading profile data:', error);
             navigate('/login');
@@ -266,9 +272,9 @@ export default function AccountPage() {
                         </button>
                         <div>
                             <h2 className="text-lg font-medium"
-                                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>PharmaC</h2>
+                                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('pharmacyTitle')}</h2>
                             <h1 className="text-2xl font-bold"
-                                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>Account Management</h1>
+                                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('accountManagement')}</h1>
                         </div>
                     </div>
                 </div>
@@ -299,7 +305,7 @@ export default function AccountPage() {
                                         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200">
                                             <div className="text-center">
                                                 <Pencil className="w-6 h-6 mx-auto mb-1" />
-                                                <span className="text-xs font-medium">Change Photo</span>
+                                                <span className="text-xs font-medium">{t('changePhoto')}</span>
                                             </div>
                                         </div>
                                         <input
@@ -326,7 +332,7 @@ export default function AccountPage() {
                                             }}
                                             value={firstname}
                                             onChange={(e) => setFirstname(e.target.value)}
-                                            placeholder="First name"
+                                            placeholder={t('firstName')}
                                         />
                                         <input
                                             type="text"
@@ -338,7 +344,7 @@ export default function AccountPage() {
                                             }}
                                             value={lastname}
                                             onChange={(e) => setLastname(e.target.value)}
-                                            placeholder="Last name"
+                                            placeholder={t('lastName')}
                                         />
                                     </div>
                                 ) : (
@@ -347,7 +353,7 @@ export default function AccountPage() {
                                 <div className="flex items-center justify-center md:justify-start space-x-2">
                                     <span className="px-3 py-1 rounded-full text-sm font-medium"
                                           style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#374151'}}>
-                                        Employee ID: #10001
+                                        {t('employeeId')}: #10001
                                     </span>
                                 </div>
                             </div>
@@ -365,7 +371,7 @@ export default function AccountPage() {
                          }}>
                         <div className="px-6 py-4"
                              style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151'}}>
-                            <h2 className="text-xl font-bold text-white">Personal Information</h2>
+                            <h2 className="text-xl font-bold text-white">{t('personalInformation')}</h2>
                         </div>
                         <div className="p-6 space-y-4">
                             {userInfo.slice(0, 5).map((item, index) => (
@@ -406,7 +412,7 @@ export default function AccountPage() {
                                                 }}
                                                 value={item.value}
                                                 onChange={(e) => handleInputChange(index, e.target.value)}
-                                                placeholder={`Enter ${item.label.toLowerCase()}`}
+                                                placeholder={`${t('enterField', { field: item.label.toLowerCase() })}`}
                                             />
                                         ) : (
                                             <div className="px-4 py-3 rounded-xl border"
@@ -416,7 +422,7 @@ export default function AccountPage() {
                                                  }}>
                                                 <span className="font-medium"
                                                       style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                                                    {item.value || 'Not specified'}
+                                                    {item.value || t('notSpecified')}
                                                 </span>
                                             </div>
                                         )}
@@ -434,7 +440,7 @@ export default function AccountPage() {
                          }}>
                         <div className="px-6 py-4"
                              style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151'}}>
-                            <h2 className="text-xl font-bold text-white">Address & Work Information</h2>
+                            <h2 className="text-xl font-bold text-white">{t('addressWorkInformation')}</h2>
                         </div>
                         <div className="p-6 space-y-4">
                             {userInfo.slice(5).map((item, index) => (
@@ -475,7 +481,7 @@ export default function AccountPage() {
                                                 }}
                                                 value={item.value}
                                                 onChange={(e) => handleInputChange(index + 5, e.target.value)}
-                                                placeholder={`Enter ${item.label.toLowerCase()}`}
+                                                placeholder={`${t('enterField', { field: item.label.toLowerCase() })}`}
                                             />
                                         ) : (
                                             <div className="px-4 py-3 rounded-xl border"
@@ -485,7 +491,7 @@ export default function AccountPage() {
                                                  }}>
                                                 <span className="font-medium"
                                                       style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                                                    {item.value || 'Not specified'}
+                                                    {item.value || t('notSpecified')}
                                                 </span>
                                             </div>
                                         )}
@@ -521,12 +527,12 @@ export default function AccountPage() {
                     >
                         {isEditing ? (
                             <span className="flex items-center space-x-2">
-                                <span>Save Changes</span>
+                                <span>{t('saveChanges')}</span>
                             </span>
                         ) : (
                             <span className="flex items-center space-x-2">
                                 <Pencil className="w-5 h-5" />
-                                <span>Edit Profile</span>
+                                <span>{t('editProfile')}</span>
                             </span>
                         )}
                     </button>

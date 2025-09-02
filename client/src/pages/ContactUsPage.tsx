@@ -1,43 +1,45 @@
 import { ChevronLeft, Mail, Phone, MapPin, Github, Linkedin, Code } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function ContactUsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const developers = [
     {
       id: 1,
       name: 'Kampol Suwannatham',
-      position: 'Full Stack Developer',
-      role: 'Junior Developer',
+      position: t('fullStackDeveloper'),
+      role: t('juniorDeveloper'),
       image: '/images/developers/mond_dev.png', 
       email: 'kampol.suwannatham@gmail.com',
       phone: '091-946-3346',
       github: 'https://github.com/llSaiMonDll',
       
-      description: 'Specialized in React, TypeScript and UI/UX Design'
+      description: t('specializedReact')
     },
     {
       id: 2,
       name: 'Ratchada Prompong',
-      position: 'Full Stack Developer',
-      role: 'Junior Developer',
+      position: t('fullStackDeveloper'),
+      role: t('juniorDeveloper'),
       image: '/images/developers/ink_dev.png', 
       email: 'dev2@pharmac.com',
       phone: '082-xxx-xxxx',
       github: '#',
-      description: 'Specialized in Node.js, Database and API Development'
+      description: t('specializedNode')
     },
     {
       id: 3,
       name: 'Issadame Damero',
-      position: 'Full Stack Developer',
-      role: 'Junior Developer',
+      position: t('fullStackDeveloper'),
+      role: t('juniorDeveloper'),
       image: '/images/developers/neo_dev.png', 
       email: 'dev3@pharmac.com',
       phone: '083-xxx-xxxx',
       github: '#',
-      description: 'Specialized in Full Stack Development and DevOps'
+      description: t('specializedFullStack')
     }
   ];
 
@@ -75,11 +77,11 @@ export default function ContactUsPage() {
             <div>
               <h1 className="text-2xl font-bold"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                Contact Us
+                {t('contactUsPage')}
               </h1>
               <p className="text-sm mt-1"
                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}}>
-                Contact Us - PharmaC Development Team
+                {t('contactUsSubtitle')}
               </p>
             </div>
           </div>
@@ -95,13 +97,12 @@ export default function ContactUsPage() {
                   style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}} />
             <h2 className="text-2xl font-bold"
                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-              PharmaC Development Team
+              {t('pharmacDevelopmentTeam')}
             </h2>
           </div>
           <p className="leading-relaxed max-w-3xl mx-auto"
              style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-            We are a team of 3 developers dedicated to creating the best pharmacy management system. 
-            With expertise and experience in software development, we are ready to serve and support you throughout your usage.
+            {t('developmentTeamIntro')}
           </p>
         </div>
 
@@ -109,7 +110,7 @@ export default function ContactUsPage() {
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-6 text-center"
               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-            Meet Our Development Team
+            {t('meetOurTeam')}
           </h3>
           <div className="grid md:grid-cols-3 gap-8">
             {developers.map((dev) => (
@@ -141,7 +142,7 @@ export default function ContactUsPage() {
                               <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-3">
                                 <span class="text-2xl font-bold">${dev.name.charAt(0)}</span>
                               </div>
-                              <p class="text-sm">Photo coming soon</p>
+                              <p class="text-sm">${t('photoComingSoon')}</p>
                             </div>
                           `;
                         }
@@ -218,14 +219,14 @@ export default function ContactUsPage() {
              style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
           <h3 className="text-xl font-semibold mb-6 text-center"
               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-            Contact Information
+            {t('contactInformation')}
           </h3>
           <div className="grid md:grid-cols-2 gap-8">
             {/* Company Info */}
             <div>
               <h4 className="font-semibold mb-4"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                Company Information
+                {t('companyInformation')}
               </h4>
               <div className="space-y-3">
                 <div className="flex items-start">
@@ -234,13 +235,16 @@ export default function ContactUsPage() {
                   <div>
                     <p className="font-medium"
                        style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                      PharmaC Development
+                      {t('pharmacDevelopment')}
                     </p>
                     <p className="text-sm"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                      123 Technology Road<br />
-                      Technology District, Innovation Zone<br />
-                      Bangkok 10400, Thailand
+                      {t('companyAddress').split('\n').map((line, index) => (
+                        <span key={index}>
+                          {line}
+                          {index < t('companyAddress').split('\n').length - 1 && <br />}
+                        </span>
+                      ))}
                     </p>
                   </div>
                 </div>
@@ -265,32 +269,32 @@ export default function ContactUsPage() {
             <div>
               <h4 className="font-semibold mb-4"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                Support
+                {t('support')}
               </h4>
               <div className="space-y-3 text-sm"
                    style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                 <div>
                   <p className="font-medium mb-1"
                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                    Business Hours
+                    {t('businessHours')}
                   </p>
-                  <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-                  <p>Saturday - Sunday: 9:00 AM - 5:00 PM</p>
+                  <p>{t('mondayFriday')}</p>
+                  <p>{t('saturdaySunday')}</p>
                 </div>
                 <div>
                   <p className="font-medium mb-1"
                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                    Response Time
+                    {t('responseTime')}
                   </p>
-                  <p>Email: Within 24 hours</p>
-                  <p>Phone: Immediate during business hours</p>
+                  <p>{t('emailResponse')}</p>
+                  <p>{t('phoneResponse')}</p>
                 </div>
                 <div>
                   <p className="font-medium mb-1"
                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                    Supported Languages
+                    {t('supportedLanguages')}
                   </p>
-                  <p>Thai, English</p>
+                  <p>{t('thaiEnglish')}</p>
                 </div>
               </div>
             </div>
@@ -317,7 +321,7 @@ export default function ContactUsPage() {
               target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
             }}
           >
-            Back to Settings
+            {t('backToSettings')}
           </button>
         </div>
       </div>

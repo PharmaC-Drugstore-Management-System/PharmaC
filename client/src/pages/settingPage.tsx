@@ -1,15 +1,18 @@
 import React, { useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  
   const settingsItems = [
-    { label: 'Account', href: '/accountSetting' },
-    { label: 'Page Setting', href: '/pageSetting' },
-    { label: 'Edit role', href: '/editrole' },
-    { label: 'Term & Condition', href: '/termCondition' },
-    { label: 'Contact us', href: '/contactUs' }
+    { label: t('account'), href: '/accountSetting' },
+    { label: t('pageSetting'), href: '/pageSetting' },
+    { label: t('editRole'), href: '/editrole' },
+    { label: t('termCondition'), href: '/termCondition' },
+    { label: t('contactUs'), href: '/contactUs' }
   ];
   const checkme = async () => {
     try {
@@ -58,8 +61,8 @@ export default function SettingsPage() {
             <ChevronLeft className="w-6 h-6 text-green-500" />
           </button>
           <div>
-            <h2 className="text-sm font-medium text-teal-100">PharmaC</h2>
-            <h1 className="text-3xl font-bold text-white">Settings</h1>
+            <h2 className="text-sm font-medium text-teal-100">{t('pharmacyTitle')}</h2>
+            <h1 className="text-3xl font-bold text-white">{t('settings')}</h1>
           </div>
         </div>
       </div>
@@ -109,8 +112,8 @@ export default function SettingsPage() {
         {/* Footer Info */}
         <div className="text-center text-sm mt-8"
              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-          <p>PharmaC Management System</p>
-          <p className="mt-1">Version 1.0.0</p>
+          <p>{t('pharmacManagementSystem')}</p>
+          <p className="mt-1">{t('version')}</p>
         </div>
       </div>
     </div>
