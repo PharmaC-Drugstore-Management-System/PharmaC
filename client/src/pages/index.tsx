@@ -17,7 +17,6 @@ import {
 import { ShoppingCart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-
 export default function PharmaDashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -41,71 +40,75 @@ export default function PharmaDashboard() {
     id: string;
     name: string;
     model: string;
-  }
+  };
 
   const forecastModels: ForecastModel[] = [
     {
-      id: 'arima',
-      name: 'ARIMA',
-      model: 'ARIMA'
+      id: "arima",
+      name: "ARIMA",
+      model: "ARIMA",
     },
     {
-      id: 'sarima',
-      name: 'SARIMA',
-      model: 'SARIMA'
-    }
+      id: "sarima",
+      name: "SARIMA",
+      model: "SARIMA",
+    },
   ];
 
   const forecastOptions: ForecastOption[] = [
     {
-      id: 'short_term',
-      name: 'Short Term (3 months)',
+      id: "short_term",
+      name: "Short Term (3 months)",
       forecastPeriods: 3,
       testSizeMonths: 6,
-      description: 'Quick forecast for immediate planning'
+      description: "Quick forecast for immediate planning",
     },
     {
-      id: 'medium_term',
-      name: 'Medium Term (6 months)',
+      id: "medium_term",
+      name: "Medium Term (6 months)",
       forecastPeriods: 6,
       testSizeMonths: 6,
-      description: 'Balanced forecast for quarterly planning'
+      description: "Balanced forecast for quarterly planning",
     },
     {
-      id: 'long_term',
-      name: 'Long Term (12 months)',
+      id: "long_term",
+      name: "Long Term (12 months)",
       forecastPeriods: 12,
       testSizeMonths: 6,
-      description: 'Extended forecast for annual planning'
+      description: "Extended forecast for annual planning",
     },
   ];
 
-  const [revenueChartData, setRevenueChartData] = useState<ChartDataPoint[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>('medium_term');
+  const [revenueChartData, setRevenueChartData] = useState<ChartDataPoint[]>(
+    []
+  );
+  const [selectedModel, setSelectedModel] = useState<string>("medium_term");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const forecastMonthly = async (modelId?: string) => {
     try {
       setIsLoading(true);
-      const currentOptions = forecastOptions.find(model => model.id === (modelId || selectedModel));
+      const currentOptions = forecastOptions.find(
+        (model) => model.id === (modelId || selectedModel)
+      );
       if (!currentOptions) return;
 
       console.log(`Running forecast with ${currentOptions.name}...`);
 
-      const info = await fetch('http://localhost:5000/arima/forecast', {
-        method: 'POST',
-        credentials: 'include',
+      const info = await fetch("http://localhost:5000/arima/forecast", {
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           forecastPeriods: currentOptions.forecastPeriods,
-          testSizeMonths: currentOptions.testSizeMonths
-        })
+          testSizeMonths: currentOptions.testSizeMonths,
+        }),
       });
 
       const data = await info.json();
-      console.log('Forecast data:', data);
+      console.log("Forecast data:", data);
 
       if (data.historical && data.forecast) {
         const combinedData: ChartDataPoint[] = [];
@@ -113,7 +116,9 @@ export default function PharmaDashboard() {
         // Add historical data
         data.historical.forEach((item: any) => {
           const date = new Date(item.date);
-          const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+          const monthName = date.toLocaleDateString("en-US", {
+            month: "short",
+          });
           combinedData.push({
             name: monthName,
             actual: Math.round(item.revenue),
@@ -123,7 +128,9 @@ export default function PharmaDashboard() {
         // Add forecast data
         data.forecast.forEach((item: any) => {
           const date = new Date(item.date);
-          const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+          const monthName = date.toLocaleDateString("en-US", {
+            month: "short",
+          });
           combinedData.push({
             name: monthName,
             forecast: Math.round(item.revenue),
@@ -133,7 +140,7 @@ export default function PharmaDashboard() {
         setRevenueChartData(combinedData);
       }
     } catch (error) {
-      console.error('Error fetching forecast data:', error);
+      console.error("Error fetching forecast data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -153,39 +160,37 @@ export default function PharmaDashboard() {
   ];
 
   const inventoryData = [
-    { id: 1, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
-    { id: 2, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
-    { id: 3, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
-    { id: 4, name: "Amoxilin", amount: "0 pcs", status: t('out_of_stock') },
+    { id: 1, name: "Amoxilin", amount: "15 pcs", status: t("in_stock") },
+    { id: 2, name: "Amoxilin", amount: "15 pcs", status: t("in_stock") },
+    { id: 3, name: "Amoxilin", amount: "15 pcs", status: t("in_stock") },
+    { id: 4, name: "Amoxilin", amount: "0 pcs", status: t("out_of_stock") },
   ];
 
   const COLORS = ["#79e2f2", "#7ab8f2", "#4d82bf", "#38618c", "#213559"];
 
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
-        method: 'GET',
-        credentials: 'include'
-      })
+      const authme = await fetch("http://localhost:5000/api/me", {
+        method: "GET",
+        credentials: "include",
+      });
       const data = await authme.json();
       if (authme.status === 401 || authme.status === 403) {
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
-      console.log('Authme data:', data);
+      console.log("Authme data:", data);
     } catch (error) {
-      console.log('Error', error)
-
+      console.log("Error", error);
     }
-  }
-
+  };
 
   useEffect(() => {
-    checkme()
-    forecastMonthly()
+    checkme();
+    forecastMonthly();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
   type InventoryItem = {
     id: number;
@@ -194,30 +199,61 @@ export default function PharmaDashboard() {
     status: string;
   };
 
-  const renderInventoryItem = ((item: InventoryItem) => {
-    const isInStock = item.status === t('in_stock');
+  const renderInventoryItem = (item: InventoryItem) => {
+    const isInStock = item.status === t("in_stock");
 
     return (
-      <div key={item.id} className="border-t py-3"
-           style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
+      <div
+        key={item.id}
+        className="border-t py-3"
+        style={{
+          borderColor: document.documentElement.classList.contains("dark")
+            ? "#4b5563"
+            : "#e5e7eb",
+        }}
+      >
         <div className="flex items-center">
-          <div className="w-16 h-16 rounded mr-4"
-               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}></div>
+          <div
+            className="w-16 h-16 rounded mr-4"
+            style={{
+              backgroundColor: document.documentElement.classList.contains(
+                "dark"
+              )
+                ? "#4b5563"
+                : "#e5e7eb",
+            }}
+          ></div>
           <div className="flex-1">
-            <a href="#" className="text-xl hover:underline"
-               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+            <a
+              href="#"
+              className="text-xl hover:underline"
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}
+            >
               {item.name}
             </a>
           </div>
           <div className="w-24 text-center">
-            <div style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{item.amount}</div>
+            <div
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}
+            >
+              {item.amount}
+            </div>
           </div>
           <div className="flex justify-center items-center w-32">
             <span
-              className={`px-4 py-1 rounded-full text-center text-sm ${isInStock
-                ? "bg-green-100 text-green-800 "
-                : "bg-red-100 text-red-800 "
-                }`}
+              className={`px-4 py-1 rounded-full text-center text-sm ${
+                isInStock
+                  ? "bg-green-100 text-green-800 "
+                  : "bg-red-100 text-red-800 "
+              }`}
             >
               {item.status}
             </span>
@@ -225,12 +261,17 @@ export default function PharmaDashboard() {
         </div>
       </div>
     );
-  });
+  };
 
   return (
-    <div className="flex h-screen" 
-         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
-
+    <div
+      className="flex h-screen"
+      style={{
+        backgroundColor: document.documentElement.classList.contains("dark")
+          ? "#111827"
+          : "#f9fafb",
+      }}
+    >
       {/* Main Content */}
 
       <div className="flex-1 p-4 ">
@@ -238,14 +279,20 @@ export default function PharmaDashboard() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="w-1 h-8 bg-green-600 mr-2"></div>
-            <h2 className="text-xl font-bold"
-                style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
-              {t('main_menu')}
+            <h2
+              className="text-xl font-bold"
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "black",
+              }}
+            >
+              {t("main_menu")}
             </h2>
           </div>
           {/* Quick POS Access */}
           <button
-            onClick={() => navigate('/pos')}
+            onClick={() => navigate("/pos")}
             className="bg-green-600 hover:bg-green-700  text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
           >
             <ShoppingCart className="w-5 h-5" />
@@ -256,15 +303,35 @@ export default function PharmaDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Revenue Chart */}
           <div className="lg:col-span-2">
-            <div className="bg-white p-4 rounded-lg shadow"
-                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
-                         color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+            <div
+              className="bg-white p-4 rounded-lg shadow"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "black",
+              }}
+            >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold"
-                    style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>Revenue Forecast</h3>
+                <h3
+                  className="text-lg font-semibold"
+                  style={{
+                    color: document.documentElement.classList.contains("dark")
+                      ? "white"
+                      : "#111827",
+                  }}
+                >
+                  Revenue Forecast
+                </h3>
                 <div className="flex items-center space-x-3">
                   {isLoading && (
-                    <span className="text-sm text-blue-600">Loading forecast...</span>
+                    <span className="text-sm text-blue-600">
+                      Loading forecast...
+                    </span>
                   )}
 
                   {/* Forecast Options Dropdown */}
@@ -286,6 +353,14 @@ export default function PharmaDashboard() {
       transition
       hover:shadow-md
     "
+    style={{
+      backgroundColor: document.documentElement.classList.contains("dark")
+        ? "#374151"
+        : "white",
+      color: document.documentElement.classList.contains("dark")
+        ? "white"
+        : "black",
+    }}
                   >
                     {forecastOptions.map((model) => (
                       <option key={model.id} value={model.id}>
@@ -313,6 +388,14 @@ export default function PharmaDashboard() {
       transition
       hover:shadow-md
     "
+    style={{
+      backgroundColor: document.documentElement.classList.contains("dark")
+        ? "#374151"
+        : "white",
+      color: document.documentElement.classList.contains("dark")
+        ? "white"
+        : "black",
+    }}
                   >
                     {forecastModels.map((model) => (
                       <option key={model.id} value={model.id}>
@@ -321,13 +404,21 @@ export default function PharmaDashboard() {
                     ))}
                   </select>
                 </div>
-
               </div>
 
               {/* Model Description */}
-              <div className="mb-3 text-sm" 
-                   style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                {forecastOptions.find(option => option.id === selectedModel)?.description}
+              <div
+                className="mb-3 text-sm"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "#9ca3af"
+                    : "#6b7280",
+                }}
+              >
+                {
+                  forecastOptions.find((option) => option.id === selectedModel)
+                    ?.description
+                }
               </div>
 
               <Link to="/RevenueDetail">
@@ -340,7 +431,9 @@ export default function PharmaDashboard() {
                       <Tooltip
                         formatter={(value, name) => [
                           `$${value?.toLocaleString() || 0}`,
-                          name === 'actual' ? 'Historical Revenue' : 'Forecast Revenue'
+                          name === "actual"
+                            ? "Historical Revenue"
+                            : "Forecast Revenue",
                         ]}
                       />
                       <Legend />
@@ -351,7 +444,7 @@ export default function PharmaDashboard() {
                         stroke="#2563eb"
                         strokeWidth={3}
                         name="Historical Revenue"
-                        dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
+                        dot={{ fill: "#2563eb", strokeWidth: 2, r: 4 }}
                       />
                       {/* Forecast Revenue Line */}
                       <Line
@@ -361,7 +454,7 @@ export default function PharmaDashboard() {
                         strokeWidth={3}
                         strokeDasharray="5 5"
                         name="Forecast Revenue"
-                        dot={{ fill: '#dc2626', strokeWidth: 2, r: 4 }}
+                        dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
                       />
                     </LineChart>
                   </div>
@@ -371,10 +464,26 @@ export default function PharmaDashboard() {
           </div>
 
           {/* Trend Pie Chart */}
-          <div className="p-4 rounded-lg shadow"
-               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
-            <h3 className="text-lg font-semibold mb-4"
-                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('trend')}</h3>
+          <div
+            className="p-4 rounded-lg shadow"
+            style={{
+              backgroundColor: document.documentElement.classList.contains(
+                "dark"
+              )
+                ? "#374151"
+                : "white",
+            }}
+          >
+            <h3
+              className="text-lg font-semibold mb-4"
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}
+            >
+              {t("trend")}
+            </h3>
             <div className="flex justify-center">
               <PieChart width={300} height={250}>
                 <Pie
@@ -406,23 +515,71 @@ export default function PharmaDashboard() {
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left Column - Sales Stats */}
           <div className="flex flex-col gap-4 h-full">
-            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
-                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
-              <h3 className="text-lg font-semibold mb-2"
-                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('amount_sales')}</h3>
-              <div className="text-4xl font-bold text-center"
-                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>200</div>
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-2"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("amount_sales")}
+              </h3>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                200
+              </div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
               </div>
             </div>
 
-            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
-                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
-              <h3 className="text-lg font-semibold mb-2"
-                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('total_sales')}</h3>
-              <div className="text-4xl font-bold text-center"
-                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>70,000</div>
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-2"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("total_sales")}
+              </h3>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                70,000
+              </div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
               </div>
@@ -431,46 +588,138 @@ export default function PharmaDashboard() {
 
           {/* Right Column - Inventory Stats */}
           <div className="flex flex-col gap-4 h-full">
-            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
-                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
-              <h3 className="text-lg font-semibold mb-1"
-                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                {t('total_items_in_stock')}
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-1"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("total_items_in_stock")}
               </h3>
-              <div className="text-4xl font-bold text-center"
-                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>1,500</div>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                1,500
+              </div>
             </div>
 
-            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
-                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
-              <h3 className="text-lg font-semibold mb-1"
-                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('total_items_sales')}</h3>
-              <div className="text-4xl font-bold text-center"
-                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>10,000</div>
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-1"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("total_items_sales")}
+              </h3>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                10,000
+              </div>
             </div>
 
-            <div className="p-5 rounded-lg shadow flex-1 flex flex-col"
-                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
-              <h3 className="text-lg font-semibold mb-2"
-                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('profit')}</h3>
-              <div className="text-4xl font-bold text-center"
-                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>50,000</div>
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-2"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("profit")}
+              </h3>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                50,000
+              </div>
             </div>
           </div>
         </div>
 
         {/* Inventory Shortage Section */}
-        <div className="p-4 rounded-lg shadow mt-6"
-             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
-          <h3 className="text-lg font-semibold mb-4"
-              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('inventory_shortage')}</h3>
+        <div
+          className="p-4 rounded-lg shadow mt-6"
+          style={{
+            backgroundColor: document.documentElement.classList.contains("dark")
+              ? "#374151"
+              : "white",
+          }}
+        >
+          <h3
+            className="text-lg font-semibold mb-4"
+            style={{
+              color: document.documentElement.classList.contains("dark")
+                ? "white"
+                : "#111827",
+            }}
+          >
+            {t("inventory_shortage")}
+          </h3>
           <div>
-            <div className="flex font-semibold py-3 border-b"
-                 style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
-                         color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-              <div className="flex-1">{t('product_name')}</div>
-              <div className="w-24 text-center">{t('amount')}</div>
-              <div className="w-32 text-center">{t('status')}</div>
+            <div
+              className="flex font-semibold py-3 border-b"
+              style={{
+                borderColor: document.documentElement.classList.contains("dark")
+                  ? "#4b5563"
+                  : "#e5e7eb",
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}
+            >
+              <div className="flex-1">{t("product_name")}</div>
+              <div className="w-24 text-center">{t("amount")}</div>
+              <div className="w-32 text-center">{t("status")}</div>
             </div>
             {inventoryData.map((item) => renderInventoryItem(item))}
           </div>

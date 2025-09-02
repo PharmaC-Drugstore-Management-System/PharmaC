@@ -69,7 +69,6 @@ function AppContent() {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 manual-dark-bg"
          style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
-      {/* Dark Mode Test Element */}
     
       
       {/* Conditionally render Navbar */}

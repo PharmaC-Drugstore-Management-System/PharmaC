@@ -9,6 +9,9 @@ const SupplierDetailsForm = () => {
   const [username, setUsername] = useState('');
   console.log("Username: ",username)
 
+  // Check if dark mode is enabled
+  const isDark = document.documentElement.classList.contains('dark');
+
   const [supplierDetails, setSupplierDetails] = useState<{
     contactName: string;
     supplier: string;
@@ -171,33 +174,41 @@ const SupplierDetailsForm = () => {
   }, [])
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex transition-colors duration-300"
+         style={{backgroundColor: isDark ? '#111827' : '#f9fafb'}}>
       {/* Main Content */}
       <div className="flex-1">
 
         {/* Form Content */}
         <div className="p-6">
-          <h2 className="text-3xl font-light text-gray-800 mb-8">Purchase Order</h2>
+          <h2 className="text-3xl font-light mb-8 transition-colors duration-300"
+              style={{color: isDark ? 'white' : '#1f2937'}}>Purchase Order</h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Supplier Details */}
-            <div className="space-y-6 bg-white p-4">
-              <h3 className="text-lg font-medium text-gray-600 mb-4">Supplier Details</h3>
+            <div className="space-y-6 p-4 rounded-lg transition-colors duration-300"
+                 style={{backgroundColor: isDark ? '#374151' : 'white'}}>
+              <h3 className="text-lg font-medium mb-4 transition-colors duration-300"
+                  style={{color: isDark ? '#d1d5db' : '#4b5563'}}>Supplier Details</h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2 transition-colors duration-300"
+                         style={{color: isDark ? '#e5e7eb' : '#374151'}}>
                     Contact Name <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-300"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-0.5"
+                         style={{backgroundColor: isDark ? 'white' : '#1f2937'}}></div>
                     <input
                       type="text"
                       value={supplierDetails.contactName}
                       onChange={(e) => handleInputChange('contactName', e.target.value)}
                       onBlur={() => setTouched(prev => ({ ...prev, contactName: true }))}
-                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
+                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 transition-colors duration-300"
+                      style={{color: isDark ? 'white' : '#1f2937'}}
                     />
                     {touched.contactName && !validate.contactName ? (
                       <div className="text-red-500 text-xs mt-1">Contact Name is required</div>
@@ -206,18 +217,22 @@ const SupplierDetailsForm = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2 transition-colors duration-300"
+                         style={{color: isDark ? '#e5e7eb' : '#374151'}}>
                     Supplier <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-300"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-0.5"
+                         style={{backgroundColor: isDark ? 'white' : '#1f2937'}}></div>
                     <input
                       type="text"
                       value={supplierDetails.supplier}
                       onChange={(e) => handleInputChange('supplier', e.target.value)}
                       onBlur={() => setTouched(prev => ({ ...prev, supplier: true }))}
-                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
+                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 transition-colors duration-300"
+                      style={{color: isDark ? 'white' : '#1f2937'}}
                     />
                     {touched.supplier && !validate.supplier ? (
                       <div className="text-red-500 text-xs mt-1">Supplier is required</div>
@@ -226,12 +241,15 @@ const SupplierDetailsForm = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2 transition-colors duration-300"
+                         style={{color: isDark ? '#e5e7eb' : '#374151'}}>
                     Tax ID <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-300"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-0.5"
+                         style={{backgroundColor: isDark ? 'white' : '#1f2937'}}></div>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -254,7 +272,8 @@ const SupplierDetailsForm = () => {
                         handleInputChange('taxId', digits);
                       }}
                       onBlur={() => setTouched(prev => ({ ...prev, taxId: true }))}
-                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
+                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 transition-colors duration-300"
+                      style={{color: isDark ? 'white' : '#1f2937'}}
                     />
                     {touched.taxId && !validate.taxId ? (
                       <div className="text-red-500 text-xs mt-1">Tax ID must be 13 digits</div>
@@ -263,18 +282,22 @@ const SupplierDetailsForm = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2 transition-colors duration-300"
+                         style={{color: isDark ? '#e5e7eb' : '#374151'}}>
                     Address <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-300"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-0.5"
+                         style={{backgroundColor: isDark ? 'white' : '#1f2937'}}></div>
                     <textarea
                       value={supplierDetails.address}
                       onChange={(e) => handleInputChange('address', e.target.value)}
                       onBlur={() => setTouched(prev => ({ ...prev, address: true }))}
                       rows={3}
-                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800 resize-none"
+                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 resize-none transition-colors duration-300"
+                      style={{color: isDark ? 'white' : '#1f2937'}}
                     />
                     {touched.address && !validate.address ? (
                       <div className="text-red-500 text-xs mt-1">Address is required</div>
@@ -285,23 +308,29 @@ const SupplierDetailsForm = () => {
             </div>
 
             {/* Your Details */}
-            <div className="space-y-6 bg-white p-4">
-              <h3 className="text-lg font-medium text-gray-600 mb-4">Your Details</h3>
+            <div className="space-y-6 p-4 rounded-lg transition-colors duration-300"
+                 style={{backgroundColor: isDark ? '#374151' : 'white'}}>
+              <h3 className="text-lg font-medium mb-4 transition-colors duration-300"
+                  style={{color: isDark ? '#d1d5db' : '#4b5563'}}>Your Details</h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2 transition-colors duration-300"
+                         style={{color: isDark ? '#e5e7eb' : '#374151'}}>
                     Issue Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-300"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-0.5"
+                         style={{backgroundColor: isDark ? 'white' : '#1f2937'}}></div>
                     <input
                       type="date"
                       value={supplierDetails.issueDate}
                       onChange={(e) => handleInputChange('issueDate', e.target.value)}
                       onBlur={() => setTouched(prev => ({ ...prev, issueDate: true }))}
-                      className="w-full px-0 py-2 pr-8 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
+                      className="w-full px-0 py-2 pr-8 bg-transparent border-0 focus:outline-none focus:ring-0 transition-colors duration-300"
+                      style={{color: isDark ? 'white' : '#1f2937'}}
                     />
                     {touched.issueDate && !validate.issueDate ? (
                       <div className="text-red-500 text-xs mt-1">Issue Date is required</div>
@@ -310,18 +339,22 @@ const SupplierDetailsForm = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2 transition-colors duration-300"
+                         style={{color: isDark ? '#e5e7eb' : '#374151'}}>
                     Prepared by <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-300"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-0.5"
+                         style={{backgroundColor: isDark ? 'white' : '#1f2937'}}></div>
                     <input
                       type="text"
                       value={supplierDetails.preparedBy}
                       onChange={(e) => handleInputChange('preparedBy', e.target.value)}
                       onBlur={() => setTouched(prev => ({ ...prev, preparedBy: true }))}
-                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-800"
+                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 transition-colors duration-300"
+                      style={{color: isDark ? 'white' : '#1f2937'}}
                     />
                     {touched.preparedBy && !validate.preparedBy ? (
                       <div className="text-red-500 text-xs mt-1">Prepared By is required</div>
@@ -330,13 +363,20 @@ const SupplierDetailsForm = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2 transition-colors duration-300"
+                         style={{color: isDark ? '#e5e7eb' : '#374151'}}>
                     Business Logo
                   </label>
                   <div className="relative">
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-300"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 mb-2">
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-0.5"
+                         style={{backgroundColor: isDark ? 'white' : '#1f2937'}}></div>
+                    <div className="border-2 border-dashed rounded-lg p-8 text-center mb-2 transition-colors duration-300"
+                         style={{
+                           borderColor: isDark ? '#4b5563' : '#d1d5db',
+                           backgroundColor: isDark ? '#4b5563' : '#f9fafb'
+                         }}>
                       {supplierDetails.businessLogo ? (
                             <div className="space-y-3">
                           {typeof supplierDetails.businessLogo === 'string' ? (
@@ -355,11 +395,29 @@ const SupplierDetailsForm = () => {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          <Image className="w-8 h-8 text-gray-400 mx-auto" />
+                          <Image className="w-8 h-8 mx-auto transition-colors duration-300"
+                                 style={{color: isDark ? '#9ca3af' : '#9ca3af'}} />
                           <div>
-                            <p className="text-gray-500 text-sm mb-2">Add Business Logo</p>
-                            <p className="text-gray-400 text-xs mb-3">Resolution up to 1080x1080px.<br />PNG or JPEG file.</p>
-                            <label className="inline-flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg cursor-pointer transition-colors border border-gray-300">
+                            <p className="text-sm mb-2 transition-colors duration-300"
+                               style={{color: isDark ? '#9ca3af' : '#6b7280'}}>Add Business Logo</p>
+                            <p className="text-xs mb-3 transition-colors duration-300"
+                               style={{color: isDark ? '#6b7280' : '#9ca3af'}}>
+                              Resolution up to 1080x1080px.<br />PNG or JPEG file.
+                            </p>
+                            <label className="inline-flex items-center px-4 py-2 rounded-lg cursor-pointer transition-colors duration-200 border"
+                                   style={{
+                                     backgroundColor: isDark ? '#374151' : 'white',
+                                     color: isDark ? '#d1d5db' : '#374151',
+                                     borderColor: isDark ? '#4b5563' : '#d1d5db'
+                                   }}
+                                   onMouseEnter={(e) => {
+                                     const target = e.target as HTMLLabelElement;
+                                     target.style.backgroundColor = isDark ? '#4b5563' : '#f9fafb';
+                                   }}
+                                   onMouseLeave={(e) => {
+                                     const target = e.target as HTMLLabelElement;
+                                     target.style.backgroundColor = isDark ? '#374151' : 'white';
+                                   }}>
                               <Upload className="w-4 h-4 mr-2" />
                               Upload Logo
                               <input
@@ -377,24 +435,29 @@ const SupplierDetailsForm = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2 transition-colors duration-300"
+                         style={{color: isDark ? '#e5e7eb' : '#374151'}}>
                     Comments
                   </label>
                   <div className="relative">
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-300"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-0.5 bg-gray-800"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-0.5"
+                         style={{backgroundColor: isDark ? 'white' : '#1f2937'}}></div>
                     <textarea
                       value={supplierDetails.comments}
                       onChange={(e) => handleInputChange('comments', e.target.value)}
                       rows={2}
-                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-400 resize-none"
+                      className="w-full px-0 py-2 bg-transparent border-0 focus:outline-none focus:ring-0 resize-none transition-colors duration-300"
+                      style={{color: isDark ? '#9ca3af' : '#9ca3af'}}
                     />
                   </div>
                 </div>
 
                 {/* Signatures Section */}
                 <div className="mt-8">
-                  <h3 className="text-lg font-medium text-gray-700 mb-6">Digital Signature</h3>
+                  <h3 className="text-lg font-medium mb-6 transition-colors duration-300"
+                      style={{color: isDark ? '#e5e7eb' : '#374151'}}>Digital Signature</h3>
                   <div className="w-full">
                     {/* Purchaser Signature Only */}
                     <div>
@@ -419,7 +482,27 @@ const SupplierDetailsForm = () => {
             <button
               onClick={handleSaveAndContinue}
               disabled={!isFormValid}
-              className={`px-16 py-4 rounded-lg font-medium transition-colors text-lg ${isFormValid ? 'bg-green-800 hover:bg-green-900 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
+              className={`px-16 py-4 rounded-lg font-medium transition-colors text-lg ${isFormValid ? 'text-white' : 'cursor-not-allowed'}`}
+              style={{
+                backgroundColor: isFormValid 
+                  ? (isDark ? '#166534' : '#14532d')
+                  : (isDark ? '#4b5563' : '#e5e7eb'),
+                color: isFormValid 
+                  ? 'white' 
+                  : (isDark ? '#9ca3af' : '#6b7280')
+              }}
+              onMouseEnter={(e) => {
+                if (isFormValid) {
+                  const target = e.target as HTMLButtonElement;
+                  target.style.backgroundColor = isDark ? '#15803d' : '#166534';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (isFormValid) {
+                  const target = e.target as HTMLButtonElement;
+                  target.style.backgroundColor = isDark ? '#166534' : '#14532d';
+                }
+              }}
             >
               Save & Continue
             </button>
