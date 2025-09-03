@@ -1,34 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Sun, Moon, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../contexts/ThemeProvider';
 
 export default function SettingsToggles() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved ? JSON.parse(saved) : false;
-  });
+  const { theme, setTheme } = useTheme();
 
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    localStorage.setItem('darkMode', JSON.stringify(newMode));
-    
-    // Apply immediately to document
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-      document.body.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.classList.remove('dark');
-    }
-  };
+  // Helper function to determine if current theme is dark
+  const isDark = theme === 'dark';
 
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
+    
+    // Force reload page for immediate language update
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const checkAuth = async () => {
@@ -49,79 +39,110 @@ export default function SettingsToggles() {
 
   useEffect(() => {
     checkAuth();
-    
-    // Apply dark mode on load
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      document.body.classList.add('dark');
-    }
-  }, [darkMode]);
-
-    const checkme = async () => {
-      try {
-        const authme = await fetch('http://localhost:5000/api/me', {
-          method: 'GET',
-          credentials: 'include'
-        })
-        const data = await authme.json();
-        if (authme.status === 401 || authme.status === 403) {
-          navigate('/login');
-          return;
-        }
-  
-        console.log('Authme data:', data);
-      } catch (error) {
-        console.log('Error', error)
-  
-      }
-    }
-  
-  
-    useEffect(() => {
-      checkme()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    // Theme is managed by ThemeProvider
+  }, [theme]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 p-4 transition-colors duration-300">
+    <div className="min-h-screen p-4 transition-colors duration-300"
+         style={{backgroundColor: isDark ? '#111827' : '#f3f4f6'}}>
       <div className="w-full">
         {/* Header */}
         <div className="flex items-center p-6">
           <button 
-            className="flex items-center justify-center w-12 h-12 bg-teal-600 rounded-full mr-4 hover:bg-teal-700 transition-colors duration-200"   
+            className="flex items-center justify-center w-12 h-12 rounded-full mr-4 transition-colors duration-200"
+            style={{
+              backgroundColor: isDark ? '#0d9488' : '#0f766e',
+              color: 'white'
+            }}
+            onMouseEnter={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.backgroundColor = isDark ? '#0f766e' : '#134e4a';
+            }}
+            onMouseLeave={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.backgroundColor = isDark ? '#0d9488' : '#0f766e';
+            }}
             onClick={() => navigate('/settings')}
           >
             <ChevronLeft className="w-6 h-6 text-white" />
           </button>
           <div>
-            <h2 className="text-lg font-medium text-gray-600 dark:text-gray-300">PharmaC</h2>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Page Settings</h1>
+            <h2 className="text-lg font-medium"
+                style={{color: isDark ? '#d1d5db' : '#4b5563'}}>
+              {t('pharmaC')}
+            </h2>
+            <h1 className="text-2xl font-semibold"
+                style={{color: isDark ? 'white' : '#111827'}}>
+              {t('pageSettings')}
+            </h1>
           </div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm mx-auto shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+        <div className="rounded-2xl p-6 max-w-sm mx-auto shadow-lg border transition-colors duration-300"
+             style={{
+               backgroundColor: isDark ? '#374151' : 'white',
+               borderColor: isDark ? '#4b5563' : '#e5e7eb'
+             }}>
           
           {/* Language Setting */}
           <div className="flex items-center justify-between mb-8">
-            <span className="text-gray-900 dark:text-white text-xl">Language</span>
-            <div className="flex bg-gray-200 dark:bg-gray-700 rounded-full p-0.5">
+            <span className="text-xl"
+                  style={{color: isDark ? 'white' : '#111827'}}>
+              {t('language')}
+            </span>
+            <div className="flex rounded-full p-0.5"
+                 style={{backgroundColor: isDark ? '#4b5563' : '#e5e7eb'}}>
               <button
                 onClick={() => changeLanguage('th')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  i18n.language === 'th' 
-                    ? 'bg-teal-400 text-white shadow-sm' 
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
-                }`}
+                className="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200"
+                style={{
+                  backgroundColor: i18n.language === 'th' 
+                    ? (isDark ? '#14b8a6' : '#14b8a6')
+                    : 'transparent',
+                  color: i18n.language === 'th' 
+                    ? 'white' 
+                    : (isDark ? '#d1d5db' : '#4b5563'),
+                  boxShadow: i18n.language === 'th' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (i18n.language !== 'th') {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.color = isDark ? 'white' : '#111827';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (i18n.language !== 'th') {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.color = isDark ? '#d1d5db' : '#4b5563';
+                  }
+                }}
               >
                 TH
               </button>
               <button
                 onClick={() => changeLanguage('en')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  i18n.language === 'en' 
-                    ? 'bg-teal-400 text-white shadow-sm' 
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
-                }`}
+                className="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200"
+                style={{
+                  backgroundColor: i18n.language === 'en' 
+                    ? (isDark ? '#14b8a6' : '#14b8a6')
+                    : 'transparent',
+                  color: i18n.language === 'en' 
+                    ? 'white' 
+                    : (isDark ? '#d1d5db' : '#4b5563'),
+                  boxShadow: i18n.language === 'en' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (i18n.language !== 'en') {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.color = isDark ? 'white' : '#111827';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (i18n.language !== 'en') {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.color = isDark ? '#d1d5db' : '#4b5563';
+                  }
+                }}
               >
                 EN
               </button>
@@ -130,25 +151,75 @@ export default function SettingsToggles() {
 
           {/* Dark Mode Setting */}
           <div className="flex items-center justify-between">
-            <span className="text-gray-900 dark:text-white text-xl">Dark mode</span>
-            <div className="flex bg-gray-200 dark:bg-gray-700 rounded-full p-0.5">
+            <span className="text-xl"
+                  style={{color: isDark ? 'white' : '#111827'}}>
+              {t('theme')}
+            </span>
+            <div className="flex rounded-full p-0.5"
+                 style={{backgroundColor: isDark ? '#4b5563' : '#e5e7eb'}}>
               <button
-                onClick={toggleDarkMode}
-                className={`p-1.5 rounded-full transition-all duration-200 ${
-                  !darkMode 
-                    ? 'bg-teal-400 text-white shadow-sm' 
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
-                }`}
+                onClick={() => {
+                  setTheme('light');
+                  // Force reload page for immediate theme update
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 100);
+                }}
+                className="p-1.5 rounded-full transition-all duration-200"
+                style={{
+                  backgroundColor: theme === 'light' 
+                    ? (isDark ? '#14b8a6' : '#14b8a6')
+                    : 'transparent',
+                  color: theme === 'light' 
+                    ? 'white' 
+                    : (isDark ? '#d1d5db' : '#4b5563'),
+                  boxShadow: theme === 'light' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (theme !== 'light') {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.color = isDark ? 'white' : '#111827';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (theme !== 'light') {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.color = isDark ? '#d1d5db' : '#4b5563';
+                  }
+                }}
               >
                 <Sun size={16} />
               </button>
               <button
-                onClick={toggleDarkMode}
-                className={`p-1.5 rounded-full transition-all duration-200 ${
-                  darkMode 
-                    ? 'bg-teal-400 text-white shadow-sm' 
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
-                }`}
+                onClick={() => {
+                  setTheme('dark');
+                  // Force reload page for immediate theme update
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 100);
+                }}
+                className="p-1.5 rounded-full transition-all duration-200"
+                style={{
+                  backgroundColor: theme === 'dark' 
+                    ? (isDark ? '#14b8a6' : '#14b8a6')
+                    : 'transparent',
+                  color: theme === 'dark' 
+                    ? 'white' 
+                    : (isDark ? '#d1d5db' : '#4b5563'),
+                  boxShadow: theme === 'dark' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (theme !== 'dark') {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.color = isDark ? 'white' : '#111827';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (theme !== 'dark') {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.color = isDark ? '#d1d5db' : '#4b5563';
+                  }
+                }}
               >
                 <Moon size={16} />
               </button>
@@ -156,9 +227,11 @@ export default function SettingsToggles() {
           </div>
 
           {/* Status Display */}
-          <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="text-sm text-gray-600 dark:text-gray-300 text-center">
-              <p>Language: {i18n.language.toUpperCase()} | Mode: {darkMode ? 'Dark' : 'Light'}</p>
+          <div className="mt-6 p-3 rounded-lg"
+               style={{backgroundColor: isDark ? '#4b5563' : '#f9fafb'}}>
+            <div className="text-sm text-center"
+                 style={{color: isDark ? '#d1d5db' : '#4b5563'}}>
+              <p>{t('language')}: {i18n.language.toUpperCase()} | {t('theme')}: {theme === 'dark' ? t('darkMode') : t('lightMode')}</p>
             </div>
           </div>
 

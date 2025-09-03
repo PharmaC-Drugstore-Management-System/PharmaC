@@ -7,7 +7,7 @@ import { ThemeProvider } from './contexts/ThemeProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="system" storageKey="pharmaC-theme">
+    <ThemeProvider defaultTheme="light" storageKey="pharmaC-theme">
       <App />
     </ThemeProvider>
   </StrictMode>,

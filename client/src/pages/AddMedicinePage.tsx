@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Barcode, Upload, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import BarcodeScanner from "react-qr-barcode-scanner";
 import type { Result } from "@zxing/library";
 
 export default function AddMedicinePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  // Check if dark mode is enabled
+  const isDark = document.documentElement.classList.contains('dark');
 
   const [showScanner, setShowScanner] = useState(false);
   const [hasScanned, setHasScanned] = useState(false);
@@ -115,11 +120,17 @@ export default function AddMedicinePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-4">
-      <h1 className="text-3xl font-bold mb-8">Add Medication</h1>
+    <div className="min-h-screen flex flex-col p-4 transition-colors duration-300"
+         style={{backgroundColor: isDark ? '#111827' : '#ffffff'}}>
+      <h1 className="text-3xl font-bold mb-8 transition-colors duration-300"
+          style={{color: isDark ? 'white' : '#1f2937'}}>{t('addMedication')}</h1>
 
       <div className="flex flex-col md:flex-row gap-6">
-        <label className="bg-teal-50 rounded-lg p-6 flex flex-col items-center justify-center min-h-64 w-full md:w-1/3 border border-teal-100 cursor-pointer">
+        <label className="rounded-lg p-6 flex flex-col items-center justify-center min-h-64 w-full md:w-1/3 border cursor-pointer transition-colors duration-300"
+               style={{
+                 backgroundColor: isDark ? '#374151' : '#f0fdfa',
+                 borderColor: isDark ? '#4b5563' : '#5eead4'
+               }}>
           {previewUrl ? (
             <div className="flex flex-col items-center gap-3">
               <img
@@ -127,7 +138,8 @@ export default function AddMedicinePage() {
                 alt="preview"
                 className="max-h-40 object-contain rounded-md"
               />
-              <div className="flex items-center gap-2 text-teal-700">
+              <div className="flex items-center gap-2 transition-colors duration-300"
+                   style={{color: isDark ? '#60a5fa' : '#0f766e'}}>
                 <span className="text-sm">{image?.name}</span>
                 <button
                   type="button"
@@ -135,7 +147,7 @@ export default function AddMedicinePage() {
                     e.stopPropagation();
                     handleRemoveImage();
                   }}
-                  className="text-red-600 hover:text-red-800"
+                  className="text-red-600 hover:text-red-800 transition-colors duration-200"
                   aria-label="Remove image"
                 >
                   <X />
@@ -144,10 +156,12 @@ export default function AddMedicinePage() {
             </div>
           ) : (
             <div className="flex flex-col items-center">
-              <div className="text-teal-600 mb-4">
+              <div className="mb-4 transition-colors duration-300"
+                   style={{color: isDark ? '#60a5fa' : '#0d9488'}}>
                 <Upload size={48} />
               </div>
-              <p className="text-teal-600">Click to upload image</p>
+              <p className="transition-colors duration-300"
+                 style={{color: isDark ? '#60a5fa' : '#0d9488'}}>{t('clickToUploadImage')}</p>
             </div>
           )}
           <input
@@ -159,25 +173,55 @@ export default function AddMedicinePage() {
         </label>
 
         <div className="w-full md:w-2/3">
-          <div className="bg-white rounded-lg p-6 shadow-sm">
+          <div className="rounded-lg p-6 shadow-sm border transition-colors duration-300"
+               style={{
+                 backgroundColor: isDark ? '#374151' : 'white',
+                 borderColor: isDark ? '#4b5563' : '#e5e7eb'
+               }}>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
-                placeholder="Product Name..."
+                placeholder={t('productNamePlaceholder')}
                 value={formData.productName}
                 onChange={(e) =>
                   setFormData({ ...formData, productName: e.target.value })
                 }
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                style={{
+                  backgroundColor: isDark ? '#4b5563' : 'white',
+                  borderColor: isDark ? '#6b7280' : '#d1d5db',
+                  color: isDark ? 'white' : '#1f2937'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                  e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
               <input
                 type="text"
-                placeholder="Brand..."
+                placeholder={t('brandPlaceholder')}
                 value={formData.brand}
                 onChange={(e) =>
                   setFormData({ ...formData, brand: e.target.value })
                 }
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                style={{
+                  backgroundColor: isDark ? '#4b5563' : 'white',
+                  borderColor: isDark ? '#6b7280' : '#d1d5db',
+                  color: isDark ? 'white' : '#1f2937'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                  e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
 
               <select
@@ -185,23 +229,49 @@ export default function AddMedicinePage() {
                 onChange={(e) =>
                   setFormData({ ...formData, productType: e.target.value })
                 }
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                style={{
+                  backgroundColor: isDark ? '#4b5563' : 'white',
+                  borderColor: isDark ? '#6b7280' : '#d1d5db',
+                  color: isDark ? 'white' : '#1f2937'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                  e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               >
-                <option value="">Select Product Type</option>
+                <option value="">{t('selectProductType')}</option>
                 {productTypes.map((p) => (
                   <option key={p} value={p}>
                     {p}
                   </option>
                 ))}
-                <option value="other">Other</option>
+                <option value="other">{t('other')}</option>
               </select>
               {formData.productType === "other" && (
                 <input
                   type="text"
-                  placeholder="Enter other product type."
+                  placeholder={t('enterOtherProductType')}
                   value={customProductType}
                   onChange={(e) => setCustomProductType(e.target.value)}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 mt-2"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 mt-2"
+                  style={{
+                    backgroundColor: isDark ? '#4b5563' : 'white',
+                    borderColor: isDark ? '#6b7280' : '#d1d5db',
+                    color: isDark ? 'white' : '#1f2937'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                    e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               )}
 
@@ -210,32 +280,60 @@ export default function AddMedicinePage() {
                 onChange={(e) =>
                   setFormData({ ...formData, unit: e.target.value })
                 }
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                style={{
+                  backgroundColor: isDark ? '#4b5563' : 'white',
+                  borderColor: isDark ? '#6b7280' : '#d1d5db',
+                  color: isDark ? 'white' : '#1f2937'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                  e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               >
-                <option value="">Select Unit</option>
+                <option value="">{t('selectUnit')}</option>
                 {units.map((u) => (
                   <option key={u} value={u}>
                     {u}
                   </option>
                 ))}
-                <option value="other">Other</option>
+                <option value="other">{t('other')}</option>
               </select>
               {formData.unit === "other" && (
                 <input
                   type="text"
-                  placeholder="Enter custom unit..."
+                  placeholder={t('enterCustomUnit')}
                   value={customUnit}
                   onChange={(e) => setCustomUnit(e.target.value)}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 mt-2"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 mt-2"
+                  style={{
+                    backgroundColor: isDark ? '#4b5563' : 'white',
+                    borderColor: isDark ? '#6b7280' : '#d1d5db',
+                    color: isDark ? 'white' : '#1f2937'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                    e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               )}
 
               <div>
-                <label className="block mb-2 font-medium text-gray-700">
-                  Is this a controlled medicine?
+                <label className="block mb-2 font-medium transition-colors duration-300"
+                       style={{color: isDark ? '#d1d5db' : '#374151'}}>
+                  {t('isControlledMedicine')}
                 </label>
                 <div className="flex gap-6">
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 transition-colors duration-300"
+                         style={{color: isDark ? '#d1d5db' : '#374151'}}>
                     <input
                       type="radio"
                       name="isControlled"
@@ -244,10 +342,12 @@ export default function AddMedicinePage() {
                       onChange={() =>
                         setFormData({ ...formData, isControlled: false })
                       }
+                      className="text-green-600 focus:ring-green-500"
                     />{" "}
-                    No
+                    {t('no')}
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 transition-colors duration-300"
+                         style={{color: isDark ? '#d1d5db' : '#374151'}}>
                     <input
                       type="radio"
                       name="isControlled"
@@ -256,36 +356,74 @@ export default function AddMedicinePage() {
                       onChange={() =>
                         setFormData({ ...formData, isControlled: true })
                       }
+                      className="text-green-600 focus:ring-green-500"
                     />{" "}
-                    Yes
+                    {t('yes')}
                   </label>
                 </div>
               </div>
 
               <input
                 type="text"
-                placeholder="Friendly Id..."
+                placeholder={t('friendlyIdPlaceholder')}
                 value={formData.friendlyId}
                 onChange={(e) =>
                   setFormData({ ...formData, friendlyId: e.target.value })
                 }
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                style={{
+                  backgroundColor: isDark ? '#4b5563' : 'white',
+                  borderColor: isDark ? '#6b7280' : '#d1d5db',
+                  color: isDark ? 'white' : '#1f2937'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                  e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
               <input
                 type="text"
-                placeholder="Barcode..."
+                placeholder={t('barcodePlaceholder')}
                 value={formData.barcode}
                 onChange={(e) =>
                   setFormData({ ...formData, barcode: e.target.value })
                 }
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                style={{
+                  backgroundColor: isDark ? '#4b5563' : 'white',
+                  borderColor: isDark ? '#6b7280' : '#d1d5db',
+                  color: isDark ? 'white' : '#1f2937'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                  e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
 
               <button
-                className="w-full p-3 bg-green-800 text-white rounded-lg hover:bg-green-900 transition"
+                className="w-full p-3 text-white rounded-lg transition-all duration-200"
                 type="submit"
+                style={{
+                  backgroundColor: isDark ? '#059669' : '#065f46'
+                }}
+                onMouseEnter={(e) => {
+                  const target = e.target as HTMLButtonElement;
+                  target.style.backgroundColor = isDark ? '#047857' : '#064e3b';
+                }}
+                onMouseLeave={(e) => {
+                  const target = e.target as HTMLButtonElement;
+                  target.style.backgroundColor = isDark ? '#059669' : '#065f46';
+                }}
               >
-                Submit
+                {t('submit')}
               </button>
             </form>
           </div>
@@ -299,19 +437,39 @@ export default function AddMedicinePage() {
             setHasScanned(false);
             setScannedData("Not Found");
           }}
-          className="flex items-center justify-center bg-white p-3 rounded-lg shadow-md border border-gray-200 w-full hover:bg-gray-50 transition"
+          className="flex items-center justify-center p-3 rounded-lg shadow-md border w-full transition-all duration-200"
+          style={{
+            backgroundColor: isDark ? '#374151' : 'white',
+            borderColor: isDark ? '#4b5563' : '#e5e7eb'
+          }}
+          onMouseEnter={(e) => {
+            const target = e.target as HTMLButtonElement;
+            target.style.backgroundColor = isDark ? '#4b5563' : '#f9fafb';
+          }}
+          onMouseLeave={(e) => {
+            const target = e.target as HTMLButtonElement;
+            target.style.backgroundColor = isDark ? '#374151' : 'white';
+          }}
         >
           <div className="flex flex-col items-center">
-            <span className="text-sm font-medium mb-1">Add by barcode</span>
-            <Barcode size={40} />
+            <span className="text-sm font-medium mb-1 transition-colors duration-300"
+                  style={{color: isDark ? '#d1d5db' : '#374151'}}>{t('addByBarcode')}</span>
+            <div style={{color: isDark ? '#60a5fa' : '#374151'}}>
+              <Barcode size={40} />
+            </div>
           </div>
         </button>
       </div>
 
       {showScanner && (
         <div className="flex flex-col items-center">
-          <h2 className="text-lg font-bold text-gray-800 mt-4">Scan Barcode</h2>
-          <div className="relative mt-6 flex flex-col items-center w-fit p-4 bg-gray-50 rounded-xl shadow-md border border-gray-200">
+          <h2 className="text-lg font-bold mt-4 transition-colors duration-300"
+              style={{color: isDark ? '#d1d5db' : '#1f2937'}}>{t('scanBarcode')}</h2>
+          <div className="relative mt-6 flex flex-col items-center w-fit p-4 rounded-xl shadow-md border transition-colors duration-300"
+               style={{
+                 backgroundColor: isDark ? '#374151' : '#f9fafb',
+                 borderColor: isDark ? '#4b5563' : '#e5e7eb'
+               }}>
             {!hasScanned && (
               <div className="w-full flex flex-row justify-end mb-2">
                 <button
@@ -320,7 +478,7 @@ export default function AddMedicinePage() {
                     setHasScanned(false);
                     setScannedData("Not Found");
                   }}
-                  className="ml-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1"
+                  className="ml-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 transition-colors duration-200"
                   aria-label="Close Scanner"
                 >
                   <X size={24} />
@@ -332,16 +490,16 @@ export default function AddMedicinePage() {
               <BarcodeScanner width={400} height={400} onUpdate={handleScan} />
             )}
 
-            <p className="mt-2 text-sm">
-              Scanned Data:{" "}
+            <p className="mt-2 text-sm transition-colors duration-300"
+               style={{color: isDark ? '#d1d5db' : '#374151'}}>
+              {t('scannedData')}{" "}
               <span
-                className={`font-bold ${
-                  scannedData === "Not Found"
-                    ? "text-red-600"
-                    : "text-green-600"
-                }`}
+                className="font-bold"
+                style={{
+                  color: scannedData === "Not Found" ? '#dc2626' : '#059669'
+                }}
               >
-                {scannedData}
+                {scannedData === "Not Found" ? t('notFound') : scannedData}
               </span>
             </p>
 
@@ -351,7 +509,18 @@ export default function AddMedicinePage() {
                   setHasScanned(false);
                   setScannedData("Not Found");
                 }}
-                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="mt-3 px-4 py-2 text-white rounded-lg transition-all duration-200"
+                style={{
+                  backgroundColor: isDark ? '#2563eb' : '#1d4ed8'
+                }}
+                onMouseEnter={(e) => {
+                  const target = e.target as HTMLButtonElement;
+                  target.style.backgroundColor = isDark ? '#1d4ed8' : '#1e40af';
+                }}
+                onMouseLeave={(e) => {
+                  const target = e.target as HTMLButtonElement;
+                  target.style.backgroundColor = isDark ? '#2563eb' : '#1d4ed8';
+                }}
               >
                 Scan Again
               </button>

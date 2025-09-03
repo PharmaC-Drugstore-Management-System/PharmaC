@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 interface Document {
@@ -22,18 +23,12 @@ interface Document {
 }
 
 export default function DocumentRecord() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPDF, setSelectedPDF] = useState<number | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [showSignatureModal, setShowSignatureModal] = useState(false);
-  const [selectedDocumentForSignature, setSelectedDocumentForSignature] = useState<number | null>(null);
-  const [signatureData, setSignatureData] = useState({
-    signer_name: '',
-    cert_serial_number: '',
-    signature_hash: ''
-  });
 
   const checkme = async () => {
     try {
@@ -111,26 +106,30 @@ export default function DocumentRecord() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen"
+         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-green-800 mb-2">Document Records</h1>
-          <p className="text-gray-600">All purchase order documents in the system</p>
+          <h1 className="text-3xl font-bold mb-2"
+              style={{color: document.documentElement.classList.contains('dark') ? '#10b981' : '#065f46'}}>{t('documentRecords')}</h1>
+          <p style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('allPurchaseOrderDocuments')}</p>
         </div>
         
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-800 mx-auto mb-4"></div>
-              <span className="text-gray-600">Loading documents...</span>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+                   style={{borderColor: document.documentElement.classList.contains('dark') ? '#10b981' : '#065f46'}}></div>
+              <span style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('loadingDocuments')}</span>
             </div>
           </div>
         ) : (
           <>
             {documents.length > 0 && (
               <div className="mb-4">
-                <p className="text-sm text-gray-600">
-                  Found {documents.length} document(s)
+                <p className="text-sm"
+                   style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                  {t('foundDocuments', { count: documents.length })}
                 </p>
               </div>
             )}
@@ -139,11 +138,13 @@ export default function DocumentRecord() {
               {documents.map((doc) => (
                 <div
                   key={doc.purchase_document_id}
-                  className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition-all duration-300 cursor-pointer group max-w-sm"
+                  className="p-4 rounded-xl shadow hover:shadow-lg transition-all duration-300 cursor-pointer group max-w-sm"
+                  style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}
                   onClick={() => openPDFPreview(doc.purchase_document_id)}
                 >
                   {/* PDF Icon Display */}
-                  <div className="relative h-32 bg-gray-50 rounded-xl mb-3 overflow-hidden flex items-center justify-center">
+                  <div className="relative h-32 rounded-xl mb-3 overflow-hidden flex items-center justify-center"
+                       style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb'}}>
                     {/* PDF Icon */}
                     <div className="text-center">
                       <div className="bg-red-500 text-white p-3 rounded-lg mb-2 inline-block">
@@ -151,12 +152,13 @@ export default function DocumentRecord() {
                           <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                         </svg>
                       </div>
-                      <p className="text-xs text-gray-600 font-medium">PDF</p>
+                      <p className="text-xs font-medium"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>PDF</p>
                     </div>
                     
                     {/* Signature Indicator */}
                     {doc.po_signature && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1" title={`Signed by: ${doc.po_signature.signer_name}`}>
+                      <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1" title={t('signedBy', { name: doc.po_signature.signer_name })}>
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -173,21 +175,24 @@ export default function DocumentRecord() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                        Click to preview
+                        {t('clickToPreview')}
                       </div>
                     </div>
                   </div>
                   
                   <div className="text-center space-y-1">
-                    <h3 className="font-medium text-gray-800 text-xs leading-tight" style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 1,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
-                    }}>
+                    <h3 className="font-medium text-xs leading-tight" 
+                        style={{
+                          color: document.documentElement.classList.contains('dark') ? 'white' : '#1f2937',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}>
                       {doc.description || `PO #${doc.purchase_document_id}`}
                     </h3>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'}}>
                       {new Date(doc.issue_date).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -198,12 +203,16 @@ export default function DocumentRecord() {
                         hour12: true
                       })}
                     </p>
-                    <p className="text-xs text-blue-600 truncate" title={doc.pdf_filename}>
+                    <p className="text-xs truncate"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}}
+                       title={doc.pdf_filename}>
                       📄 {doc.pdf_filename}
                     </p>
                     {doc.po_signature && (
-                      <p className="text-xs text-green-600 truncate" title={`Signed by: ${doc.po_signature.signer_name}`}>
-                        ✓ Signed by {doc.po_signature.signer_name}
+                      <p className="text-xs truncate"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#10b981' : '#059669'}}
+                         title={t('signedBy', { name: doc.po_signature.signer_name })}>
+                        ✓ {t('signedBy', { name: doc.po_signature.signer_name })}
                       </p>
                     )}
                   </div>
@@ -214,12 +223,15 @@ export default function DocumentRecord() {
             {documents.length === 0 && (
               <div className="text-center py-16">
                 <div className="mb-4">
-                  <svg className="w-20 h-20 text-gray-300 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-20 h-20 mx-auto" 
+                       style={{color: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db'}}
+                       fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-600 mb-2">No documents found</h3>
-                <p className="text-gray-500">New documents will appear here when created</p>
+                <h3 className="text-lg font-medium mb-2"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('noDocumentsFound')}</h3>
+                <p style={{color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'}}>{t('newDocumentsWillAppear')}</p>
               </div>
             )}
           </>
@@ -232,24 +244,37 @@ export default function DocumentRecord() {
             onClick={closePDFPreview}
           >
             <div 
-              className="bg-white rounded-lg w-full max-w-4xl h-full max-h-[90vh] flex flex-col"
+              className="rounded-lg w-full max-w-4xl h-full max-h-[90vh] flex flex-col"
+              style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="flex justify-between items-center p-4 border-b">
-                <h2 className="text-lg font-semibold text-gray-800">PDF Preview</h2>
+              <div className="flex justify-between items-center p-4 border-b"
+                   style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
+                <h2 className="text-lg font-semibold"
+                    style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1f2937'}}>{t('pdfPreview')}</h2>
                 <div className="flex gap-2">
                   <button
                     onClick={() => window.open(`http://localhost:5000/purchase/pdf/${selectedPDF}`, '_blank')}
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm transition-colors"
                   >
-                    Open in New Tab
+                    {t('openInNewTab')}
                   </button>
                   <button
                     onClick={closePDFPreview}
-                    className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm"
+                    className="px-3 py-1 rounded text-sm transition-colors"
+                    style={{
+                      backgroundColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af',
+                      color: 'white'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#6b7280';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af';
+                    }}
                   >
-                    Close
+                    {t('close')}
                   </button>
                 </div>
               </div>

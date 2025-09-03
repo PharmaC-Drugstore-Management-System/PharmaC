@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   LineChart,
   Line,
@@ -104,23 +105,23 @@ const renderRevenueRow = (item: RevenueItem) => {
         </div>
 
         {/* Product Name */}
-        <div className="flex-1">
+        <div className="flex-1" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
           <a href="#" className="text-xl hover:underline">
             {item.name}
           </a>
         </div>
 
         {/* Product ID */}
-        <div className="w-24 text-center">{item.productId}</div>
+        <div className="w-24 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{item.productId}</div>
 
         {/* Price */}
-        <div className="w-24 text-center">{item.price} THB</div>
+        <div className="w-24 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{item.price} THB</div>
 
         {/* Amount */}
-        <div className="w-24 text-center">{item.amount}</div>
+        <div className="w-24 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{item.amount}</div>
 
         {/* Total Sale */}
-        <div className="w-24 text-center">
+        <div className="w-24 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
           {item.totalSale.toLocaleString()} THB
         </div>
 
@@ -144,6 +145,7 @@ const renderRevenueRow = (item: RevenueItem) => {
 };
 
 export default function RevenueDetail() {
+  const { t } = useTranslation();
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
     new Date("2025-05-01"),
     new Date("2025-05-31"),
@@ -183,18 +185,29 @@ export default function RevenueDetail() {
       {/* Inventory Title */}
       <div className="flex items-center mb-6">
         <div className="w-1 h-8 bg-green-600 mr-2"></div>
-        <h2 className="text-xl font-bold" style={{ color: "black" }}>
-          Statistics
+        <h2 className="text-xl font-bold"
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+          {t('statistics')}
         </h2>
       </div>
 
       {/* TREND CHART */}
-      <div className="bg-white p-2 rounded-lg shadow lg:col-span-1 border border-gray-200 mb-4 p-4">
-        <h3 className="text-lg font-semibold mb-2">Trend</h3>
+      <div className="p-4 rounded-lg shadow lg:col-span-1 border mb-4"
+           style={{
+             backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+             borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+           }}>
+        <h3 className="text-lg font-semibold mb-2"
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{t('trend')}</h3>
         {/* Date Range Picker */}
         <div className="flex justify-between items-center mb-4">
-          <div className="inline-flex items-center px-4 py-2 bg-white shadow rounded-full border border-gray-200">
-            <span className="text-sm mr-2">
+          <div className="inline-flex items-center px-4 py-2 shadow rounded-full border"
+               style={{
+                 backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                 borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
+               }}>
+            <span className="text-sm mr-2"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
               {startDate?.toLocaleDateString("en-GB", {
                 day: "numeric",
                 month: "short",
@@ -245,12 +258,21 @@ export default function RevenueDetail() {
       </div>
 
       {/* Revenue Chart */}
-      <div className="bg-white p-4 rounded-lg shadow mb-4 border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4 ">Revenue</h3>
+      <div className="bg-white p-4 rounded-lg shadow mb-4 border border-gray-200" style={{
+          backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+          borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+        }}>
+        <h3 className="text-lg font-semibold mb-4 "
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Revenue</h3>
         {/* Date Range Picker */}
         <div className="flex justify-between items-center mb-4">
-          <div className="inline-flex items-center px-4 py-2 bg-white shadow rounded-full border border-gray-200">
-            <span className="text-sm mr-2">
+          <div className="inline-flex items-center px-4 py-2 shadow rounded-full border border-gray-200"
+               style={{
+                 backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                 borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
+               }}>
+            <span className="text-sm mr-2"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
               {startDate?.toLocaleDateString("en-GB", {
                 day: "numeric",
                 month: "short",
@@ -277,12 +299,32 @@ export default function RevenueDetail() {
             />
           </div>
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
           <LineChart width={600} height={250} data={revenueChartData}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              vertical={false} 
+              stroke={document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}
+            />
+            <XAxis 
+              dataKey="name" 
+              tick={{fill: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}
+              axisLine={{stroke: document.documentElement.classList.contains('dark') ? '#6b7280' : '#374151'}}
+              tickLine={{stroke: document.documentElement.classList.contains('dark') ? '#6b7280' : '#374151'}}
+            />
+            <YAxis 
+              tick={{fill: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}
+              axisLine={{stroke: document.documentElement.classList.contains('dark') ? '#6b7280' : '#374151'}}
+              tickLine={{stroke: document.documentElement.classList.contains('dark') ? '#6b7280' : '#374151'}}
+            />
+            <Tooltip 
+              contentStyle={{
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                border: `1px solid ${document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}`,
+                borderRadius: '6px',
+                color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+              }}
+            />
             <Line
               type="monotone"
               dataKey="projected"
@@ -300,18 +342,24 @@ export default function RevenueDetail() {
       </div>
 
       {/* Stock shortage based on trend */}
-      <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">
+      <div className="bg-white p-4 rounded-lg shadow" style={{
+          backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+          borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+        }}>
+        <h3 className="text-lg font-semibold mb-4"
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
           Stock shortage based on trend
         </h3>
-        <div className="flex font-semibold text-sm py-3 border-b border-gray-300">
-          <div className="w-24 text-center">Rank</div>
-          <div className="flex-1 text-left">Product Name</div>
-          <div className="w-24 text-center">Product ID</div>
-          <div className="w-24 text-center">Price</div>
-          <div className="w-24 text-center">Amount</div>
-          <div className="w-24 text-center">Total Sale</div>
-          <div className="w-32 text-center">Status</div>
+        <div className="flex font-semibold text-sm py-3 border-b border-gray-300" style={{
+          color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+        }}>
+          <div className="w-24 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Rank</div>
+          <div className="flex-1 text-left"  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Product Name</div>
+          <div className="w-24 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Product ID</div>
+          <div className="w-24 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Price</div>
+          <div className="w-24 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Amount</div>
+          <div className="w-24 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Total Sale</div>
+          <div className="w-32 text-center" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Status</div>
         </div>
         {rankedData.map((item) => renderRevenueRow(item))}
       </div>

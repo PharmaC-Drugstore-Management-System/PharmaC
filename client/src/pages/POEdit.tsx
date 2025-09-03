@@ -19,6 +19,9 @@ const PurchaseOrder = () => {
 
   const navigate = useNavigate();
 
+  // Check if dark mode is enabled
+  const isDark = document.documentElement.classList.contains('dark');
+
   const loadData = async () => {
     try {
       const res = await fetch("http://localhost:5000/inventory/get-medicine", {
@@ -123,27 +126,50 @@ const PurchaseOrder = () => {
     loadData();
     checkme();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);  return (
-    <div className="min-h-screen ">
+  }, []);  
+
+  return (
+    <div className="min-h-screen transition-colors duration-300"
+         style={{backgroundColor: isDark ? '#111827' : '#f9fafb'}}>
       {/* Main Content */}
 
       {/* Purchase Order Content */}
       <div className="p-6">
-        <h2 className="text-3xl font-light text-gray-800 mb-8">
+        <h2 className="text-3xl font-light mb-8 transition-colors duration-300"
+            style={{color: isDark ? 'white' : '#1f2937'}}>
           Purchase Order
         </h2>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="rounded-lg shadow-sm p-6 transition-colors duration-300"
+             style={{backgroundColor: isDark ? '#374151' : 'white'}}>
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-4">
-              <h3 className="text-xl font-semibold text-gray-800">Order</h3>
-              <div className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">{orderItems.length} items</div>
-              <div className="text-sm text-gray-600 bg-white border border-gray-200 px-2 py-1 rounded">Selected: {selectedItems.size}</div>
+              <h3 className="text-xl font-semibold transition-colors duration-300"
+                  style={{color: isDark ? 'white' : '#1f2937'}}>Order</h3>
+              <div className="text-sm px-2 py-1 rounded transition-colors duration-300"
+                   style={{
+                     color: isDark ? '#d1d5db' : '#4b5563',
+                     backgroundColor: isDark ? '#4b5563' : '#f3f4f6'
+                   }}>
+                {orderItems.length} items
+              </div>
+              <div className="text-sm border px-2 py-1 rounded transition-colors duration-300"
+                   style={{
+                     color: isDark ? '#d1d5db' : '#4b5563',
+                     backgroundColor: isDark ? '#374151' : 'white',
+                     borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                   }}>
+                Selected: {selectedItems.size}
+              </div>
             </div>
           </div>
 
           {/* Order Table Header */}
-          <div className="grid grid-cols-6 gap-4 pb-4 border-b border-gray-200 text-sm font-medium text-gray-600">
+          <div className="grid grid-cols-6 gap-4 pb-4 border-b text-sm font-medium transition-colors duration-300"
+               style={{
+                 borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                 color: isDark ? '#d1d5db' : '#4b5563'
+               }}>
             <div>Select</div>
             <div className="col-span-2">Product Name</div>
             <div>Product ID</div>
@@ -153,37 +179,58 @@ const PurchaseOrder = () => {
 
           {/* Order Items (scrollable list) */}
           <div className="mt-4">
-            <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 rounded">
+            <div className="max-h-80 overflow-y-auto divide-y rounded transition-colors duration-300"
+                 style={{borderColor: isDark ? '#4b5563' : '#f3f4f6'}}>
               {orderItems.map((item) => (
                 <div
                   key={item.id}
-                  className="grid grid-cols-6 gap-4 items-center py-3 px-2"
+                  className="grid grid-cols-6 gap-4 items-center py-3 px-2 transition-colors duration-300"
+                  style={{borderColor: isDark ? '#4b5563' : '#f3f4f6'}}
                 >
                   <div>
                     <input
                       type="checkbox"
                       checked={selectedItems.has(item.id)}
                       onChange={() => handleItemSelection(item.id)}
-                      className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
+                      className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500 focus:ring-2"
+                      style={{
+                        backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                        borderColor: isDark ? '#4b5563' : '#d1d5db'
+                      }}
                     />
                   </div>
                   <div className="col-span-2 flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center text-lg transition-colors duration-300"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#f3f4f6'}}>
                       {item.image}
                     </div>
                     <div>
-                      <span className="font-medium text-gray-800">{item.name}</span>
-                      <div className="text-sm text-gray-500">{item.brand}</div>
+                      <span className="font-medium transition-colors duration-300"
+                            style={{color: isDark ? 'white' : '#1f2937'}}>{item.name}</span>
+                      <div className="text-sm transition-colors duration-300"
+                           style={{color: isDark ? '#9ca3af' : '#6b7280'}}>{item.brand}</div>
                     </div>
                   </div>
-                  <div className="text-gray-600">{item.id}</div>
+                  <div className="transition-colors duration-300"
+                       style={{color: isDark ? '#d1d5db' : '#4b5563'}}>{item.id}</div>
                   <div className="flex items-center space-x-2">
                       {selectedItems.has(item.id) && (
                         <button
                           onClick={() => updateQuantity(item.id, Math.max(1, item.amount - 1))}
-                          className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+                          className="w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-200"
+                          style={{
+                            backgroundColor: isDark ? '#4b5563' : '#f3f4f6'
+                          }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = isDark ? '#6b7280' : '#e5e7eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = isDark ? '#4b5563' : '#f3f4f6';
+                          }}
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-3 h-3" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
                         </button>
                       )}
                       {selectedItems.has(item.id) ? (
@@ -195,23 +242,41 @@ const PurchaseOrder = () => {
                             const value = Number(e.target.value);
                             updateQuantity(item.id, isNaN(value) || value < 1 ? 1 : value);
                           }}
-                          className="mx-2 min-w-12 text-center border rounded px-2 py-1 w-20"
+                          className="mx-2 min-w-12 text-center border rounded px-2 py-1 w-20 transition-colors duration-300"
+                          style={{
+                            backgroundColor: isDark ? '#374151' : 'white',
+                            borderColor: isDark ? '#4b5563' : '#d1d5db',
+                            color: isDark ? 'white' : '#1f2937'
+                          }}
                         />
                       ) : (
-                        <span className="mx-2 min-w-12 text-center">
+                        <span className="mx-2 min-w-12 text-center transition-colors duration-300"
+                              style={{color: isDark ? '#d1d5db' : '#4b5563'}}>
                           {item.amount} {item.unit}
                         </span>
                       )}
                       {selectedItems.has(item.id) && (
                         <button
                           onClick={() => updateQuantity(item.id, item.amount + 1)}
-                          className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+                          className="w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-200"
+                          style={{
+                            backgroundColor: isDark ? '#4b5563' : '#f3f4f6'
+                          }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = isDark ? '#6b7280' : '#e5e7eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = isDark ? '#4b5563' : '#f3f4f6';
+                          }}
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-3 h-3" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
                         </button>
                       )}
                   </div>
-                  <div className="font-semibold">
+                  <div className="font-semibold transition-colors duration-300"
+                       style={{color: isDark ? 'white' : '#1f2937'}}>
                     {(item.price ?? 0).toLocaleString()}
                   </div>
                 </div>
@@ -220,9 +285,11 @@ const PurchaseOrder = () => {
           </div>
 
           {/* Total Summary */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t transition-colors duration-300"
+               style={{borderColor: isDark ? '#4b5563' : '#e5e7eb'}}>
             <div className="flex justify-between items-center text-lg font-semibold">
-              <span>Total Order Value:</span>
+              <span className="transition-colors duration-300"
+                    style={{color: isDark ? 'white' : '#1f2937'}}>Total Order Value:</span>
               <span className="text-teal-600">
                 {getTotalValue().toLocaleString()} THB
               </span>
@@ -236,9 +303,17 @@ const PurchaseOrder = () => {
             onClick={createQuotation}
             className={`w-full py-4 rounded-lg font-medium transition-colors ${
               selectedItems.size === 0
-                ? "bg-gray-400 text-gray-600 cursor-not-allowed opacity-60"
-                : "bg-green-800 hover:bg-green-900 text-white"
+                ? "cursor-not-allowed opacity-60"
+                : "hover:bg-green-900 text-white"
             }`}
+            style={{
+              backgroundColor: selectedItems.size === 0 
+                ? (isDark ? '#4b5563' : '#9ca3af')
+                : (isDark ? '#166534' : '#14532d'),
+              color: selectedItems.size === 0
+                ? (isDark ? '#9ca3af' : '#6b7280')
+                : 'white'
+            }}
           >
             Create Quotation
           </button>
@@ -249,7 +324,19 @@ const PurchaseOrder = () => {
           )}
           <button
             onClick={copyOrderText}
-            className="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 py-4 rounded-lg font-medium transition-colors"
+            className="w-full py-4 rounded-lg font-medium transition-colors duration-200"
+            style={{
+              backgroundColor: isDark ? '#4b5563' : '#d1d5db',
+              color: isDark ? '#d1d5db' : '#374151'
+            }}
+            onMouseEnter={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.backgroundColor = isDark ? '#6b7280' : '#9ca3af';
+            }}
+            onMouseLeave={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.backgroundColor = isDark ? '#4b5563' : '#d1d5db';
+            }}
           >
             Copy text
           </button>

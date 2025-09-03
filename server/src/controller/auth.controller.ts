@@ -100,6 +100,26 @@ const controller = {
         .json({ message: "Unauthorized 401", error: error.message });
     }
   },
+  logout: async (req: any, res: any) => {
+    try {
+      // Clear the httpOnly cookie by setting it to expire immediately
+      res.cookie("token", "", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 0, // Expire immediately
+      });
+
+      return res
+        .status(200)
+        .json({ message: "Logout Successfully" });
+    } catch (error: any) {
+      console.log("Logout controller error:", error);
+      return res
+        .status(500)
+        .json({ message: "Error during logout", error: error.message });
+    }
+  },
 };
 
 export default controller;

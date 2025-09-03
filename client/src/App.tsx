@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useTheme } from './contexts/ThemeProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import CustomerPaymentPage from './pages/CustomerPaymentPage';
 import Navbar from '../src/components/Navbar.tsx';
@@ -54,7 +55,7 @@ function AppContent() {
   // Show loading spinner
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-teal-600"></div>
       </div>
     );
@@ -67,7 +68,10 @@ function AppContent() {
 
   // Default layout for Owner/Staff or unauthenticated users
   return (
-    <div className="flex h-screen bg-[#FAF9F8]">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 manual-dark-bg"
+         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
+    
+      
       {/* Conditionally render Navbar */}
       {!hideNavAndHeader && <Navbar />}
 

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ExpiryMonitor() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [startDate, setStartDate] = useState("2025-05-01");
   const [filterStartDate, setFilterStartDate] = useState("2025-09-01");
@@ -58,53 +60,90 @@ export default function ExpiryMonitor() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4"
+         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
       {/* Page Title */}
       <div className="flex items-center mb-6">
         <div className="w-1 h-8 bg-green-600 mr-2"></div>
-        <h2 className="text-xl font-bold text-black">Expiry Monitor</h2>
+        <h2 className="text-xl font-bold"
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{t('expiryMonitor')}</h2>
       </div>
 
       {/* Earliest to Expire Section */}
       <div className="mb-8">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">
-          Earliest to Expire
+        <h3 className="text-xl font-semibold mb-4"
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+          {t('earliestToExpire')}
         </h3>
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Start Date
+          <label className="block text-sm font-medium mb-2"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+            {t('startDate')}
           </label>
           <div className="relative">
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              style={{
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+              }}
             />
-            <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Calendar className="absolute left-3 top-2.5 h-4 w-4"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af'}} />
           </div>
         </div>
 
         {/* Earliest Expiry Table */}
-        <div className="bg-white rounded-lg shadow border">
-          <div className="flex items-center justify-between p-4 border-b bg-gray-50 font-medium text-gray-700">
-            <div className="flex-1">Name</div>
-            <div className="flex-1 px-2">Brand</div>
-            <div className="w-16 text-center">Amount</div>
-            <div className="w-24 text-center">Expired date</div>
-            <div className="w-16 text-center">Total</div>
-            <div className="w-20 text-center">Lot id</div>
+        <div className="rounded-lg shadow border"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
+          <div className="flex items-center justify-between p-4 border-b font-medium"
+               style={{
+                 backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                 borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                 color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+               }}>
+            <div className="flex-1">{t('name')}</div>
+            <div className="flex-1 px-2">{t('brand')}</div>
+            <div className="w-16 text-center">{t('amount')}</div>
+            <div className="w-24 text-center">{t('expiredDate')}</div>
+            <div className="w-16 text-center">{t('total')}</div>
+            <div className="w-20 text-center">{t('lotId')}</div>
           </div>
           {allMedications
             .filter((med) => new Date(med.expiredDate.split("/").reverse().join("-")) >= new Date(startDate))
             .map((med, idx) => (
-              <div key={idx} className="flex items-center justify-between p-4 border-t text-gray-700">
-                <div className="flex-1">{med.name}</div>
-                <div className="flex-1 px-2">{med.brand}</div>
-                <div className="w-16 text-center">{med.amount}</div>
-                <div className="w-24 text-center">{med.expiredDate}</div>
-                <div className="w-16 text-center">{med.total}</div>
-                <div className="w-20 text-center">{med.lotId}</div>
+              <div key={idx} className="flex items-center justify-between p-4 border-t hover:shadow-md transition-shadow"
+                   style={{
+                     borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                     color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151',
+                     backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'
+                   }}>
+                <div className="flex-1 font-medium">{med.name}</div>
+                <div className="flex-1 px-2 text-sm"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{med.brand}</div>
+                <div className="w-16 text-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {med.amount}
+                  </span>
+                </div>
+                <div className="w-24 text-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    {med.expiredDate}
+                  </span>
+                </div>
+                <div className="w-16 text-center font-semibold">{med.total}</div>
+                <div className="w-20 text-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {med.lotId}
+                  </span>
+                </div>
               </div>
             ))}
         </div>
@@ -112,36 +151,55 @@ export default function ExpiryMonitor() {
 
       {/* Filter by Expiry Date Section */}
       <div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">
-          Filter by Expiry Date
+        <h3 className="text-xl font-semibold mb-4"
+            style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+          {t('filterByExpiryDate')}
         </h3>
         <div className="flex items-center space-x-4 mb-4">
-          {[filterStartDate, filterEndDate].map((val, i) => (
-            <div className="relative" key={i}>
+          {[
+            { value: filterStartDate, setter: setFilterStartDate, label: t('startDate') },
+            { value: filterEndDate, setter: setFilterEndDate, label: t('endDate') }
+          ].map((dateField, i) => (
+            <div className="relative flex-1" key={i}>
+              <label className="block text-sm font-medium mb-1"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+                {dateField.label}
+              </label>
               <input
                 type="date"
-                value={val}
-                onChange={(e) =>
-                  i === 0
-                    ? setFilterStartDate(e.target.value)
-                    : setFilterEndDate(e.target.value)
-                }
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={dateField.value}
+                onChange={(e) => dateField.setter(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                style={{
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                  borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                  color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                }}
               />
-              <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <Calendar className="absolute left-3 top-8 h-4 w-4"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af'}} />
             </div>
           ))}
         </div>
 
         {/* Filtered Medications Table */}
-        <div className="bg-white rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between p-4 border-b bg-gray-50 font-medium text-gray-700">
-            <div className="flex-1">Name</div>
-            <div className="flex-1 px-2">Brand</div>
-            <div className="w-16 text-center">Amount</div>
-            <div className="w-24 text-center">Expired date</div>
-            <div className="w-16 text-center">Total</div>
-            <div className="w-20 text-center">Lot id</div>
+        <div className="rounded-lg shadow border"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
+          <div className="flex items-center justify-between p-4 border-b font-medium"
+               style={{
+                 backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                 borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                 color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+               }}>
+            <div className="flex-1">{t('name')}</div>
+            <div className="flex-1 px-2">{t('brand')}</div>
+            <div className="w-16 text-center">{t('amount')}</div>
+            <div className="w-24 text-center">{t('expiredDate')}</div>
+            <div className="w-16 text-center">{t('total')}</div>
+            <div className="w-20 text-center">{t('lotId')}</div>
           </div>
           {allMedications
             .filter((med) => {
@@ -149,13 +207,31 @@ export default function ExpiryMonitor() {
               return d >= new Date(filterStartDate) && d <= new Date(filterEndDate);
             })
             .map((med, idx) => (
-              <div key={idx} className="flex items-center justify-between p-4 border-t text-gray-700">
-                <div className="flex-1">{med.name}</div>
-                <div className="flex-1 px-2">{med.brand}</div>
-                <div className="w-16 text-center">{med.amount}</div>
-                <div className="w-24 text-center">{med.expiredDate}</div>
-                <div className="w-16 text-center">{med.total}</div>
-                <div className="w-20 text-center">{med.lotId}</div>
+              <div key={idx} className="flex items-center justify-between p-4 border-t hover:shadow-md transition-shadow"
+                   style={{
+                     borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                     color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151',
+                     backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'
+                   }}>
+                <div className="flex-1 font-medium">{med.name}</div>
+                <div className="flex-1 px-2 text-sm"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{med.brand}</div>
+                <div className="w-16 text-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {med.amount}
+                  </span>
+                </div>
+                <div className="w-24 text-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    {med.expiredDate}
+                  </span>
+                </div>
+                <div className="w-16 text-center font-semibold">{med.total}</div>
+                <div className="w-20 text-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {med.lotId}
+                  </span>
+                </div>
               </div>
             ))}
         </div>

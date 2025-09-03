@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Trophy,
   Crown,
@@ -27,6 +28,7 @@ interface Member {
 }
 
 export default function MemberManagementPage() {
+  const { t } = useTranslation();
   const [members, setMembers] = useState<Member[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -341,67 +343,86 @@ export default function MemberManagementPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4"
+         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="w-1 h-8 bg-green-600 mr-2"></div>
-            <h2 className="text-xl font-bold text-black">จัดการสมาชิก</h2>
+            <h2 className="text-xl font-bold"
+                style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{t('membershipManagement')}</h2>
           </div>
           <button
             onClick={() => setShowAddMemberModal(true)}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <UserPlus className="w-4 h-4" />
-            เพิ่มสมาชิกใหม่
+            {t('addNewMember')}
           </button>
         </div>
-        <p className="text-gray-600 mt-1">รายชื่อลูกค้าที่เป็นสมาชิกทั้งหมด</p>
+        <p className="mt-1"
+           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('completeMemberList')}</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="p-6 rounded-xl shadow-sm border"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Users className="w-8 h-8 text-blue-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">สมาชิกทั้งหมด</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-500">{t('totalMembers')}</p>
+              <p className="text-2xl font-bold text-gray-900" style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {members.length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="p-6 rounded-xl shadow-sm border"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Crown className="w-8 h-8 text-purple-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">
-                Platinum Members
+              <p className="text-sm font-medium"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                {t('platinumMembers')}
               </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold"
+                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {members.filter((m) => m.membershipType === "Platinum").length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="p-6 rounded-xl shadow-sm border"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Calendar className="w-8 h-8 text-green-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">
-                สมาชิกใหม่เดือนนี้
+              <p className="text-sm font-medium"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                {t('newMembersThisMonth')}
               </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold"
+                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {
                   members.filter((m) => {
                     const joinMonth = new Date(m.joinDate).getMonth();
@@ -414,14 +435,20 @@ export default function MemberManagementPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="p-6 rounded-xl shadow-sm border"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Gift className="w-8 h-8 text-purple-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">คะแนนรวม</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('totalPoints')}</p>
+              <p className="text-2xl font-bold"
+                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 {members.reduce((sum, m) => sum + m.score, 0)}
               </p>
             </div>
@@ -432,34 +459,47 @@ export default function MemberManagementPage() {
       {/* Search Bar */}
       <div className="mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}} />
           <input
             type="text"
-            placeholder="ค้นหาสมาชิก (ชื่อ, เบอร์โทร, อีเมล)..."
+            placeholder={t('searchMembers')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            style={{
+              backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+              borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+              color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+            }}
           />
         </div>
       </div>
 
       {/* Members Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="rounded-xl shadow-sm border overflow-hidden mb-8"
+           style={{
+             backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+             borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+           }}>
+        <div className="px-6 py-4 border-b"
+             style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              รายชื่อสมาชิก
+            <h2 className="text-lg font-semibold"
+                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+              {t('memberList')}
             </h2>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">
-                ทั้งหมด {filteredMembers.length} คน
+              <span className="text-sm"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                {t('totalMembersCount', { count: filteredMembers.length })}
               </span>
               <button
                 onClick={() => setShowRankingSection(!showRankingSection)}
                 className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
               >
                 <Trophy className="w-4 h-4" />
-                {showRankingSection ? "ซ่อน" : "แสดง"}อันดับ
+                {showRankingSection ? t('hideRankings') : t('showRankings')}
               </button>
             </div>
           </div>
@@ -467,38 +507,56 @@ export default function MemberManagementPage() {
 
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb'}}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  สมาชิก
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                  {t('member')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  เพศ
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                  {t('gender')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ข้อมูลติดต่อ
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                  {t('contactInfo')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  วันเกิด
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                  {t('birthday')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ระดับสมาชิก
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                  {t('membershipLevel')}
                 </th>
                 {showRankingSection && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    คะแนน/อันดับ
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
+                      style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                    {t('pointsRank')}
                   </th>
                 )}
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  จัดการ
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
+                    style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                  {t('actions')}
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y"
+                   style={{
+                     backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                     borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                   }}>
               {filteredMembers.map((member) => (
                 <tr
                   key={member.id}
-                  className="hover:bg-gray-50 transition-colors"
+                  className="transition-colors"
+                  style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#374151' : 'white';
+                  }}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -506,12 +564,15 @@ export default function MemberManagementPage() {
                         <User className="w-5 h-5 text-white" />
                       </div>
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium"
+                             style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                           {member.name}
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Calendar className="w-3 h-3 text-gray-400" />
-                          สมัคร:{" "}
+                        <div className="flex items-center gap-1 text-xs"
+                             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                          <Calendar className="w-3 h-3"
+                                    style={{color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'}} />
+                          Joined:{" "}
                           {new Date(member.joinDate).toLocaleDateString(
                             "th-TH"
                           )}
@@ -520,26 +581,30 @@ export default function MemberManagementPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm"
+                         style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                       <div className="flex items-center gap-1 mb-1">
                         {member.gender}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm"
+                         style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                       <div className="flex items-center gap-1 mb-1">
-                        <Phone className="w-3 h-3 text-gray-400" />
+                        <Phone className="w-3 h-3"
+                               style={{color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'}} />
                         {member.phone}
                       </div>
                     </div>
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm"
+                         style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                       {member.birthday
                         ? new Date(member.birthday).toLocaleDateString("th-TH")
-                        : "ไม่ระบุ"}
+                        : "Not specified"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -554,11 +619,13 @@ export default function MemberManagementPage() {
                   {showRankingSection && (
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="text-sm">
-                        <div className="font-semibold text-gray-900">
-                          {member.score} คะแนน
+                        <div className="font-semibold"
+                             style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                          {member.score} Points
                         </div>
-                        <div className="text-xs text-gray-500">
-                          อันดับ #{member.rank}
+                        <div className="text-xs"
+                             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                          Rank #{member.rank}
                         </div>
                       </div>
                     </td>
@@ -580,16 +647,22 @@ export default function MemberManagementPage() {
 
       {/* Small Ranking Section (when expanded) */}
       {showRankingSection && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-md font-semibold text-gray-700 mb-4 flex items-center gap-2">
+        <div className="rounded-xl shadow-sm border p-6"
+             style={{
+               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+             }}>
+          <h3 className="text-md font-semibold mb-4 flex items-center gap-2"
+              style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
             <Trophy className="w-5 h-5 text-yellow-500" />
-            อันดับสมาชิกยอดเยี่ยม
+            Top Members Ranking
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {members.slice(0, 3).map((member, index) => (
               <div
                 key={member.id}
-                className="flex items-center p-3 bg-gray-50 rounded-lg"
+                className="flex items-center p-3 rounded-lg"
+                style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb'}}
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3 ${
@@ -603,10 +676,12 @@ export default function MemberManagementPage() {
                   {index + 1}
                 </div>
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium"
+                       style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                     {member.name}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                     {member.score} คะแนน
                   </div>
                 </div>
@@ -622,14 +697,20 @@ export default function MemberManagementPage() {
       {/* Add Member Modal */}
       {showAddMemberModal && (
         <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 border border-gray-400">
+          <div className="rounded-xl p-6 w-full max-w-md mx-4 border"
+               style={{
+                 backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                 borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'
+               }}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 เพิ่มสมาชิกใหม่
               </h3>
               <button
                 onClick={() => setShowAddMemberModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="hover:text-gray-600"
+                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -637,7 +718,8 @@ export default function MemberManagementPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   เลขบัตรประชาชน
                 </label>
                 <input
@@ -646,14 +728,20 @@ export default function MemberManagementPage() {
                   onChange={(e) =>
                     setNewMember({ ...newMember, citizen_id: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                   placeholder="1234567890123"
                   maxLength={13}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   ชื่อ-นามสกุล
                 </label>
                 <input
@@ -662,13 +750,19 @@ export default function MemberManagementPage() {
                   onChange={(e) =>
                     setNewMember({ ...newMember, name: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                   placeholder="กรอกชื่อ-นามสกุล"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   เบอร์โทรศัพท์
                 </label>
                 <input
@@ -677,13 +771,19 @@ export default function MemberManagementPage() {
                   onChange={(e) =>
                     setNewMember({ ...newMember, phone_number: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                   placeholder="08X-XXX-XXXX"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   วันเกิด
                 </label>
                 <input
@@ -692,12 +792,18 @@ export default function MemberManagementPage() {
                   onChange={(e) =>
                     setNewMember({ ...newMember, birthday: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   เพศ
                 </label>
                 <select
@@ -705,7 +811,12 @@ export default function MemberManagementPage() {
                   onChange={(e) =>
                     setNewMember({ ...newMember, gender: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                 >
                   <option value="">เลือกเพศ</option>
                   <option value="ชาย">ชาย</option>
@@ -715,7 +826,8 @@ export default function MemberManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   คะแนนเริ่มต้น
                 </label>
                 <input
@@ -727,7 +839,12 @@ export default function MemberManagementPage() {
                       point: parseInt(e.target.value),
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                   placeholder="0"
                 />
               </div>
@@ -736,7 +853,17 @@ export default function MemberManagementPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowAddMemberModal(false)}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#f3f4f6',
+                  color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#f3f4f6';
+                }}
               >
                 ยกเลิก
               </button>
@@ -754,14 +881,20 @@ export default function MemberManagementPage() {
       {/* Edit Member Modal */}
       {showEditMemberModal && editingMember && (
         <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 border border-gray-400">
+          <div className="rounded-xl p-6 w-full max-w-md mx-4 border"
+               style={{
+                 backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                 borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'
+               }}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                 แก้ไขข้อมูลสมาชิก
               </h3>
               <button
                 onClick={cancelEditMember}
-                className="text-gray-400 hover:text-gray-600"
+                className="hover:text-gray-600"
+                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -769,7 +902,8 @@ export default function MemberManagementPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   เลขบัตรประชาชน
                 </label>
                 <input
@@ -778,14 +912,20 @@ export default function MemberManagementPage() {
                   onChange={(e) =>
                     setEditMember({ ...editMember, citizen_id: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                   placeholder="1234567890123"
                   maxLength={13}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   ชื่อ-นามสกุล
                 </label>
                 <input
@@ -794,13 +934,19 @@ export default function MemberManagementPage() {
                   onChange={(e) =>
                     setEditMember({ ...editMember, name: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                   placeholder="กรอกชื่อ-นามสกุล"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   เบอร์โทรศัพท์
                 </label>
                 <input
@@ -812,13 +958,19 @@ export default function MemberManagementPage() {
                       phone_number: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                   placeholder="08X-XXX-XXXX"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   วันเกิด
                 </label>
                 <input
@@ -827,12 +979,18 @@ export default function MemberManagementPage() {
                   onChange={(e) =>
                     setEditMember({ ...editMember, birthday: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   เพศ
                 </label>
                 <select
@@ -840,7 +998,12 @@ export default function MemberManagementPage() {
                   onChange={(e) =>
                     setEditMember({ ...editMember, gender: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                 >
                   <option value="">เลือกเพศ</option>
                   <option value="ชาย">ชาย</option>
@@ -850,7 +1013,8 @@ export default function MemberManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                   คะแนน
                 </label>
                 <input
@@ -862,7 +1026,12 @@ export default function MemberManagementPage() {
                       point: parseInt(e.target.value),
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                  }}
                   placeholder="0"
                   min="0"
                 />
@@ -872,7 +1041,17 @@ export default function MemberManagementPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={cancelEditMember}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#f3f4f6',
+                  color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#f3f4f6';
+                }}
               >
                 ยกเลิก
               </button>

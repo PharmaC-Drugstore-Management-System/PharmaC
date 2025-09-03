@@ -64,6 +64,26 @@ export function emitOrderToCustomerDisplay(orderData: any) {
   
   // Also emit to all connected clients as fallback
   io.emit("new-order-qr", orderData);
+  
+  // Emit notification to admin/staff for new orders
+  emitNotificationToAdmins({
+    type: 'NEW_ORDER',
+    order: orderData.order,
+    timestamp: orderData.timestamp
+  });
+}
+
+// Function to emit notifications to admin/staff
+export function emitNotificationToAdmins(notificationData: any) {
+  if (!io) {
+    console.error("❌ Socket.IO not initialized");
+    return;
+  }
+
+  console.log("🔔 Emitting notification to admins:", notificationData);
+  
+  // Emit to all connected clients (admins/staff)
+  io.emit("admin-notification", notificationData);
 }
 
 // Function to emit payment status updates

@@ -17,7 +17,6 @@ import {
 import { ShoppingCart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-
 export default function PharmaDashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -41,42 +40,42 @@ export default function PharmaDashboard() {
     id: string;
     name: string;
     model: string;
-  }
+  };
 
   const forecastModels: ForecastModel[] = [
     {
-      id: 'arima',
-      name: 'ARIMA',
-      model: 'ARIMA'
+      id: "arima",
+      name: "ARIMA",
+      model: "ARIMA",
     },
     {
-      id: 'sarima',
-      name: 'SARIMA',
-      model: 'SARIMA'
-    }
+      id: "sarima",
+      name: "SARIMA",
+      model: "SARIMA",
+    },
   ];
 
   const forecastOptions: ForecastOption[] = [
     {
-      id: 'short_term',
-      name: 'Short Term (3 months)',
+      id: "short_term",
+      name: t('shortTerm'),
       forecastPeriods: 3,
       testSizeMonths: 6,
-      description: 'Quick forecast for immediate planning'
+      description: t('quickForecast'),
     },
     {
-      id: 'medium_term',
-      name: 'Medium Term (6 months)',
+      id: "medium_term",
+      name: t('mediumTerm'),
       forecastPeriods: 6,
       testSizeMonths: 6,
-      description: 'Balanced forecast for quarterly planning'
+      description: t('balancedForecast'),
     },
     {
-      id: 'long_term',
-      name: 'Long Term (12 months)',
+      id: "long_term",
+      name: t('longTerm'),
       forecastPeriods: 12,
       testSizeMonths: 6,
-      description: 'Extended forecast for annual planning'
+      description: t('extendedForecast'),
     },
   ];
 
@@ -103,18 +102,20 @@ export default function PharmaDashboard() {
   const forecastMonthly = async (modelId?: string, forecastModelId?: string) => {
     try {
       setIsLoading(true);
-      const currentOptions = forecastOptions.find(model => model.id === (modelId || selectedModel));
+      const currentOptions = forecastOptions.find(
+        (model) => model.id === (modelId || selectedModel)
+      );
       if (!currentOptions) return;
 
       const modelToSend = forecastModelId || selectedForecastModel;
 
       console.log(`Running forecast with ${currentOptions.name} using model ${modelToSend.toUpperCase()}`);
 
-      const info = await fetch('http://localhost:5000/arima/forecast', {
-        method: 'POST',
-        credentials: 'include',
+      const info = await fetch("http://localhost:5000/arima/forecast", {
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           forecastPeriods: currentOptions.forecastPeriods,
@@ -124,7 +125,7 @@ export default function PharmaDashboard() {
       });
 
       const data = await info.json();
-      console.log('Forecast data:', data);
+      console.log("Forecast data:", data);
 
       if (data.historical && data.forecast) {
         const combinedData: ChartDataPoint[] = [];
@@ -156,7 +157,7 @@ export default function PharmaDashboard() {
         setFilteredChartData(filtered);
       }
     } catch (error) {
-      console.error('Error fetching forecast data:', error);
+      console.error("Error fetching forecast data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -181,39 +182,37 @@ export default function PharmaDashboard() {
   ];
 
   const inventoryData = [
-    { id: 1, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
-    { id: 2, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
-    { id: 3, name: "Amoxilin", amount: "15 pcs", status: t('in_stock') },
-    { id: 4, name: "Amoxilin", amount: "0 pcs", status: t('out_of_stock') },
+    { id: 1, name: "Amoxilin", amount: "15 pcs", status: t("inStock") },
+    { id: 2, name: "Amoxilin", amount: "15 pcs", status: t("inStock") },
+    { id: 3, name: "Amoxilin", amount: "15 pcs", status: t("inStock") },
+    { id: 4, name: "Amoxilin", amount: "0 pcs", status: t("outOfStock") },
   ];
 
   const COLORS = ["#79e2f2", "#7ab8f2", "#4d82bf", "#38618c", "#213559"];
 
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
-        method: 'GET',
-        credentials: 'include'
-      })
+      const authme = await fetch("http://localhost:5000/api/me", {
+        method: "GET",
+        credentials: "include",
+      });
       const data = await authme.json();
       if (authme.status === 401 || authme.status === 403) {
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
-      console.log('Authme data:', data);
+      console.log("Authme data:", data);
     } catch (error) {
-      console.log('Error', error)
-
+      console.log("Error", error);
     }
-  }
-
+  };
 
   useEffect(() => {
-    checkme()
-    forecastMonthly()
+    checkme();
+    forecastMonthly();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
   // Update filtered data when chart data changes
   useEffect(() => {
@@ -230,27 +229,61 @@ export default function PharmaDashboard() {
     status: string;
   };
 
-  const renderInventoryItem = ((item: InventoryItem) => {
-    const isInStock = item.status === t('in_stock');
+  const renderInventoryItem = (item: InventoryItem) => {
+    const isInStock = item.status === t("inStock");
 
     return (
-      <div key={item.id} className="border-t border-gray-200  py-3">
+      <div
+        key={item.id}
+        className="border-t py-3"
+        style={{
+          borderColor: document.documentElement.classList.contains("dark")
+            ? "#4b5563"
+            : "#e5e7eb",
+        }}
+      >
         <div className="flex items-center">
-          <div className="w-16 h-16 bg-gray-200 rounded mr-4"></div>
+          <div
+            className="w-16 h-16 rounded mr-4"
+            style={{
+              backgroundColor: document.documentElement.classList.contains(
+                "dark"
+              )
+                ? "#4b5563"
+                : "#e5e7eb",
+            }}
+          ></div>
           <div className="flex-1">
-            <a href="#" className="text-xl hover:underline text-gray-900">
+            <a
+              href="#"
+              className="text-xl hover:underline"
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}
+            >
               {item.name}
             </a>
           </div>
           <div className="w-24 text-center">
-            <div className="text-gray-900 ">{item.amount}</div>
+            <div
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}
+            >
+              {item.amount}
+            </div>
           </div>
           <div className="flex justify-center items-center w-32">
             <span
-              className={`px-4 py-1 rounded-full text-center text-sm ${isInStock
-                ? "bg-green-100 text-green-800 "
-                : "bg-red-100 text-red-800 "
-                }`}
+              className={`px-4 py-1 rounded-full text-center text-sm ${
+                isInStock
+                  ? "bg-green-100 text-green-800 "
+                  : "bg-red-100 text-red-800 "
+              }`}
             >
               {item.status}
             </span>
@@ -258,11 +291,17 @@ export default function PharmaDashboard() {
         </div>
       </div>
     );
-  });
+  };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-
+    <div
+      className="flex h-screen"
+      style={{
+        backgroundColor: document.documentElement.classList.contains("dark")
+          ? "#111827"
+          : "#f9fafb",
+      }}
+    >
       {/* Main Content */}
 
       <div className="flex-1 p-4 ">
@@ -270,29 +309,59 @@ export default function PharmaDashboard() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="w-1 h-8 bg-green-600 mr-2"></div>
-            <h2 className="text-xl font-bold text-black">
-              {t('main_menu')}
+            <h2
+              className="text-xl font-bold"
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "black",
+              }}
+            >
+              {t("menu")}
             </h2>
           </div>
           {/* Quick POS Access */}
           <button
-            onClick={() => navigate('/pos')}
+            onClick={() => navigate("/pos")}
             className="bg-green-600 hover:bg-green-700  text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
           >
             <ShoppingCart className="w-5 h-5" />
-            <span>เปิดขาย (POS)</span>
+            <span>{t("openSalePOS")}</span>
           </button>
         </div>
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Revenue Chart */}
           <div className="lg:col-span-2">
-            <div className="bg-white p-4 rounded-lg shadow">
+            <div
+              className="bg-white p-4 rounded-lg shadow"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "black",
+              }}
+            >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Revenue Forecast</h3>
+                <h3
+                  className="text-lg font-semibold"
+                  style={{
+                    color: document.documentElement.classList.contains("dark")
+                      ? "white"
+                      : "#111827",
+                  }}
+                >
+                  {t("revenueForecast")}
+                </h3>
                 <div className="flex items-center space-x-3">
                   {isLoading && (
-                    <span className="text-sm text-blue-600">Loading forecast...</span>
+                    <span className="text-sm text-blue-600">
+                      {t("loadingForecast")}
+                    </span>
                   )}
 
                   {/* Forecast Options Dropdown */}
@@ -300,7 +369,28 @@ export default function PharmaDashboard() {
                     value={selectedModel}
                     onChange={(e) => handleModelChange(e.target.value)}
                     disabled={isLoading}
-                    className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-gray-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition hover:shadow-md"
+                    className="
+      px-4 py-2 
+      border border-gray-300 
+      rounded-lg 
+      shadow-sm   
+      text-gray-800
+      font-medium
+      focus:outline-none 
+      focus:ring-2 
+      focus:ring-blue-500 
+      focus:border-blue-500
+      transition
+      hover:shadow-md
+    "
+    style={{
+      backgroundColor: document.documentElement.classList.contains("dark")
+        ? "#374151"
+        : "white",
+      color: document.documentElement.classList.contains("dark")
+        ? "white"
+        : "black",
+    }}
                   >
                     {forecastOptions.map((model) => (
                       <option key={model.id} value={model.id}>
@@ -314,7 +404,28 @@ export default function PharmaDashboard() {
                     value={selectedForecastModel}
                     onChange={(e) => handleForecastModelChange(e.target.value)}
                     disabled={isLoading}
-                    className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-gray-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition hover:shadow-md"
+                    className="
+      px-4 py-2 
+      border border-gray-300 
+      rounded-lg 
+      shadow-sm
+      text-gray-800
+      font-medium
+      focus:outline-none 
+      focus:ring-2 
+      focus:ring-blue-500 
+      focus:border-blue-500
+      transition
+      hover:shadow-md
+    "
+    style={{
+      backgroundColor: document.documentElement.classList.contains("dark")
+        ? "#374151"
+        : "white",
+      color: document.documentElement.classList.contains("dark")
+        ? "white"
+        : "black",
+    }}
                   >
                     {forecastModels.map((model) => (
                       <option key={model.id} value={model.id}>
@@ -325,11 +436,19 @@ export default function PharmaDashboard() {
                 </div>
               </div>
 
-              {/* Model Description with Current Year Indicator */}
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm text-gray-600">
-                  {forecastOptions.find(option => option.id === selectedModel)?.description}
-                </span>
+              {/* Model Description */}
+              <div
+                className="mb-3 text-sm"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "#9ca3af"
+                    : "#6b7280",
+                }}
+              >
+                {
+                  forecastOptions.find((option) => option.id === selectedModel)
+                    ?.description
+                }
               </div>
 
               <Link to="/revenue-detail">
@@ -361,8 +480,8 @@ export default function PharmaDashboard() {
                         dataKey="actual"
                         stroke="#2563eb"
                         strokeWidth={3}
-                        name="Historical Revenue"
-                        dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
+                        name={t("historicalRevenue")}
+                        dot={{ fill: "#2563eb", strokeWidth: 2, r: 4 }}
                       />
                       {/* Forecast Revenue Line */}
                       <Line
@@ -371,8 +490,8 @@ export default function PharmaDashboard() {
                         stroke="#dc2626"
                         strokeWidth={3}
                         strokeDasharray="5 5"
-                        name="Forecast Revenue"
-                        dot={{ fill: '#dc2626', strokeWidth: 2, r: 4 }}
+                        name={t("forecastRevenue")}
+                        dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
                       />
                     </LineChart>
                   </div>
@@ -382,8 +501,26 @@ export default function PharmaDashboard() {
           </div>
 
           {/* Trend Pie Chart */}
-          <div className="bg-white p-4 rounded-lg shadow ">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('trend')}</h3>
+          <div
+            className="p-4 rounded-lg shadow"
+            style={{
+              backgroundColor: document.documentElement.classList.contains(
+                "dark"
+              )
+                ? "#374151"
+                : "white",
+            }}
+          >
+            <h3
+              className="text-lg font-semibold mb-4"
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}
+            >
+              {t("trend")}
+            </h3>
             <div className="flex justify-center">
               <PieChart width={300} height={250}>
                 <Pie
@@ -415,17 +552,71 @@ export default function PharmaDashboard() {
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left Column - Sales Stats */}
           <div className="flex flex-col gap-4 h-full">
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">{t('amount_sales')}</h3>
-              <div className="text-4xl font-bold text-center text-gray-900">200</div>
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-2"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("amountSales")}
+              </h3>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                200
+              </div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col ">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">{t('total_sales')}</h3>
-              <div className="text-4xl font-bold text-center text-gray-900">70,000</div>
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-2"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("totalSales")}
+              </h3>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                70,000
+              </div>
               <div className="flex items-center justify-center text-green-500 mt-2">
                 <span>+2.00</span>
               </div>
@@ -434,33 +625,138 @@ export default function PharmaDashboard() {
 
           {/* Right Column - Inventory Stats */}
           <div className="flex flex-col gap-4 h-full">
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col ">
-              <h3 className="text-lg font-semibold mb-1 text-gray-900">
-                {t('total_items_in_stock')}
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-1"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("totalItemsInStock")}
               </h3>
-              <div className="text-4xl font-bold text-center text-gray-900">1,500</div>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                1,500
+              </div>
             </div>
 
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-1 text-gray-900">{t('total_items_sales')}</h3>
-              <div className="text-4xl font-bold text-center text-gray-900">10,000</div>
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-1"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("totalItemsSales")}
+              </h3>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                10,000
+              </div>
             </div>
 
-            <div className="bg-white p-5 rounded-lg shadow flex-1 flex flex-col ">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">{t('profit')}</h3>
-              <div className="text-4xl font-bold text-center text-gray-900">50,000</div>
+            <div
+              className="p-5 rounded-lg shadow flex-1 flex flex-col"
+              style={{
+                backgroundColor: document.documentElement.classList.contains(
+                  "dark"
+                )
+                  ? "#374151"
+                  : "white",
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-2"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {t("profit")}
+              </h3>
+              <div
+                className="text-4xl font-bold text-center"
+                style={{
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                50,000
+              </div>
             </div>
           </div>
         </div>
 
         {/* Inventory Shortage Section */}
-        <div className="bg-white p-4 rounded-lg shadow mt-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('inventory_shortage')}</h3>
+        <div
+          className="p-4 rounded-lg shadow mt-6"
+          style={{
+            backgroundColor: document.documentElement.classList.contains("dark")
+              ? "#374151"
+              : "white",
+          }}
+        >
+          <h3
+            className="text-lg font-semibold mb-4"
+            style={{
+              color: document.documentElement.classList.contains("dark")
+                ? "white"
+                : "#111827",
+            }}
+          >
+            {t("inventoryShortage")}
+          </h3>
           <div>
-            <div className="flex font-semibold py-3 border-b border-gray-200 text-gray-900">
-              <div className="flex-1">{t('product_name')}</div>
-              <div className="w-24 text-center">{t('amount')}</div>
-              <div className="w-32 text-center">{t('status')}</div>
+            <div
+              className="flex font-semibold py-3 border-b"
+              style={{
+                borderColor: document.documentElement.classList.contains("dark")
+                  ? "#4b5563"
+                  : "#e5e7eb",
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}
+            >
+              <div className="flex-1">{t("productName")}</div>
+              <div className="w-24 text-center">{t("amount")}</div>
+              <div className="w-32 text-center">{t("status")}</div>
             </div>
             {inventoryData.map((item) => renderInventoryItem(item))}
           </div>

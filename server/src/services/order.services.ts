@@ -40,7 +40,7 @@ const orderService = {
                     },
                     total_amount: total_amount,
                     total_price: total_price,
-                    date: new Date(),
+                    date: new Date(), // ใช้ timestamp แทน time+date แยก
                     status: 'PENDING'
                 }
             });
@@ -55,13 +55,20 @@ const orderService = {
                 }
             });
 
-            // Step 6: Get the complete order with linked carts
+            // Step 6: Get the complete order with linked carts and customer
             const completeOrder = await prisma.order.findUnique({
                 where: { order_id: order.order_id },
                 include: {
                     carts: {
                         include: {
                             product: true
+                        }
+                    },
+                    customer: {
+                        select: {
+                            customer_id: true,
+                            name: true,
+                            phone_number: true,
                         }
                     }
                 }
@@ -103,6 +110,94 @@ const orderService = {
             return data;
         } catch (error) {
              console.error("Service error get list order:", error);
+            throw error;
+        }
+    },
+
+    getRecentOrders: async (sinceDate: Date) => {
+        try {
+            console.log('🔍 Fetching recent orders since:', sinceDate);
+            
+            const data = await prisma.order.findMany({
+                where: {
+                    date: {
+                        gte: sinceDate
+                    }
+                },
+                include: {
+                    customer: {
+                        select: {
+                            customer_id: true,
+                            name: true,
+                            phone_number: true,
+                        }
+                    },
+                    carts: {
+                        include: {
+                            product: {
+                                select: {
+                                    product_name: true,
+                                    brand: true
+                                }
+                            }
+                        }
+                    }
+                },
+                orderBy: {
+                    order_id: 'desc'  // เรียงตาม order_id แทน date
+                },
+                take: 20  // จำกัดผลลัพธ์
+            });
+            
+            console.log('📊 Found orders:', data.length);
+            console.log('🏆 Latest order ID:', data[0]?.order_id);
+            console.log('📋 All order IDs:', data.map(o => o.order_id));
+            
+            return data;
+        } catch (error) {
+            console.error("Service error get recent orders:", error);
+            throw error;
+        }
+    },
+
+    // เพิ่มฟังก์ชันใหม่เพื่อดึง orders ล่าสุดโดยไม่จำกัดวันที่
+    getLatestOrders: async (limit: number = 20) => {
+        try {
+            console.log('🔍 Fetching latest orders, limit:', limit);
+            
+            const data = await prisma.order.findMany({
+                include: {
+                    customer: {
+                        select: {
+                            customer_id: true,
+                            name: true,
+                            phone_number: true,
+                        }
+                    },
+                    carts: {
+                        include: {
+                            product: {
+                                select: {
+                                    product_name: true,
+                                    brand: true
+                                }
+                            }
+                        }
+                    }
+                },
+                orderBy: {
+                    order_id: 'desc'
+                },
+                take: limit
+            });
+            
+            console.log('📊 Found latest orders:', data.length);
+            console.log('🏆 Latest order ID:', data[0]?.order_id);
+            console.log('📋 Latest order IDs:', data.slice(0, 5).map(o => o.order_id));
+            
+            return data;
+        } catch (error) {
+            console.error("Service error get latest orders:", error);
             throw error;
         }
     }
