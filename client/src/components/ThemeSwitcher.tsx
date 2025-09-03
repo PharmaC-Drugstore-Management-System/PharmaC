@@ -71,16 +71,6 @@ export default function ThemeSwitcher({ showText = false, className = '' }: Them
           </span>
         )}
       </button>
-
-      {/* Theme Status Indicator - ใช้ Tailwind classes */}
-      <div className="absolute -bottom-1 -right-1">
-        <div 
-          className={`w-2 h-2 rounded-full transition-all duration-300 ${
-            isDark ? 'bg-indigo-500' : 'bg-emerald-500'
-          }`}
-          title={isDark ? 'Dark mode' : 'Light mode'}
-        />
-      </div>
     </div>
   );
 }

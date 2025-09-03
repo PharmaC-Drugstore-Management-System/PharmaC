@@ -1,6 +1,7 @@
 import { ChevronLeft, Pencil, X, Plus, User, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface Employee {
   employee_id: number;
@@ -25,6 +26,7 @@ interface UserProfile {
 
 export default function EditRolePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -35,9 +37,9 @@ export default function EditRolePage() {
   const [loading, setLoading] = useState(true);
 
   const roleNames = {
-    1: 'Customer',
-    2: 'Owner', 
-    3: 'Pharmacist'
+    1: t('customer'),
+    2: t('owner'), 
+    3: t('pharmacist')
   };
 
   const loadUserProfile = async () => {
@@ -262,11 +264,11 @@ export default function EditRolePage() {
             </h2>
             <h1 className="text-3xl font-bold"
                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-              Role Management
+              {t('roleManagement')}
             </h1>
             <p className="text-sm mt-1"
                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-              จัดการบทบาทและสิทธิ์ของพนักงาน
+              {t('manageEmployeeRoles')}
             </p>
           </div>
         </div>
@@ -294,14 +296,14 @@ export default function EditRolePage() {
                 <div className="flex items-center space-x-4">
                   <h3 className="text-lg font-semibold"
                       style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                    พนักงานทั้งหมด
+                    {t('allEmployees')}
                   </h3>
                   <span className="text-sm font-medium px-3 py-1 rounded-full"
                         style={{
                           backgroundColor: document.documentElement.classList.contains('dark') ? '#065f46' : '#ccfbf1',
                           color: document.documentElement.classList.contains('dark') ? '#10b981' : '#115e59'
                         }}>
-                    {employees.length} คน
+                    {employees.length} {t('people')}
                   </span>
                 </div>
                 <button
@@ -333,7 +335,7 @@ export default function EditRolePage() {
                   }}
                 >
                   <Pencil className="w-4 h-4 mr-2" />
-                  {edit ? 'ยกเลิก' : 'แก้ไข'}
+                  {edit ? t('cancel') : t('edit')}
                 </button>
               </div>
             </div>
@@ -430,7 +432,7 @@ export default function EditRolePage() {
                         <div className="space-y-2">
                           <div className="text-sm font-medium mb-2"
                                style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                            เลือก Role:
+                            {t('selectRole')}
                           </div>
                           {Object.entries(roleNames).map(([roleId, roleName]) => (
                             <label key={roleId} className="flex items-center space-x-2">
@@ -476,7 +478,7 @@ export default function EditRolePage() {
                   <div className="flex items-center space-x-4">
                     <input
                       type="email"
-                      placeholder="อีเมล์พนักงานใหม่..."
+                      placeholder={t('newEmployeeEmail')}
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none transition-colors"
@@ -512,13 +514,13 @@ export default function EditRolePage() {
                         target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#0d9488' : '#0d9488';
                       }}
                     >
-                      เพิ่ม
+                      {t('add')}
                     </button>
                   </div>
                   <div>
                     <div className="text-sm font-medium mb-2"
                          style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                      เลือก Role เริ่มต้น:
+                      {t('selectDefaultRole')}
                     </div>
                     <div className="flex space-x-4">
                       {Object.entries(roleNames).map(([roleId, roleName]) => (
@@ -583,7 +585,7 @@ export default function EditRolePage() {
                     }}
                   >
                     <Plus className="w-5 h-5 mr-2" />
-                    {isAdding ? 'ยกเลิก' : 'เพิ่มพนักงาน'}
+                    {isAdding ? t('cancel') : t('addEmployee')}
                   </button>
 
                   {/* Save Button */}
@@ -609,7 +611,7 @@ export default function EditRolePage() {
                         : 'linear-gradient(to right, #059669, #047857)';
                     }}
                   >
-                    บันทึก
+                    {t('save')}
                   </button>
                 </div>
               </div>
