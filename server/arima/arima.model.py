@@ -1,11 +1,10 @@
 import pandas as pd # type: ignore
-from statsmodels.tsa.arima.model import ARIMA # type: ignore
 import numpy as np # type: ignore
 import json
 import sys
 from sklearn.metrics import mean_absolute_error, mean_squared_error # type: ignore
 
-def run_forecast(data_json, forecast_steps=12, test_size_months=6):
+def run_forecast(data_json, forecast_steps=12, test_size_months=6, model_type='ARIMA', seasonal_order=(1,1,1,12)):
     try:
         df = pd.DataFrame(data_json)
         df['date'] = pd.to_datetime(df['date'])
@@ -13,7 +12,6 @@ def run_forecast(data_json, forecast_steps=12, test_size_months=6):
         df = df.asfreq('ME')
         df['revenue'] = pd.to_numeric(df['revenue'])
         df.sort_index(inplace=True)
-
         df.ffill(inplace=True)
 
         if test_size_months > 0 and len(df) > test_size_months:
@@ -23,10 +21,18 @@ def run_forecast(data_json, forecast_steps=12, test_size_months=6):
             train_df = df
             test_df = pd.DataFrame()
 
-              
-        model = ARIMA(train_df['revenue'], order=(2, 1, 1))
+        # Select model based on user input
+        model_type_upper = model_type.upper()
+        if model_type_upper == 'SARIMA':
+            from statsmodels.tsa.statespace.sarimax import SARIMAX
+            model = SARIMAX(train_df['revenue'], order=(2,1,1), seasonal_order=seasonal_order)
+        else:
+            from statsmodels.tsa.arima.model import ARIMA
+            model = ARIMA(train_df['revenue'], order=(2,1,1))
+
         model_fit = model.fit()
 
+        # Evaluate on test set if provided
         if not test_df.empty:
             start_idx = len(train_df)
             end_idx = start_idx + len(test_df) - 1
@@ -48,25 +54,26 @@ def run_forecast(data_json, forecast_steps=12, test_size_months=6):
         else:
             evaluation_metrics = {'message': 'No test set used for evaluation.'}
 
+        # Forecast future values
         last_date_of_all_data = df.index[-1]
         forecast_index = pd.date_range(start=last_date_of_all_data + pd.DateOffset(months=1), periods=forecast_steps, freq='M')
-
         future_forecast_values = model_fit.predict(start=len(df), end=len(df) + forecast_steps - 1)
 
+        # Prepare historical output
         historical_output = df['revenue'].reset_index().rename(columns={'index': 'date'}).to_dict(orient='records')
         for item in historical_output:
             item['date'] = item['date'].isoformat()
 
+        # Prepare forecast output
         forecast_output = pd.DataFrame({'date': forecast_index, 'revenue': future_forecast_values.values}).to_dict(orient='records')
         for item in forecast_output:
             item['date'] = item['date'].isoformat()
 
-        # Removed 'test_predictions_output' generation and inclusion in the return dictionary
-
         return {
+            'model_type': model_type_upper,  # <-- Add model type to response
             'historical': historical_output,
             'forecast': forecast_output,
-            'evaluation_metrics': evaluation_metrics # No change here
+            'evaluation_metrics': evaluation_metrics
         }
 
     except Exception as e:
@@ -83,11 +90,13 @@ if __name__ == '__main__':
         revenue_data = input_data.get('revenue_data')
         forecast_periods = input_data.get('forecast_periods', 12)
         test_size_months = input_data.get('test_size_months', 6)
+        model_type = input_data.get('model_type', 'ARIMA')
+        seasonal_order = tuple(input_data.get('seasonal_order', (1,1,1,12)))
 
         if not revenue_data:
             raise ValueError("No 'revenue_data' provided in the input.")
 
-        result = run_forecast(revenue_data, forecast_periods, test_size_months)
+        result = run_forecast(revenue_data, forecast_periods, test_size_months, model_type, seasonal_order)
         print(json.dumps(result))
     except json.JSONDecodeError:
         print(json.dumps({'error': 'Invalid JSON input.'}))
@@ -98,4 +107,3 @@ if __name__ == '__main__':
     except Exception as e:
         print(json.dumps({'error': f'An unexpected error occurred: {str(e)}'}))
         sys.exit(1)
-        

@@ -79,13 +79,27 @@ export default function PharmaDashboard() {
     },
   ];
 
-  const [revenueChartData, setRevenueChartData] = useState<ChartDataPoint[]>(
-    []
-  );
-  const [selectedModel, setSelectedModel] = useState<string>("medium_term");
+  const [revenueChartData, setRevenueChartData] = useState<ChartDataPoint[]>([]);
+  const [filteredChartData, setFilteredChartData] = useState<ChartDataPoint[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>('medium_term');
+  const [selectedForecastModel, setSelectedForecastModel] = useState<string>('arima');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const forecastMonthly = async (modelId?: string) => {
+  // Current year date range for filtering (hidden from UI)
+  const currentYear = new Date().getFullYear();
+  const startDate = new Date(currentYear, 0, 1); // January 1st of current year
+  const endDate = new Date(currentYear, 11, 31); // December 31st of current year
+
+  // Filter data to show only current year
+  const filterDataByDateRange = (data: ChartDataPoint[]) => {
+    return data.filter(item => {
+      // Parse the date from the "Mon YYYY" format
+      const itemDate = new Date(item.name + " 01"); // Add day to make it a valid date
+      return itemDate >= startDate && itemDate <= endDate;
+    });
+  };
+
+  const forecastMonthly = async (modelId?: string, forecastModelId?: string) => {
     try {
       setIsLoading(true);
       const currentOptions = forecastOptions.find(
@@ -93,7 +107,9 @@ export default function PharmaDashboard() {
       );
       if (!currentOptions) return;
 
-      console.log(`Running forecast with ${currentOptions.name}...`);
+      const modelToSend = forecastModelId || selectedForecastModel;
+
+      console.log(`Running forecast with ${currentOptions.name} using model ${modelToSend.toUpperCase()}`);
 
       const info = await fetch("http://localhost:5000/arima/forecast", {
         method: "POST",
@@ -104,7 +120,8 @@ export default function PharmaDashboard() {
         body: JSON.stringify({
           forecastPeriods: currentOptions.forecastPeriods,
           testSizeMonths: currentOptions.testSizeMonths,
-        }),
+          model_type: modelToSend.toUpperCase()
+        })
       });
 
       const data = await info.json();
@@ -116,11 +133,9 @@ export default function PharmaDashboard() {
         // Add historical data
         data.historical.forEach((item: any) => {
           const date = new Date(item.date);
-          const monthName = date.toLocaleDateString("en-US", {
-            month: "short",
-          });
+          const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
           combinedData.push({
-            name: monthName,
+            name: monthYear,
             actual: Math.round(item.revenue),
           });
         });
@@ -128,16 +143,18 @@ export default function PharmaDashboard() {
         // Add forecast data
         data.forecast.forEach((item: any) => {
           const date = new Date(item.date);
-          const monthName = date.toLocaleDateString("en-US", {
-            month: "short",
-          });
+          const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
           combinedData.push({
-            name: monthName,
+            name: monthYear,
             forecast: Math.round(item.revenue),
           });
         });
 
         setRevenueChartData(combinedData);
+        
+        // Filter data for current year and update filtered chart data
+        const filtered = filterDataByDateRange(combinedData);
+        setFilteredChartData(filtered);
       }
     } catch (error) {
       console.error("Error fetching forecast data:", error);
@@ -149,6 +166,11 @@ export default function PharmaDashboard() {
   const handleModelChange = async (modelId: string) => {
     setSelectedModel(modelId);
     await forecastMonthly(modelId);
+  };
+
+  const handleForecastModelChange = async (modelId: string) => {
+    setSelectedForecastModel(modelId);
+    await forecastMonthly(selectedModel, modelId);
   };
 
   const trendData = [
@@ -191,6 +213,14 @@ export default function PharmaDashboard() {
     forecastMonthly();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Update filtered data when chart data changes
+  useEffect(() => {
+    if (revenueChartData.length > 0) {
+      const filtered = filterDataByDateRange(revenueChartData);
+      setFilteredChartData(filtered);
+    }
+  }, [revenueChartData]);
 
   type InventoryItem = {
     id: number;
@@ -371,8 +401,8 @@ export default function PharmaDashboard() {
 
                   {/* Forecast Model Dropdown */}
                   <select
-                    value={selectedModel}
-                    onChange={(e) => handleModelChange(e.target.value)}
+                    value={selectedForecastModel}
+                    onChange={(e) => handleForecastModelChange(e.target.value)}
                     disabled={isLoading}
                     className="
       px-4 py-2 
@@ -421,19 +451,26 @@ export default function PharmaDashboard() {
                 }
               </div>
 
-              <Link to="/RevenueDetail">
+              <Link to="/revenue-detail">
                 <div className="cursor-pointer hover:shadow-md transition-shadow">
                   <div className="flex justify-center">
-                    <LineChart width={600} height={250} data={revenueChartData}>
+                    <LineChart width={600} height={300} data={filteredChartData}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 11 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => `₿${value.toLocaleString()}`}
+                      />
                       <Tooltip
                         formatter={(value, name) => [
-                          `$${value?.toLocaleString() || 0}`,
-                          name === "actual"
-                            ? t("historicalRevenue")
-                            : t("forecastRevenue"),
+                          `${value?.toLocaleString() || 0} ฿`,
+                          name === 'actual' ? 'Historical Revenue' : 'Forecast Revenue'
                         ]}
                       />
                       <Legend />
