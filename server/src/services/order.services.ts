@@ -32,12 +32,15 @@ const orderService = {
             // Step 4: Create single order first
             const order = await prisma.order.create({
                 data: {
-                    employee_id: employee_id,
-                    customer_id:customer_id,
+                    employee: {
+                        connect: { employee_id: employee_id }
+                    },
+                    customer: {
+                        connect: { customer_id: customer_id }
+                    },
                     total_amount: total_amount,
                     total_price: total_price,
                     date: new Date(),
-                    time: new Date(),
                     status: 'PENDING'
                 }
             });

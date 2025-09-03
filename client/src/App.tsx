@@ -25,6 +25,7 @@ import MembershipRanking from "./pages/membershipPage.tsx";
 import POSPage from "./pages/POSPage.tsx";
 import TermsConditionsPage from "./pages/TermConditionPage.tsx";
 import ContactUsPage from "./pages/ContactUsPage.tsx";
+import RevenueDetail from "./pages/RevenueDetail.tsx";
 import { useEffect } from 'react';
 import LotPage from "./pages/InventoryLotPage.tsx";
 
@@ -106,6 +107,12 @@ function AppContent() {
               <LotPage />
               // </ProtectedRoute>
             } />
+
+            <Route path="/revenue-detail" element={
+              <ProtectedRoute allowedRoles={['Owner']}>
+                <RevenueDetail />
+              </ProtectedRoute>} />
+              
             <Route path="/settings" element={
               <ProtectedRoute allowedRoles={['Owner']}>
                 <SettingsPage />

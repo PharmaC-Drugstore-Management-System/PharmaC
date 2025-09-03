@@ -28,12 +28,15 @@ const controller = {
 
             const forecastPeriods = req.body.forecastPeriods || 12;
             const testSizeMonths = req.body.testSizeMonths || 6;
+            const model_type =  req.body.model_type
 
-            const forecastResult = await forecast_service.getForecastService(historicalData, forecastPeriods, testSizeMonths);
+            console.log("Model_TYPE ====== ",model_type)
+
+            const forecastResult = await forecast_service.getForecastService(historicalData, forecastPeriods, testSizeMonths, model_type);
 
             if (forecastResult.error) {
                 return res.status(500).json({
-                    message: 'ARIMA model processing failed',
+                    message: 'Model processing failed',
                     error: forecastResult.error,
                     details: forecastResult.details,
                     rawOutput: forecastResult.rawOutput
