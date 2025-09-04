@@ -8,7 +8,7 @@ const inventory_service = {
     iscontrolled: boolean,
     product_type: string,
     unit: string,
-    image?: string | null,
+    image?: string | null
   ) => {
     try {
       const add = await prisma.product.create({
@@ -36,6 +36,21 @@ const inventory_service = {
       return get;
     } catch (error: any) {
       console.error("Error in inventory_service.get_service():", error.message);
+      throw error;
+    }
+  },
+  getById_service: async (id: number) => {
+    try {
+      const product = await prisma.product.findUnique({
+        where: { product_id : Number(id) },
+      });
+
+      return product;
+    } catch (error: any) {
+      console.error(
+        "Error in inventory_service.getById_service():",
+        error.message
+      );
       throw error;
     }
   },
