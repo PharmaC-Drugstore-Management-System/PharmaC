@@ -124,19 +124,16 @@ model is_pharmacist {
 }
 
 model lot {
-  amount                     Int?
-  added_date                 DateTime?  @db.Date
-  expired_date               DateTime?  @db.Date
-  cost                       Float?     @db.Real
-  lot_id                     Int        @id @default(autoincrement())
-  lot_no                     String?    @db.VarChar(20)
-  product_id                 Int?
-  stock_id                   Int?
-  cart                       cart[]
-  product                    product?   @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_product_fk")
-  stock_lot_stock_idTostock  stock?     @relation("lot_stock_idTostock", fields: [stock_id], references: [stock_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_stock_fk")
-  quantity                   quantity[]
-  stock_stock_lot_id_fkTolot stock[]    @relation("stock_lot_id_fkTolot")
+  init_amount       Int?
+  added_date        DateTime?           @db.Date
+  expired_date      DateTime?           @db.Date
+  cost              Float?              @db.Real
+  lot_id            Int                 @id @default(autoincrement())
+  lot_no            String?             @db.VarChar(20)
+  product_id        Int?
+  cart              cart[]
+  product           product?            @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_product_fk")
+  stock_transaction stock_transaction[]
 }
 
 model metrics {
@@ -200,7 +197,6 @@ model product {
   forecasted_product forecasted_product[]
   lot                lot[]
   revenue            revenue[]
-  stock              stock[]
   trend              trend[]
 }
 
@@ -221,17 +217,6 @@ model purchase_document {
   po_signature         po_signature? @relation(fields: [signature_fk], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_po_signature_fk")
   store                store?        @relation(fields: [store_id], references: [store_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_store_fk")
   supplier             supplier?     @relation(fields: [suplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_supplier_fk")
-}
-
-model quantity {
-  sales_amount                         Int?
-  total_amount                         Int?
-  lot_id                               Int?
-  quantity_id                          Int     @id @default(autoincrement())
-  stock_id                             Int?
-  lot                                  lot?    @relation(fields: [lot_id], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "quantity_lot_fk")
-  stock_quantity_stock_idTostock       stock?  @relation("quantity_stock_idTostock", fields: [stock_id], references: [stock_id], onDelete: NoAction, onUpdate: NoAction, map: "quantity_stock_fk")
-  stock_stock_quantity_id_fkToquantity stock[] @relation("stock_quantity_id_fkToquantity")
 }
 
 model revenue {
@@ -266,19 +251,6 @@ model role {
   employee      employee[]
   is_allowed    is_allowed[]
   is_pharmacist is_pharmacist[]
-}
-
-model stock {
-  product_id_fk                           Int?
-  quantity_id_fk                          Int?
-  lot_id_fk                               Int?
-  barcode                                 String?    @db.VarChar
-  stock_id                                Int        @id @default(autoincrement())
-  lot_lot_stock_idTostock                 lot[]      @relation("lot_stock_idTostock")
-  quantity_quantity_stock_idTostock       quantity[] @relation("quantity_stock_idTostock")
-  lot_stock_lot_id_fkTolot                lot?       @relation("stock_lot_id_fkTolot", fields: [lot_id_fk], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_lot_fk")
-  product                                 product?   @relation(fields: [product_id_fk], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_product_fk")
-  quantity_stock_quantity_id_fkToquantity quantity?  @relation("stock_quantity_id_fkToquantity", fields: [quantity_id_fk], references: [quantity_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_quantity_fk")
 }
 
 model store {
@@ -330,4 +302,15 @@ model po_signature {
   purchase_document purchase_document[]
 
   @@map("po_signature")
+}
+
+model stock_transaction {
+  lot_id_fk      Int?
+  stock_trans_id Int       @id(map: "stock_pkey") @default(autoincrement())
+  trans_type     String?   @db.VarChar(255)
+  qty            Int?
+  trans_date     DateTime? @db.Timestamp(6)
+  ref_no         String?   @db.VarChar(120)
+  note           String?   @db.VarChar(255)
+  lot            lot?      @relation(fields: [lot_id_fk], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_lot_fk")
 }

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-
+const API_URL = import.meta.env.VITE_API_URL;
 type MedicineItem = {
   id: number;
   name: string;
@@ -36,59 +36,41 @@ export default function PharmacInventoryPage() {
   const [editMode, setEditMode] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
-  // const loadData = async () => {
-  //   try {
-  //     const res = await fetch("http://localhost:5000/inventory/get-medicine", {
-  //       method: "GET",
-  //       credentials: "include",
-  //     });
-  //     const result = await res.json();
-  //     const data = result?.data || [];
-  //     const formattedItems = data.map(
-  //       (item: any): MedicineItem => ({
-  //         id: item.product_id,
-  //         name: item.product_name || "-",
-  //         brand: item.brand || "-",
-  //         price: item.price ?? 0,
-  //         image: item.image || null,
-  //         productType: item.producttype ?? null,
-  //         unit: item.unit ?? item.unit_name ?? item.unitName ?? null,
-  //         isControlled:
-  //           item.iscontrolled ??
-  //           item.isControlled ??
-  //           item.is_controlled ??
-  //           item.controlled ??
-  //           false,
-  //         expiredDate:
-  //           (item.lot && item.lot[0] && item.lot[0].expired_date) || "-",
-  //         amount:
-  //           item.stock && item.stock.length > 0 && item.stock[0].quantity_id_fk
-  //             ? item.stock[0].quantity_id_fk
-  //             : item.amount ?? 0,
-  //       })
-  //     );
-  //     setItems(formattedItems);
-  //   } catch (error) {
-  //     console.log("Error", error);
-  //   }
-  // };
   const loadData = async () => {
-    // Instead of fetching, just mock one item
-    const mockData: MedicineItem[] = [
-      {
-        id: 1,
-        name: "Paracetamol",
-        brand: "Tylenol",
-        price: 50,
-        image: null,
-        productType: "Tablet",
-        unit: "Box",
-        isControlled: false,
-        expiredDate: "2025-12-31",
-        amount: 25,
-      },
-    ];
-    setItems(mockData);
+    try {
+      const res = await fetch(`${API_URL}/inventory/get-medicine`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const result = await res.json();
+      const data = result?.data || [];
+      const formattedItems = data.map(
+        (item: any): MedicineItem => ({
+          id: item.product_id,
+          name: item.product_name || "-",
+          brand: item.brand || "-",
+          price: item.price ?? 0,
+          image: item.image || null,
+          productType: item.producttype ?? null,
+          unit: item.unit ?? item.unit_name ?? item.unitName ?? null,
+          isControlled:
+            item.iscontrolled ??
+            item.isControlled ??
+            item.is_controlled ??
+            item.controlled ??
+            false,
+          expiredDate:
+            (item.lot && item.lot[0] && item.lot[0].expired_date) || "-",
+          amount:
+            item.stock && item.stock.length > 0 && item.stock[0].quantity_id_fk
+              ? item.stock[0].quantity_id_fk
+              : item.amount ?? 0,
+        })
+      );
+      setItems(formattedItems);
+    } catch (error) {
+      console.log("Error", error);
+    }
   };
 
   const checkme = async () => {

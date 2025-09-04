@@ -16,6 +16,7 @@ import {
 
 import { ShoppingCart } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -129,7 +130,7 @@ export default function PharmaDashboard() {
       const data = await info.json();
       console.log("Forecast data:", data);
 
-      if (data.historical && data.forecast) {
+      if (info.ok && data.historical && data.forecast) {
         const combinedData: ChartDataPoint[] = [];
 
         // Add historical data
@@ -157,9 +158,28 @@ export default function PharmaDashboard() {
         // Filter data for current year and update filtered chart data
         const filtered = filterDataByDateRange(combinedData);
         setFilteredChartData(filtered);
+      } else {
+        // POST request error - show error alert
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to generate forecast data',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
       }
     } catch (error) {
       console.error("Error fetching forecast data:", error);
+      // POST request network error - show error alert
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Network error occurred. Please try again.',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
     } finally {
       setIsLoading(false);
     }
@@ -523,19 +543,20 @@ export default function PharmaDashboard() {
             >
               {t("trend")}
             </h3>
-            <div className="flex justify-center">
-              <PieChart width={300} height={250}>
+            <div className="flex justify-center overflow-visible">
+              <PieChart width={450} height={300}>
                 <Pie
                   data={trendData}
-                  cx={150}
-                  cy={120}
+                  cx={225}
+                  cy={155}
                   innerRadius={0}
-                  outerRadius={80}
+                  outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                   label={({ name, percent }) =>
                     `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                   }
+                  labelLine={false}
                 >
                   {trendData.map((_entry, index) => (
                     <Cell

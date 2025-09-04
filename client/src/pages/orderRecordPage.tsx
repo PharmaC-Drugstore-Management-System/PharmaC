@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Package, User, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 
 export default function OrderRecord() {
@@ -63,15 +64,33 @@ export default function OrderRecord() {
       });
       const data = await response.json();
 
-      if (data.status && data.data) {
+      if (response.ok && data.status && data.data) {
         setOrders(data.data);
         console.log('Order data with customer info:', data.data);
       } else {
         setOrders([]);
+        // GET request - show error alert only
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to load orders',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
       }
     } catch (error) {
       console.log('Error loading orders:', error);
       setOrders([]);
+      // GET request - show error alert only
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Network error occurred. Please try again.',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
     } finally {
       setLoading(false);
     }
