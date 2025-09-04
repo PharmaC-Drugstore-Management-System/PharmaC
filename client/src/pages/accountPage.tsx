@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import Swal from 'sweetalert2';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface AccountDetailResponse {
     data: {
@@ -63,7 +66,7 @@ export default function AccountPage() {
             try {
                 console.log('🖼️ Image change started');
                 console.log('📁 Selected file:', file);
-                
+
                 // แสดงตัวอย่างรูปภาพทันที
                 const reader = new FileReader();
                 reader.onloadend = () => {
@@ -79,7 +82,7 @@ export default function AccountPage() {
                 const formData = new FormData();
                 formData.append('profileImage', file);
 
-                const response = await fetch('http://localhost:5000/acc/upload-profile-image', {
+                const response = await fetch(`${API_URL}/acc/upload-profile-image`, {
                     method: 'POST',
                     credentials: 'include',
                     body: formData
@@ -91,27 +94,27 @@ export default function AccountPage() {
                 if (response.ok) {
                     const result = await response.json();
                     console.log('✅ Profile image uploaded successfully:', result);
-                    
+
                     // อัพเดท imageUrl ด้วย URL จริงจาก server
                     setImageUrl(result.data.imageUrl);
                     console.log('🎉 Image URL updated:', result.data.imageUrl);
-                    
+
                     // แสดงข้อความสำเร็จ
                     alert('Profile image updated successfully!');
                 } else {
                     const errorResult = await response.json();
                     console.error('❌ Failed to upload profile image:', errorResult);
-                    
+
                     // แสดงข้อความผิดพลาด
                     alert(`Failed to upload image: ${errorResult.message}`);
-                    
+
                     // โหลดข้อมูลใหม่เพื่อเอารูปเดิมกลับมา
                     loadDataFromAPI();
                 }
             } catch (error) {
                 console.error('💥 Error uploading profile image:', error);
                 alert('Error uploading image. Please try again.');
-                
+
                 // โหลดข้อมูลใหม่เพื่อเอารูปเดิมกลับมา
                 loadDataFromAPI();
             }
@@ -121,9 +124,9 @@ export default function AccountPage() {
     const loadDataFromAPI = async () => {
         try {
             console.log('Loading profile data from API...');
-            
+
             // Step 1: Get employee_id from JWT token
-            const authResponse = await fetch('http://localhost:5000/api/me', {
+            const authResponse = await fetch(`${API_URL}/api/me`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -143,7 +146,7 @@ export default function AccountPage() {
             }
 
             // Step 2: Use employee_id to get full account details
-            const accountResponse = await fetch('http://localhost:5000/acc/account-detail', {
+            const accountResponse = await fetch(`${API_URL}/acc/account-detail`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -181,7 +184,7 @@ export default function AccountPage() {
                     user.tax_id || '',
                     user.gender || '',
                     user.phonenumber || '',
-                    user.birthdate 
+                    user.birthdate
                         ? new Date(user.birthdate).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'numeric',
@@ -197,7 +200,7 @@ export default function AccountPage() {
                 ];
                 return { ...item, value: values[index] };
             });
-            
+
             setUserInfo(updatedUserInfo);
         } catch (error) {
             console.log('Error loading profile data:', error);
@@ -226,7 +229,7 @@ export default function AccountPage() {
             };
             console.log(body);
 
-            const edit = await fetch('http://localhost:5000/acc/edit-account', {
+            const edit = await fetch(`${API_URL}/acc/edit-account`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -235,11 +238,41 @@ export default function AccountPage() {
                 body: JSON.stringify(body),
             });
 
-            console.log('Successful');
             const result = await edit.json();
             console.log(result);
+
+            if (edit.ok) {
+                console.log('Edit successful');
+                Swal.fire({
+                    title:'Success!',
+                    text:'Account edited successfully',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            } else {
+                console.log('Edit failed:', result.message);
+                Swal.fire({
+                    title:'Error!',
+                    text:'Failed to edit account',
+                    icon: 'error',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            }
+
         } catch (error) {
             console.log('Error', error);
+            Swal.fire({
+                title: t('error') || 'Error!',
+                text: t('networkError') || 'Network error occurred. Please try again.',
+                icon: 'error',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
         }
     };
 
@@ -249,22 +282,22 @@ export default function AccountPage() {
 
     useEffect(() => {
         loadDataFromAPI();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
     return (
         <div className="min-h-screen"
-             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
+            style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb' }}>
             {/* Header */}
             <div className="shadow-sm border-b"
-                 style={{
-                   backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
-                   borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
-                 }}>
+                style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                }}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center py-6">
-                         <button
+                        <button
                             onClick={() => navigate('/settings')}
                             className="flex items-center justify-center w-12 h-12 bg-teal-600 rounded-xl mr-4 shadow-lg hover:bg-gray-700 transition-colors duration-200"
                         >
@@ -272,9 +305,9 @@ export default function AccountPage() {
                         </button>
                         <div>
                             <h2 className="text-lg font-medium"
-                                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('pharmacyTitle')}</h2>
+                                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>{t('pharmacyTitle')}</h2>
                             <h1 className="text-2xl font-bold"
-                                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{t('accountManagement')}</h1>
+                                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : '#111827' }}>{t('accountManagement')}</h1>
                         </div>
                     </div>
                 </div>
@@ -283,19 +316,19 @@ export default function AccountPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Profile Header Card */}
                 <div className="rounded-2xl shadow-lg mb-8 overflow-hidden border"
-                     style={{
-                       backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
-                       borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
-                     }}>
+                    style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                    }}>
                     <div className="px-8 py-6"
-                         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151'}}>
+                        style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151' }}>
                         <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
 
                             {/* Profile Image */}
                             <div className="relative">
                                 <div className="w-32 h-32 rounded-full overflow-hidden bg-white p-1 shadow-lg">
                                     <div className="w-full h-full rounded-full overflow-hidden group cursor-pointer relative"
-                                         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
+                                        style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
                                         <img
                                             src={imageUrl}
                                             alt="Profile"
@@ -326,9 +359,9 @@ export default function AccountPage() {
                                             type="text"
                                             className="text-2xl font-bold placeholder-gray-500 border rounded-lg px-4 py-2 w-full"
                                             style={{
-                                              backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                                              borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
-                                              color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                                backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                                                color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
                                             }}
                                             value={firstname}
                                             onChange={(e) => setFirstname(e.target.value)}
@@ -338,9 +371,9 @@ export default function AccountPage() {
                                             type="text"
                                             className="text-2xl font-bold placeholder-gray-500 border rounded-lg px-4 py-2 w-full"
                                             style={{
-                                              backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                                              borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
-                                              color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                                backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                                                color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
                                             }}
                                             value={lastname}
                                             onChange={(e) => setLastname(e.target.value)}
@@ -352,7 +385,7 @@ export default function AccountPage() {
                                 )}
                                 <div className="flex items-center justify-center md:justify-start space-x-2">
                                     <span className="px-3 py-1 rounded-full text-sm font-medium"
-                                          style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#374151'}}>
+                                        style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#374151' }}>
                                         {t('employeeId')}: #10001
                                     </span>
                                 </div>
@@ -365,12 +398,12 @@ export default function AccountPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     {/* Personal Information Card */}
                     <div className="rounded-2xl shadow-lg overflow-hidden border"
-                         style={{
-                           backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
-                           borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
-                         }}>
+                        style={{
+                            backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                            borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                        }}>
                         <div className="px-6 py-4"
-                             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151'}}>
+                            style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151' }}>
                             <h2 className="text-xl font-bold text-white">{t('personalInformation')}</h2>
                         </div>
                         <div className="p-6 space-y-4">
@@ -378,7 +411,7 @@ export default function AccountPage() {
                                 <div key={index} className="group">
                                     <div className="flex flex-col space-y-2">
                                         <label className="text-sm font-semibold uppercase tracking-wide"
-                                               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+                                            style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
                                             {item.label}
                                         </label>
                                         {isEditing ? (
@@ -386,29 +419,29 @@ export default function AccountPage() {
                                                 type={item.label === 'Email' ? 'email' : item.label === 'Phone' ? 'tel' : 'text'}
                                                 className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors duration-200"
                                                 style={{
-                                                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                                                  borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
-                                                  color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                                                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
                                                 }}
                                                 onFocus={(e) => {
-                                                  const target = e.target as HTMLInputElement;
-                                                  target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280';
+                                                    const target = e.target as HTMLInputElement;
+                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280';
                                                 }}
                                                 onBlur={(e) => {
-                                                  const target = e.target as HTMLInputElement;
-                                                  target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
+                                                    const target = e.target as HTMLInputElement;
+                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
                                                 }}
                                                 onMouseEnter={(e) => {
-                                                  const target = e.target as HTMLInputElement;
-                                                  if (target !== document.activeElement) {
-                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af';
-                                                  }
+                                                    const target = e.target as HTMLInputElement;
+                                                    if (target !== document.activeElement) {
+                                                        target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af';
+                                                    }
                                                 }}
                                                 onMouseLeave={(e) => {
-                                                  const target = e.target as HTMLInputElement;
-                                                  if (target !== document.activeElement) {
-                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
-                                                  }
+                                                    const target = e.target as HTMLInputElement;
+                                                    if (target !== document.activeElement) {
+                                                        target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
+                                                    }
                                                 }}
                                                 value={item.value}
                                                 onChange={(e) => handleInputChange(index, e.target.value)}
@@ -416,12 +449,12 @@ export default function AccountPage() {
                                             />
                                         ) : (
                                             <div className="px-4 py-3 rounded-xl border"
-                                                 style={{
-                                                   backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
-                                                   borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
-                                                 }}>
+                                                style={{
+                                                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                                                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
+                                                }}>
                                                 <span className="font-medium"
-                                                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? 'white' : '#111827' }}>
                                                     {item.value || t('notSpecified')}
                                                 </span>
                                             </div>
@@ -434,12 +467,12 @@ export default function AccountPage() {
 
                     {/* Address & Work Information Card */}
                     <div className="rounded-2xl shadow-lg overflow-hidden border"
-                         style={{
-                           backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
-                           borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
-                         }}>
+                        style={{
+                            backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                            borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                        }}>
                         <div className="px-6 py-4"
-                             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151'}}>
+                            style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151' }}>
                             <h2 className="text-xl font-bold text-white">{t('addressWorkInformation')}</h2>
                         </div>
                         <div className="p-6 space-y-4">
@@ -447,7 +480,7 @@ export default function AccountPage() {
                                 <div key={index + 5} className="group">
                                     <div className="flex flex-col space-y-2">
                                         <label className="text-sm font-semibold uppercase tracking-wide"
-                                               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+                                            style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
                                             {item.label}
                                         </label>
                                         {isEditing ? (
@@ -455,29 +488,29 @@ export default function AccountPage() {
                                                 type="text"
                                                 className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors duration-200"
                                                 style={{
-                                                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                                                  borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
-                                                  color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                                                    color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
                                                 }}
                                                 onFocus={(e) => {
-                                                  const target = e.target as HTMLInputElement;
-                                                  target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280';
+                                                    const target = e.target as HTMLInputElement;
+                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280';
                                                 }}
                                                 onBlur={(e) => {
-                                                  const target = e.target as HTMLInputElement;
-                                                  target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
+                                                    const target = e.target as HTMLInputElement;
+                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
                                                 }}
                                                 onMouseEnter={(e) => {
-                                                  const target = e.target as HTMLInputElement;
-                                                  if (target !== document.activeElement) {
-                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af';
-                                                  }
+                                                    const target = e.target as HTMLInputElement;
+                                                    if (target !== document.activeElement) {
+                                                        target.style.borderColor = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af';
+                                                    }
                                                 }}
                                                 onMouseLeave={(e) => {
-                                                  const target = e.target as HTMLInputElement;
-                                                  if (target !== document.activeElement) {
-                                                    target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
-                                                  }
+                                                    const target = e.target as HTMLInputElement;
+                                                    if (target !== document.activeElement) {
+                                                        target.style.borderColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db';
+                                                    }
                                                 }}
                                                 value={item.value}
                                                 onChange={(e) => handleInputChange(index + 5, e.target.value)}
@@ -485,12 +518,12 @@ export default function AccountPage() {
                                             />
                                         ) : (
                                             <div className="px-4 py-3 rounded-xl border"
-                                                 style={{
-                                                   backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
-                                                   borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
-                                                 }}>
+                                                style={{
+                                                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                                                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'
+                                                }}>
                                                 <span className="font-medium"
-                                                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? 'white' : '#111827' }}>
                                                     {item.value || t('notSpecified')}
                                                 </span>
                                             </div>
@@ -507,16 +540,16 @@ export default function AccountPage() {
                     <button
                         className="px-12 py-4 rounded-2xl text-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
                         style={{
-                          backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151',
-                          color: 'white'
+                            backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151',
+                            color: 'white'
                         }}
                         onMouseEnter={(e) => {
-                          const target = e.target as HTMLButtonElement;
-                          target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#374151' : '#4b5563';
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#374151' : '#4b5563';
                         }}
                         onMouseLeave={(e) => {
-                          const target = e.target as HTMLButtonElement;
-                          target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151';
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#1f2937' : '#374151';
                         }}
                         onClick={() => {
                             if (isEditing) {

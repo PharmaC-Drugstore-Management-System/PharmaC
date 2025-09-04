@@ -16,6 +16,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { FaFire, FaRegCalendarAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const revenueDetailData = [
   {
     id: 1,
@@ -157,7 +159,7 @@ export default function RevenueDetail() {
   useEffect(() => {
     const checkme = async () => {
       try {
-        const authme = await fetch("http://localhost:5000/api/me", {
+        const authme = await fetch(`${API_URL}/api/me`, {
           method: "GET",
           credentials: "include",
         });

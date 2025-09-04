@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 interface Product {
   product_id: number;
   product_name: string;
@@ -88,7 +90,7 @@ export default function POSPage() {
     loadQuickCustomers();
 
     // Initialize socket connection
-    const socket = io('http://localhost:5000');
+    const socket = io(API_URL);
 
     // Listen for payment status updates
     socket.on('payment-status-update', (data: any) => {
@@ -143,7 +145,7 @@ export default function POSPage() {
 
   const loadQuickCustomers = async () => {
     try {
-      const response = await fetch("http://localhost:5000/customer/get-customers");
+      const response = await fetch(`${API_URL}/customer/get-customers`);
       if (response.ok) {
         const customers = await response.json();
         setQuickMembers(customers.slice(0, 3)); // Get first 3 customers for quick access

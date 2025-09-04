@@ -30,6 +30,7 @@ interface Order {
 }
 
 const CustomerPaymentPage: React.FC = () => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const { logout } = useAuth();
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
@@ -49,7 +50,7 @@ const CustomerPaymentPage: React.FC = () => {
       setConnectionStatus('connecting');
 
       // Connect to Socket.IO server
-      const socket = io('http://localhost:5000', {
+      const socket = io(`${API_URL}`, {
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 10,
@@ -133,7 +134,7 @@ const CustomerPaymentPage: React.FC = () => {
       console.error('Socket connection error:', error);
       setConnectionStatus('disconnected');
     }
-  }, [currentOrder]);
+  }, [currentOrder, API_URL]);
 
   const verifyStatus = useCallback(async () => {
     if (!currentOrder?.payment_intent_id || !currentOrder?.order_id) {
@@ -148,7 +149,7 @@ const CustomerPaymentPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/payment/check',
+      const response = await fetch(`${API_URL}/payment/check`,
         {
           method: 'POST',
           headers: {
@@ -183,7 +184,7 @@ const CustomerPaymentPage: React.FC = () => {
     } catch (error) {
       console.error('Error verifying payment status:', error);
     }
-  }, [currentOrder]);
+  }, [currentOrder, API_URL]);
 
   // Socket.IO connection
   useEffect(() => {
@@ -219,6 +220,25 @@ const CustomerPaymentPage: React.FC = () => {
   };
 
   const displayOrder = currentOrder || mockOrder;
+
+  // Handle completed order effect
+  useEffect(() => {
+    if (displayOrder.status === 'completed') {
+      const interval = setInterval(() => {
+        verifyStatus();
+      }, 10000); // 10 seconds
+
+      // Reload window after 5 seconds (show completed for 5s)
+      const reloadTimeout = setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(reloadTimeout);
+      };
+    }
+  }, [displayOrder.status, verifyStatus]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
