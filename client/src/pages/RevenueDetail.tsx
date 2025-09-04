@@ -5,6 +5,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 // Types
 type ChartDataPoint = {
   name: string;
@@ -63,8 +65,8 @@ export default function RevenueDetail() {
   // Forecast Options
   const forecastOptions: ForecastOption[] = [
     { id: 'short_term', name: 'Short Term (3 months)', forecastPeriods: 3, testSizeMonths: 12, description: 'Quick forecast for immediate planning' },
-    { id: 'medium_term', name: 'Medium Term (6 months)', forecastPeriods: 6, testSizeMonths: 24, description: 'Balanced forecast for quarterly planning' },
-    { id: 'long_term', name: 'Long Term (12 months)', forecastPeriods: 12, testSizeMonths: 24, description: 'Extended forecast for annual planning' }
+    { id: 'medium_term', name: 'Medium Term (6 months)', forecastPeriods: 6, testSizeMonths: 12, description: 'Balanced forecast for quarterly planning' },
+    { id: 'long_term', name: 'Long Term (12 months)', forecastPeriods: 12, testSizeMonths: 12, description: 'Extended forecast for annual planning' }
   ];
 
   // Date range preset options
@@ -127,7 +129,7 @@ export default function RevenueDetail() {
   // Check authentication
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', { method: 'GET', credentials: 'include' });
+      const authme = await fetch(`${API_URL}/api/me`, { method: 'GET', credentials: 'include' });
       const data = await authme.json();
       if (authme.status === 401 || authme.status === 403) {
         navigate('/login');
@@ -151,7 +153,7 @@ export default function RevenueDetail() {
 
       console.log(`Running forecast with ${currentOptions.name} using model ${modelToSend.toUpperCase()}`);
 
-      const info = await fetch('http://localhost:5000/arima/forecast', {
+      const info = await fetch(`${API_URL}/arima/forecast`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

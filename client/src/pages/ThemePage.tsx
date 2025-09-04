@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeProvider';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function SettingsToggles() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ export default function SettingsToggles() {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/me', {
+      const response = await fetch(`${API_URL}/api/me`, {
         method: 'GET',
         credentials: 'include'
       });
