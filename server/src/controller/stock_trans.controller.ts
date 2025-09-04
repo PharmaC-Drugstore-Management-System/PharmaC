@@ -1,4 +1,3 @@
-import { get } from "http";
 import stock_trans_service from "../services/stock_trans.service";
 
 const controller = {
@@ -16,6 +15,54 @@ const controller = {
             res.status(200).json(stockTrans);
         } catch (error) {
             res.status(500).json({ error: "Error fetching stock transactions" });
+        }
+    },
+    getById: async (req: any, res: any) => {
+        try {
+            const stockTrans = await stock_trans_service.getByIdStockTrans(parseInt(req.params.id));
+            if (!stockTrans) {
+                return res.status(404).json({ error: "Stock transaction not found" });
+            }
+            res.status(200).json(stockTrans);
+        } catch (error) {
+            res.status(500).json({ error: "Error fetching stock transaction" });
+        }
+    },
+    
+
+    // Get transactions by lot
+    getByLotId: async (req: any, res: any) => {
+        try {
+            const lotId = parseInt(req.params.lotId);
+            if (isNaN(lotId)) {
+                return res.status(400).json({ error: 'Invalid lot ID' });
+            }
+
+            const transactions = await stock_trans_service.getTransactionsByLot(lotId);
+            res.status(200).json(transactions);
+        } catch (error) {
+            console.error('Error fetching transactions by lot:', error);
+            res.status(500).json({ error: 'Failed to fetch transactions' });
+        }
+    },
+
+    // Get transactions with filters
+    getWithFilters: async (req: any, res: any) => {
+        try {
+            const filters = {
+                productId: req.query.productId ? parseInt(req.query.productId as string) : undefined,
+                lotId: req.query.lotId ? parseInt(req.query.lotId as string) : undefined,
+                transType: req.query.transType as string,
+                dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+                dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined,
+                refNo: req.query.refNo as string
+            };
+
+            const transactions = await stock_trans_service.getTransactionsWithFilters(filters);
+            res.status(200).json(transactions);
+        } catch (error) {
+            console.error('Error fetching filtered transactions:', error);
+            res.status(500).json({ error: 'Failed to fetch transactions' });
         }
     }
 }

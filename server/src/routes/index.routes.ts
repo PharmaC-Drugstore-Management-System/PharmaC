@@ -38,7 +38,7 @@ router.use("/payment", paymentRoute);
 import lotRoute from "./lot.routes.ts";
 router.use("/lot", lotRoute);
 
-import stockTransRoute from "./stock_trans.routes.ts";
+import stockTransRoute from "./stock_trans.routes.ts"
 router.use("/stock", stockTransRoute);
 
 export default router;
