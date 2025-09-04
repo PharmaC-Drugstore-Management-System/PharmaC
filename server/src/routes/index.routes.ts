@@ -20,17 +20,24 @@ router.use("/arima", forecastRoute);
 import purchaseRoute from "./purchase.routes.ts";
 router.use("/purchase", purchaseRoute);
 
-import orderRoute from "./order.routes.ts"
-router.use("/order",orderRoute)
+import orderRoute from "./order.routes.ts";
+router.use("/order", orderRoute);
 
-import customerRoute  from "./customer.routes.ts"
+import customerRoute from "./customer.routes.ts";
 router.use("/customer", customerRoute);
 
-import signatureRoute from "./signature.routes.ts"
+import signatureRoute from "./signature.routes.ts";
 router.use("/signature", signatureRoute);
-import revenueRoute from "./revenue.routes.ts"
-router.use("/revenue",revenueRoute)
+import revenueRoute from "./revenue.routes.ts";
+router.use("/revenue", revenueRoute);
 
-import paymentRoute from "./payment.routes.ts"
-router.use("/payment", paymentRoute)
+import paymentRoute from "./payment.routes.ts";
+router.use("/payment", paymentRoute);
+
+import lotRoute from "./lot.routes.ts";
+router.use("/lot", lotRoute);
+
+import stockTransRoute from "./stock_trans.routes.ts";
+router.use("/stock", stockTransRoute);
+
 export default router;
