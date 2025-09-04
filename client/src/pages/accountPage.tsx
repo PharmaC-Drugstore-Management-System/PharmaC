@@ -3,6 +3,8 @@ import { ChevronLeft, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface AccountDetailResponse {
     data: {
         employee_id: number;
@@ -79,7 +81,7 @@ export default function AccountPage() {
                 const formData = new FormData();
                 formData.append('profileImage', file);
 
-                const response = await fetch('http://localhost:5000/acc/upload-profile-image', {
+                const response = await fetch(`${API_URL}/acc/upload-profile-image`, {
                     method: 'POST',
                     credentials: 'include',
                     body: formData
@@ -123,7 +125,7 @@ export default function AccountPage() {
             console.log('Loading profile data from API...');
             
             // Step 1: Get employee_id from JWT token
-            const authResponse = await fetch('http://localhost:5000/api/me', {
+            const authResponse = await fetch(`${API_URL}/api/me`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -143,7 +145,7 @@ export default function AccountPage() {
             }
 
             // Step 2: Use employee_id to get full account details
-            const accountResponse = await fetch('http://localhost:5000/acc/account-detail', {
+            const accountResponse = await fetch(`${API_URL}/acc/account-detail`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -226,7 +228,7 @@ export default function AccountPage() {
             };
             console.log(body);
 
-            const edit = await fetch('http://localhost:5000/acc/edit-account', {
+            const edit = await fetch(`${API_URL}/acc/edit-account`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 interface Employee {
   employee_id: number;
   email: string;
@@ -27,7 +29,7 @@ interface UserProfile {
 export default function EditRolePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  
+  const API_URL = import.meta.env.VITE_API_URL;
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [edit, setEdit] = useState(false);
@@ -43,11 +45,12 @@ export default function EditRolePage() {
   };
 
   const loadUserProfile = async () => {
+    
     try {
       console.log('Loading profile data from API...');
       
       // Step 1: Get employee_id from JWT token
-      const authResponse = await fetch('http://localhost:5000/api/me', {
+      const authResponse = await fetch(`${API_URL}/api/me`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -67,7 +70,7 @@ export default function EditRolePage() {
       }
 
       // Step 2: Use employee_id to get full account details
-      const accountResponse = await fetch('http://localhost:5000/acc/account-detail', {
+      const accountResponse = await fetch(`${API_URL}/acc/account-detail`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -106,7 +109,7 @@ export default function EditRolePage() {
   const loadEmployees = async () => {
     try {
       // Get all employees from database
-      const response = await fetch('http://localhost:5000/acc/get-all-employees', {
+      const response = await fetch(`${API_URL}/acc/get-all-employees`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -181,7 +184,7 @@ export default function EditRolePage() {
       console.log('Saving employees...', employees);
       console.log('Employees data structure:', JSON.stringify(employees, null, 2));
       
-      const response = await fetch('http://localhost:5000/acc/update-employee-roles', {
+      const response = await fetch(`${API_URL}/acc/update-employee-roles`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -390,7 +393,7 @@ export default function EditRolePage() {
                           <img 
                             src={employee.profile_image.startsWith('http') 
                               ? employee.profile_image 
-                              : `http://localhost:5000/uploads/${employee.profile_image}`
+                              : `${API_URL}/uploads/${employee.profile_image}`
                             }
                             alt="Profile"
                             className="w-full h-full object-cover"

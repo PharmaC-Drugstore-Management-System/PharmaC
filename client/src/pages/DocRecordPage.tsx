@@ -23,6 +23,7 @@ interface Document {
 }
 
 export default function DocumentRecord() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -32,7 +33,7 @@ export default function DocumentRecord() {
 
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
+      const authme = await fetch(`${API_URL}/api/me`, {
         method: 'GET',
         credentials: 'include'
       })
@@ -51,7 +52,7 @@ export default function DocumentRecord() {
   const fetchDocuments = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:5000/purchase/pdfs', {
+      const response = await fetch(`${API_URL}/purchase/pdfs`, {
         method: 'GET',
         credentials: 'include'
       });

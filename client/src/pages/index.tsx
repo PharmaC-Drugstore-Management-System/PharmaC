@@ -17,6 +17,8 @@ import {
 import { ShoppingCart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function PharmaDashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -111,7 +113,7 @@ export default function PharmaDashboard() {
 
       console.log(`Running forecast with ${currentOptions.name} using model ${modelToSend.toUpperCase()}`);
 
-      const info = await fetch("http://localhost:5000/arima/forecast", {
+      const info = await fetch(`${API_URL}/arima/forecast`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -192,7 +194,7 @@ export default function PharmaDashboard() {
 
   const checkme = async () => {
     try {
-      const authme = await fetch("http://localhost:5000/api/me", {
+      const authme = await fetch(`${API_URL}/api/me`, {
         method: "GET",
         credentials: "include",
       });

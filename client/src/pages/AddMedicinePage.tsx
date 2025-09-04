@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import BarcodeScanner from "react-qr-barcode-scanner";
 import type { Result } from "@zxing/library";
-
+const API_URL = import.meta.env.VITE_API_URL;
 export default function AddMedicinePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -97,7 +97,7 @@ export default function AddMedicinePage() {
 
       if (image) payload.append("image", image, image.name);
 
-      const res = await fetch("http://localhost:5000/inventory/add-medicine", {
+      const res = await fetch(`${API_URL}/inventory/add-medicine`, {
         method: "POST",
         credentials: "include",
         body: payload,

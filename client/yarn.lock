@@ -892,6 +892,11 @@ detect-libc@^2.0.3:
   resolved "https://registry.npmjs.org/detect-libc/-/detect-libc-2.0.4.tgz"
   integrity sha512-3UDv+G9CsCKO1WKMGw9fwq/SWJYbI0c5Y7LU1AXYoDdbhE2AHQ6N6Nb34sG8Fj7T5APy8qXDCKuuIHd1BR0tVA==
 
+dotenv@^17.2.2:
+  version "17.2.2"
+  resolved "https://registry.npmjs.org/dotenv/-/dotenv-17.2.2.tgz"
+  integrity sha512-Sf2LSQP+bOlhKWWyhFsn0UsfdK/kCWRv1iuA2gXAwt3dyNabr6QSj00I2V10pidqz69soatm9ZwZvpQMTIOd5Q==
+
 electron-to-chromium@^1.5.73:
   version "1.5.140"
 
@@ -1587,10 +1592,10 @@ react-datepicker@^8.4.0:
   dependencies:
     scheduler "^0.26.0"
 
-react-i18next@^15.7.2:
-  version "15.7.2"
-  resolved "https://registry.npmjs.org/react-i18next/-/react-i18next-15.7.2.tgz"
-  integrity sha512-xJxq7ibnhUlMvd82lNC4te1GxGUMoM1A05KKyqoqsBXVZtEvZg/fz/fnVzdlY/hhQ3SpP/79qCocZOtICGhd3g==
+react-i18next@^15.7.3:
+  version "15.7.3"
+  resolved "https://registry.npmjs.org/react-i18next/-/react-i18next-15.7.3.tgz"
+  integrity sha512-AANws4tOE+QSq/IeMF/ncoHlMNZaVLxpa5uUGW1wjike68elVYr0018L9xYoqBr1OFO7G7boDPrbn0HpMCJxTw==
   dependencies:
     "@babel/runtime" "^7.27.6"
     html-parse-stringify "^3.0.1"
