@@ -15,25 +15,6 @@ type LotRow = {
     expirationDate: string;    // YYYY-MM-DD
 };
 
-type StockTransaction = {
-    stock_trans_id: number;
-    trans_type: 'IN' | 'OUT' | 'ADJUST';
-    qty: number;
-    trans_date: string;
-    ref_no: string;
-    note: string;
-    lot_id_fk: number;
-    lot?: {
-        lot_id: number;
-        lot_no: string;
-        product_id: number;
-        added_date: string;
-        expired_date: string;
-        cost: number;
-        init_amount: number;
-    };
-};
-
 type Medicine = {
     id: number;
     name: string;
@@ -350,12 +331,47 @@ export default function LotPage() {
             if (response.ok) {
                 const data = await response.json();
                 
-                if (data.status) {
+                if (data.status && data.data && data.data.lot_id) {
+                    const newLotId = data.data.lot_id;
+                    
+                    // Create stock transaction record for the new lot
+                    try {
+                        const stockTransactionData = {
+                            trans_type: 'IN',
+                            qty: parseInt(newLot.totalStock),
+                            trans_date: new Date().toISOString(),
+                            ref_no: `LOT-${newLot.lotNo}`,
+                            note: `add stock for new lot ${newLot.lotNo}`,
+                            lot_id_fk: newLotId
+                        };
+
+                        console.log('Creating stock transaction:', stockTransactionData);
+
+                        const stockResponse = await fetch(`${API_URL}/stock/add-stock`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(stockTransactionData)
+                        });
+
+                        if (stockResponse.ok) {
+                            const stockData = await stockResponse.json();
+                            console.log('Stock transaction created:', stockData);
+                        } else {
+                            console.error('Failed to create stock transaction');
+                        }
+                    } catch (stockError) {
+                        console.error('Error creating stock transaction:', stockError);
+                        // Don't fail the entire operation if stock transaction fails
+                    }
+                    
                     // Success - show success message and refresh data
                     Swal.fire({
                         icon: 'success',
                         title: 'Success!',
-                        text: 'Lot added successfully',
+                        text: 'Lot and stock record added successfully',
                         showConfirmButton: false,
                         timer: 2000,
                         timerProgressBar: true
@@ -804,9 +820,178 @@ export default function LotPage() {
 
                 {/* Stock Transactions Tab */}
                 {activeTab === 'transactions' && (
-                    <StockTransactionsTab lotId={id} />
+                    <StockTransactionsTab productId={id} />
                 )}
             </div>
+
+            {/* Add Lot Modal */}
+            {showAddLotModal && (
+                <div className="fixed inset-0 backdrop-blur-sm bg-opacity-80 flex items-center justify-center p-4 z-50">
+                    <div className="w-full max-w-md rounded-lg shadow-xl border border-gray-300"
+                        style={{
+                            backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : 'white',
+                            maxHeight: '90vh',
+                            overflowY: 'auto'
+                        }}>
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b"
+                            style={{ borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }}>
+                            <h3 className="text-lg font-semibold"
+                                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : '#111827' }}>
+                                Add New Lot
+                            </h3>
+                            <button
+                                onClick={handleCloseAddLotModal}
+                                className="p-2 rounded-md transition-colors"
+                                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                                <X className="w-5 h-5" color="red" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 space-y-4">
+                            {/* Lot Number */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    Lot Number *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newLot.lotNo}
+                                    onChange={(e) => handleLotInputChange('lotNo', e.target.value)}
+                                    placeholder="Enter lot number (e.g., L001, B12345)"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Stocked Date */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    Stocked Date *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={newLot.stockedDate}
+                                    onChange={(e) => handleLotInputChange('stockedDate', e.target.value)}
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Total Stock */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    Total Stock *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={newLot.totalStock}
+                                    onChange={(e) => handleLotInputChange('totalStock', e.target.value)}
+                                    placeholder="Enter total stock quantity"
+                                    min="1"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Cost per Unit */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    Cost per Unit *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={newLot.cost}
+                                    onChange={(e) => handleLotInputChange('cost', e.target.value)}
+                                    placeholder="Enter cost per unit"
+                                    min="0"
+                                    step="0.01"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Expiration Date */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    Expiration Date *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={newLot.expirationDate}
+                                    onChange={(e) => handleLotInputChange('expirationDate', e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]} // Cannot be in the past
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex justify-end space-x-3 p-6 border-t"
+                            style={{ borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }}>
+                            <button
+                                onClick={handleCloseAddLotModal}
+                                disabled={isAddingLot}
+                                className={`px-4 py-2 border rounded-md transition-colors ${
+                                    isAddingLot 
+                                        ? 'opacity-50 cursor-not-allowed' 
+                                        : 'hover:bg-gray-50'
+                                }`}
+                                style={{
+                                    borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                    color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151',
+                                    backgroundColor: 'transparent'
+                                }}>
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleAddLot}
+                                disabled={isAddingLot}
+                                className={`px-4 py-2 rounded-md transition-colors ${
+                                    isAddingLot 
+                                        ? 'bg-emerald-400 cursor-not-allowed' 
+                                        : 'bg-emerald-600 hover:bg-emerald-700'
+                                } text-white`}>
+                                {isAddingLot ? (
+                                    <span className="flex items-center">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                        Adding...
+                                    </span>
+                                ) : (
+                                    'Add Lot'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

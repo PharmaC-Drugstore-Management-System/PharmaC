@@ -11,9 +11,12 @@ const controller = {
     },
     get: async (req: any, res: any) => {
         try {
+            console.log('📥 GET /stock/get-stock called');
             const stockTrans = await stock_trans_service.getAllStockTrans();
+            console.log('📤 Sending response with', stockTrans.length, 'transactions');
             res.status(200).json(stockTrans);
         } catch (error) {
+            console.error('❌ Error in get controller:', error);
             res.status(500).json({ error: "Error fetching stock transactions" });
         }
     },
@@ -42,6 +45,32 @@ const controller = {
             res.status(200).json(transactions);
         } catch (error) {
             console.error('Error fetching transactions by lot:', error);
+            res.status(500).json({ error: 'Failed to fetch transactions' });
+        }
+    },
+
+    // Get transactions by product ID (all lots in product)
+    getByProductId: async (req: any, res: any) => {
+        try {
+            console.log('=== DEBUG CONTROLLER getByProductId ===');
+            console.log('Request params:', req.params);
+            console.log('Raw productId:', req.params.productId);
+            
+            const productId = parseInt(req.params.productId);
+            console.log('Parsed productId:', productId);
+            
+            if (isNaN(productId)) {
+                console.log('Invalid product ID detected');
+                return res.status(400).json({ error: 'Invalid product ID' });
+            }
+
+            const transactions = await stock_trans_service.getTransactionsByProduct(productId);
+            console.log('Transactions returned from service:', transactions.length);
+            console.log('==========================================');
+            
+            res.status(200).json(transactions);
+        } catch (error) {
+            console.error('Error fetching transactions by product:', error);
             res.status(500).json({ error: 'Failed to fetch transactions' });
         }
     },

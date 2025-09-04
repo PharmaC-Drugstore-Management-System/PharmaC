@@ -21,7 +21,7 @@ type StockTransaction = {
 };
 
 // Stock Transactions Component
-function StockTransactionsTab({ lotId }: { lotId: string }) {
+function StockTransactionsTab({ productId }: { productId: string }) {
     const [transactions, setTransactions] = useState<StockTransaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -33,15 +33,23 @@ function StockTransactionsTab({ lotId }: { lotId: string }) {
                 setLoading(true);
                 setError(null);
 
-                // Call the API endpoint to get stock transactions by lot ID
-                const response = await fetch(`http://localhost:5000/stock/lot/${lotId}`);
+                // Call the API endpoint to get stock transactions by product ID (all lots)
+                const response = await fetch(`http://localhost:5000/stock/product/${productId}`);
 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch transactions: ${response.statusText}`);
                 }
                 
                 const data = await response.json();
-                console.log('Fetched transactions:', data);
+                console.log('=== DEBUG STOCK TRANSACTIONS ===');
+                console.log('API URL:', `http://localhost:5000/stock/product/${productId}`);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                console.log('Raw response data:', data);
+                console.log('Data type:', typeof data);
+                console.log('Is array:', Array.isArray(data));
+                console.log('Data length:', data?.length);
+                console.log('================================');
                 setTransactions(data);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch transactions');
@@ -51,10 +59,10 @@ function StockTransactionsTab({ lotId }: { lotId: string }) {
             }
         };
 
-        if (lotId) {
+        if (productId) {
             fetchTransactions();
         }
-    }, [lotId]);
+    }, [productId]);
 
     if (loading) {
         return (
@@ -253,7 +261,7 @@ function StockTransactionsTab({ lotId }: { lotId: string }) {
 
                 <div className="text-sm"
                      style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                    📊 Stock Movement History Log
+                    📊 Stock Movement History (All Lots)
                 </div>
             </div>
 

@@ -20,7 +20,8 @@ const stock_trans_service = {
   },
   getAllStockTrans: async () => {
     try {
-      return await prisma.stock_transaction.findMany({
+      console.log('🔍 Fetching all stock transactions...');
+      const result = await prisma.stock_transaction.findMany({
         include: {
           lot: {
             include: {
@@ -32,7 +33,10 @@ const stock_trans_service = {
           trans_date: "desc",
         },
       });
+      console.log('✅ Found stock transactions:', result.length);
+      return result;
     } catch (error) {
+      console.error('❌ Error in getAllStockTrans:', error);
       throw new Error("Error fetching stock transactions");
     }
   },
@@ -79,6 +83,41 @@ const stock_trans_service = {
       });
     } catch (error) {
       throw new Error("Error fetching transactions by lot");
+    }
+  },
+
+  // Get transactions by product ID (all lots in product)
+  getTransactionsByProduct: async (productId: number) => {
+    try {
+      console.log('=== DEBUG SERVICE getTransactionsByProduct ===');
+      console.log('Searching for product ID:', productId);
+      
+      const transactions = await prisma.stock_transaction.findMany({
+        where: {
+          lot: {
+            product_id: productId,
+          },
+        },
+        include: {
+          lot: {
+            include: {
+              product: true,
+            },
+          },
+        },
+        orderBy: {
+          trans_date: "desc",
+        },
+      });
+      
+      console.log('Found transactions count:', transactions.length);
+      console.log('Transactions preview:', transactions.slice(0, 2));
+      console.log('==============================================');
+      
+      return transactions;
+    } catch (error) {
+      console.error('Error in getTransactionsByProduct:', error);
+      throw new Error("Error fetching transactions by product");
     }
   },
 
