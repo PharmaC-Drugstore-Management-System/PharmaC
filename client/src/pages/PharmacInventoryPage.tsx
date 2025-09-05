@@ -90,10 +90,11 @@ export default function PharmacInventoryPage() {
     ];
     setItems(mockData);
   };
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const checkme = async () => {
     try {
-      const authme = await fetch("http://localhost:5000/api/me", {
+      const authme = await fetch(`${API_URL}/api/me`, {
         method: "GET",
         credentials: "include",
       });

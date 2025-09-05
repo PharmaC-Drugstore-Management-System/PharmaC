@@ -39,13 +39,14 @@ export default function Header() {
 
   // Check if dark mode is enabled
   const isDark = document.documentElement.classList.contains('dark');
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const checkme = async () => {
     try {
       console.log("Loading profile data from API...");
 
       // Step 1: Get employee_id from JWT token
-      const authResponse = await fetch("http://localhost:5000/api/me", {
+      const authResponse = await fetch(`${API_URL}/api/me`, {
         method: "GET",
         credentials: "include",
       });
@@ -69,7 +70,7 @@ export default function Header() {
 
       // Step 2: Use employee_id to get full account details
       const accountResponse = await fetch(
-        "http://localhost:5000/acc/account-detail",
+        "http://localhost:3000/acc/account-detail",
         {
           method: "POST",
           headers: {
@@ -115,7 +116,7 @@ export default function Header() {
       );
 
       const response = await fetch(
-        "http://localhost:5000/order/latest?limit=20",
+        "http://localhost:3000/order/latest?limit=20",
         {
           method: "GET",
           credentials: "include",
@@ -213,7 +214,7 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       // Call logout API
-      await fetch("http://localhost:5000/api/logout", {
+      await fetch(`${API_URL}api/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -244,7 +245,7 @@ export default function Header() {
     loadInitialNotifications();
 
     // Initialize Socket.IO connection for real-time notifications
-    const socketConnection = io("http://localhost:5000", {
+    const socketConnection = io("http://localhost:3000", {
       transports: ["websocket"],
     });
 
@@ -595,7 +596,7 @@ export default function Header() {
                           src={
                             userProfile.profile_image.startsWith("http")
                               ? userProfile.profile_image
-                              : `http://localhost:5000/uploads/${userProfile.profile_image}`
+                              : `http://localhost:3000/uploads/${userProfile.profile_image}`
                           }
                           alt="Profile"
                           className="w-full h-full object-cover rounded-full"
