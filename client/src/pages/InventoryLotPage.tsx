@@ -117,52 +117,86 @@ export default function LotPage() {
                 : "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1600&auto=format&fit=crop";
 
     return (
-        <div className="min-h-screen bg-[#f7f8fa]">
+        <div className="min-h-screen"
+             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f7f8fa'}}>
             {/* Top */}
             <div className="px-6 pt-6">
-                <h1 className="text-2xl font-semibold text-gray-900">Medicine</h1>
+                <h1 className="text-2xl font-semibold"
+                    style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>Medicine</h1>
             </div>
 
             <div className="px-6 py-4">
                 {/* Breadcrumb (no warehouses) */}
-                <div className="text-sm text-gray-500 mb-3">
-                    <Link to="/inventory" className="text-emerald-700 hover:underline">Inventory</Link>
+                <div className="text-sm mb-3"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                    <Link to="/inventory" className="text-emerald-600 hover:underline">Inventory</Link>
                     <span className="mx-1">›</span>
-                    <span className="text-gray-800 font-medium">{med.name}</span>
+                    <span className="font-medium"
+                          style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>{med.name}</span>
                 </div>
 
                 {/* Header cards (same theme as your inventory) */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center">
+                    <div className="border rounded-lg p-4 flex items-center"
+                         style={{
+                           backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                           borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                         }}>
                         <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3">
                             <Pill className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div className="flex-1">
-                            <div className="text-sm text-gray-500">Total Lots</div>
-                            <div className="text-2xl font-bold text-gray-900">{lots.length}</div>
+                            <div className="text-sm"
+                                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Total Lots</div>
+                            <div className="text-2xl font-bold"
+                                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{lots.length}</div>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center">
+                    <div className="border rounded-lg p-4 flex items-center"
+                         style={{
+                           backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                           borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                         }}>
                         <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3">
                             <Box className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div className="flex-1">
-                            <div className="text-sm text-gray-500">Available Units</div>
-                            <div className="text-2xl font-bold text-gray-900">{available}</div>
+                            <div className="text-sm"
+                                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Available Units</div>
+                            <div className="text-2xl font-bold"
+                                 style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{available}</div>
                         </div>
                     </div>
 
-                    <div className={`rounded-lg p-4 border ${expSoon > 0 ? "bg-gradient-to-r from-orange-500 to-red-500 border-orange-200" : "bg-white border-gray-200"}`}>
+                    <div className={`rounded-lg p-4 border ${expSoon > 0 ? "bg-gradient-to-r from-orange-500 to-red-500 border-orange-200" : ""}`}
+                         style={{
+                           backgroundColor: expSoon > 0 ? undefined : (document.documentElement.classList.contains('dark') ? '#374151' : 'white'),
+                           borderColor: expSoon > 0 ? undefined : (document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb')
+                         }}>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                                <Calendar className={`w-8 h-8 ${expSoon > 0 ? "text-white" : "text-gray-400"}`} />
+                                <Calendar className={`w-8 h-8 ${expSoon > 0 ? "text-white" : (document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280')}`} />
                                 <div className="ml-3">
-                                    <div className={`text-sm ${expSoon > 0 ? "text-orange-100" : "text-gray-500"}`}>Expire Soon</div>
-                                    <div className={`text-2xl font-bold ${expSoon > 0 ? "text-white" : "text-gray-900"}`}>{expSoon}</div>
+                                    <div className={`text-sm ${expSoon > 0 ? "text-orange-100" : (document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280')}`}>Expire Soon</div>
+                                    <div className={`text-2xl font-bold ${expSoon > 0 ? "text-white" : (document.documentElement.classList.contains('dark') ? 'white' : '#111827')}`}>{expSoon}</div>
                                 </div>
                             </div>
-                            <button className={`px-3 py-1 rounded-md text-sm font-medium ${expSoon > 0 ? "bg-white/20 text-white hover:bg-white/30" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>
+                            <button className={`px-3 py-1 rounded-md text-sm font-medium ${expSoon > 0 ? "bg-white/20 text-white hover:bg-white/30" : ""}`}
+                                    style={{
+                                      backgroundColor: expSoon > 0 ? undefined : (document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6'),
+                                      color: expSoon > 0 ? undefined : (document.documentElement.classList.contains('dark') ? 'white' : '#374151')
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      if (expSoon === 0) {
+                                        e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb';
+                                      }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (expSoon === 0) {
+                                        e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6';
+                                      }
+                                    }}>
                                 Manage
                             </button>
                         </div>
@@ -173,8 +207,16 @@ export default function LotPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Medicine details */}
                     <div className="lg:col-span-3">
-                        <div className="bg-white border border-gray-200 rounded-lg p-4">
-                            <div className="h-48 md:h-56 w-full overflow-hidden rounded-md mb-4 border border-gray-100 bg-white">
+                        <div className="border rounded-lg p-4"
+                             style={{
+                               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                             }}>
+                            <div className="h-48 md:h-56 w-full overflow-hidden rounded-md mb-4 border"
+                                 style={{
+                                   backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                   borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#f3f4f6'
+                                 }}>
                                 <img
                                     src={med.image!} // you set a fixed mock URL in MOCK_MEDICINES
                                     alt={med.name}
@@ -197,37 +239,45 @@ export default function LotPage() {
                             </div>
                             <div className="space-y-2">
                                 <div>
-                                    <div className="text-xs text-gray-500">Name</div>
-                                    <div className="text-gray-900 font-medium">{med.name}</div>
+                                    <div className="text-xs"
+                                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Name</div>
+                                    <div className="font-medium"
+                                         style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>{med.name}</div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
-                                        <div className="text-xs text-gray-500">Brand</div>
-                                        <div className="text-gray-800">{med.brand}</div>
+                                        <div className="text-xs"
+                                             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Brand</div>
+                                        <div style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>{med.brand}</div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-gray-500">Type</div>
-                                        <div className="text-gray-800">{med.productType ?? "-"}</div>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <div className="text-xs text-gray-500">Unit</div>
-                                        <div className="text-gray-800">{med.unit ?? "-"}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-gray-500">Controlled</div>
-                                        <div className="text-gray-800">{med.isControlled ? "Yes" : "No"}</div>
+                                        <div className="text-xs"
+                                             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Type</div>
+                                        <div style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>{med.productType ?? "-"}</div>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
-                                        <div className="text-xs text-gray-500">Price</div>
-                                        <div className="text-gray-800">{med.price}</div>
+                                        <div className="text-xs"
+                                             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Unit</div>
+                                        <div style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>{med.unit ?? "-"}</div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-gray-500">Next Expiration</div>
-                                        <div className="text-gray-800">{fmt(med.expiredDate)}</div>
+                                        <div className="text-xs"
+                                             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Controlled</div>
+                                        <div style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>{med.isControlled ? "Yes" : "No"}</div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <div className="text-xs"
+                                             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Price</div>
+                                        <div style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>{med.price}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-xs"
+                                             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Next Expiration</div>
+                                        <div style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>{fmt(med.expiredDate)}</div>
                                     </div>
                                 </div>
                             </div>
@@ -236,14 +286,23 @@ export default function LotPage() {
 
                     {/* Lots table */}
                     <div className="lg:col-span-9">
-                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="border rounded-lg overflow-hidden"
+                             style={{
+                               backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                             }}>
                             <div className="p-4 flex items-center justify-between">
                                 <button className="inline-flex items-center px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700">
                                     <Plus className="w-4 h-4 mr-1" /> Add New Lot
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-100 border-t border-b border-gray-200 text-sm font-medium text-gray-700">
+                            <div className="grid grid-cols-12 gap-4 px-6 py-3 border-t border-b text-sm font-medium"
+                                 style={{
+                                   backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                                   borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                                   color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                                 }}>
                                 <div className="col-span-2">Lot no.</div>
                                 <div className="col-span-2">Stocked Date</div>
                                 <div className="col-span-2">Total Stock Unit</div>
@@ -252,11 +311,13 @@ export default function LotPage() {
                                 <div className="col-span-2">Expiration Date</div>
                             </div>
 
-                            <div className="divide-y divide-gray-200">
+                            <div className="divide-y"
+                                 style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
                                 {lots.map((r) => {
                                     const exp = expStatus(r.expirationDate);
                                     return (
-                                        <div key={r.lotNo} className="grid grid-cols-12 gap-4 px-6 py-4 text-gray-800">
+                                        <div key={r.lotNo} className="grid grid-cols-12 gap-4 px-6 py-4"
+                                             style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>
                                             <div className="col-span-2">{r.lotNo}</div>
                                             <div className="col-span-2">{fmt(r.stockedDate)}</div>
                                             <div className="col-span-2">{r.totalStock}</div>
@@ -267,7 +328,8 @@ export default function LotPage() {
                                                     <span className={`inline-block w-2 h-2 rounded-full mr-2 ${exp.dot}`} />
                                                     {exp.label}
                                                 </span>
-                                                <button className="text-gray-400 hover:text-gray-600">
+                                                <button className="hover:text-gray-600"
+                                                        style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                                                     <MoreVertical className="w-5 h-5" />
                                                 </button>
                                             </div>
@@ -276,14 +338,20 @@ export default function LotPage() {
                                 })}
                             </div>
 
-                            <div className="px-6 py-3 bg-gray-50 text-sm text-gray-500">
-                                Total stock: <span className="text-gray-800 font-medium">{total}</span> • Available:{" "}
-                                <span className="text-gray-800 font-medium">{available}</span>
+                            <div className="px-6 py-3 text-sm"
+                                 style={{
+                                   backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                                   color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
+                                 }}>
+                                Total stock: <span className="font-medium"
+                                                   style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>{total}</span> • Available:{" "}
+                                <span className="font-medium"
+                                      style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937'}}>{available}</span>
                             </div>
                         </div>
 
                         <div className="mt-4">
-                            <Link to="/inventory" className="text-emerald-700 hover:text-emerald-800 text-sm font-medium">
+                            <Link to="/inventory" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
                                 ← Back to Inventory
                             </Link>
                         </div>

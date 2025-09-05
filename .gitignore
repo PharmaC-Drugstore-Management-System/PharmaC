@@ -5,3 +5,5 @@ server/prisma/schema.prisma
 server/prisma/schema.prisma
 payment-test.md
 *.prisma
+server/package-lock.json
+server/prisma/schema.prisma

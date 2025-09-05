@@ -30,6 +30,7 @@ interface Order {
 }
 
 const CustomerPaymentPage: React.FC = () => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const { logout } = useAuth();
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
@@ -49,7 +50,7 @@ const CustomerPaymentPage: React.FC = () => {
       setConnectionStatus('connecting');
 
       // Connect to Socket.IO server
-      const socket = io('http://localhost:5000', {
+      const socket = io(`${API_URL}`, {
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 10,
@@ -148,7 +149,7 @@ const CustomerPaymentPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/payment/check',
+      const response = await fetch(`${API_URL}/payment/check`,
         {
           method: 'POST',
           headers: {

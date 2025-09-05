@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = 'dark' | 'light';
 
 type ThemeProviderProps = {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: 'system',
+  theme: 'light',
   setTheme: () => null,
 };
 
@@ -22,35 +22,55 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = 'system',
-  storageKey = 'ui-theme',
+  defaultTheme = 'light',
+  storageKey = 'pharmaC-theme',
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+    () => {
+      const stored = localStorage.getItem(storageKey) as Theme;
+      return (stored === 'dark' || stored === 'light') ? stored : defaultTheme;
+    }
   );
 
+  // Apply theme immediately on mount and whenever theme changes
   useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light';
-      root.classList.add(systemTheme);
-      return;
-    }
-
-    root.classList.add(theme);
+    applyTheme(theme);
   }, [theme]);
+
+  const applyTheme = (newTheme: Theme) => {
+    const root = document.documentElement;
+    const body = document.body;
+    
+    // Remove all theme classes
+    root.classList.remove('light', 'dark');
+    body.classList.remove('light', 'dark');
+    
+    // Add new theme class
+    root.classList.add(newTheme);
+    body.classList.add(newTheme);
+    
+    // Force immediate reflow
+    root.offsetHeight;
+    body.offsetHeight;
+  };
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      // Apply theme immediately before state update
+      applyTheme(newTheme);
+      
+      // Update localStorage
+      localStorage.setItem(storageKey, newTheme);
+      
+      // Update state
+      setTheme(newTheme);
+      
+      // Force another reflow to ensure update
+      setTimeout(() => {
+        applyTheme(newTheme);
+      }, 0);
     },
   };
 

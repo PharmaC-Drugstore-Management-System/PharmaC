@@ -1,63 +1,88 @@
 import { ChevronLeft, Mail, Phone, MapPin, Github, Linkedin, Code } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function ContactUsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const developers = [
     {
       id: 1,
       name: 'Kampol Suwannatham',
-      position: 'Full Stack Developer',
-      role: 'Junior Developer',
-      image: '/api/placeholder/150/150', // placeholder until you add real photos
-      email: 'dev1@pharmac.com',
-      phone: '081-xxx-xxxx',
-      github: 'https://github.com/dev1',
-      linkedin: 'https://linkedin.com/in/dev1',
-      description: 'เชี่ยวชาญด้าน React, TypeScript และ UI/UX Design'
+      position: t('fullStackDeveloper'),
+      role: t('juniorDeveloper'),
+      image: '/images/developers/mond_dev.png', 
+      email: 'kampol.suwannatham@gmail.com',
+      phone: '091-946-3346',
+      github: 'https://github.com/llSaiMonDll',
+      
+      description: t('specializedReact')
     },
     {
       id: 2,
       name: 'Ratchada Prompong',
-      position: 'Full Stack Developer',
-      role: 'Junior Developer',
-      image: '/api/placeholder/150/150',
+      position: t('fullStackDeveloper'),
+      role: t('juniorDeveloper'),
+      image: '/images/developers/ink_dev.png', 
       email: 'dev2@pharmac.com',
       phone: '082-xxx-xxxx',
-      github: 'https://github.com/dev2',
-      linkedin: 'https://linkedin.com/in/dev2',
-      description: 'เชี่ยวชาญด้าน Node.js, Database และ API Development'
+      github: '#',
+      description: t('specializedNode')
     },
     {
       id: 3,
       name: 'Issadame Damero',
-      position: 'Full Stack Developer',
-      role: 'Junior Developer',
-      image: '/api/placeholder/150/150',
+      position: t('fullStackDeveloper'),
+      role: t('juniorDeveloper'),
+      image: '/images/developers/neo_dev.png', 
       email: 'dev3@pharmac.com',
       phone: '083-xxx-xxxx',
-      github: 'https://github.com/dev3',
-      linkedin: 'https://linkedin.com/in/dev3',
-      description: 'เชี่ยวชาญด้าน Full Stack Development และ DevOps'
+      github: '#',
+      description: t('specializedFullStack')
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen"
+         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="shadow-sm border-b"
+           style={{
+             backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+             borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+           }}>
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center">
             <button
-              className="flex items-center justify-center w-10 h-10 bg-green-600 hover:bg-gray-700 rounded-full mr-4 shadow-md hover:shadow-lg transition-all duration-200"
+              className="flex items-center justify-center w-10 h-10 rounded-full mr-4 shadow-md transition-all duration-200"
+              style={{
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#059669' : '#16a34a',
+                color: 'white'
+              }}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#047857' : '#15803d';
+                target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#059669' : '#16a34a';
+                target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+              }}
               onClick={() => navigate('/settings')}
             >
               <ChevronLeft className="w-5 h-5 text-white" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">ติดต่อเรา</h1>
-              <p className="text-sm text-gray-600 mt-1">Contact Us - PharmaC Development Team</p>
+              <h1 className="text-2xl font-bold"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                {t('contactUsPage')}
+              </h1>
+              <p className="text-sm mt-1"
+                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}}>
+                {t('contactUsSubtitle')}
+              </p>
             </div>
           </div>
         </div>
@@ -65,23 +90,41 @@ export default function ContactUsPage() {
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Introduction */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-8 text-center">
+        <div className="rounded-lg shadow-md p-8 mb-8 text-center"
+             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
           <div className="flex items-center justify-center mb-4">
-            <Code className="w-8 h-8 text-gray-600 mr-3" />
-            <h2 className="text-2xl font-bold text-gray-900">ทีมพัฒนา PharmaC</h2>
+            <Code className="w-8 h-8 mr-3"
+                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}} />
+            <h2 className="text-2xl font-bold"
+                style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+              {t('pharmacDevelopmentTeam')}
+            </h2>
           </div>
-          <p className="text-gray-700 leading-relaxed max-w-3xl mx-auto">
-            เราเป็นทีมนักพัฒนา 3 คนที่มุ่งมั่นในการสร้างระบบจัดการร้านขายยาที่ดีที่สุด 
-            ด้วยความเชี่ยวชาญและประสบการณ์ในการพัฒนาซอฟต์แวร์ เราพร้อมให้บริการและสนับสนุนคุณตลอดการใช้งาน
+          <p className="leading-relaxed max-w-3xl mx-auto"
+             style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+            {t('developmentTeamIntro')}
           </p>
         </div>
 
         {/* Development Team */}
         <div className="mb-8">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">Meet Our Development Team</h3>
+          <h3 className="text-xl font-semibold mb-6 text-center"
+              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+            {t('meetOurTeam')}
+          </h3>
           <div className="grid md:grid-cols-3 gap-8">
             {developers.map((dev) => (
-              <div key={dev.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div key={dev.id} 
+                   className="rounded-lg shadow-md overflow-hidden transition-all duration-300"
+                   style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}
+                   onMouseEnter={(e) => {
+                     const target = e.target as HTMLDivElement;
+                     target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                   }}
+                   onMouseLeave={(e) => {
+                     const target = e.target as HTMLDivElement;
+                     target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                   }}>
                 {/* Profile Image */}
                 <div className="relative">
                   <div className="w-full h-64 bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center">
@@ -99,31 +142,43 @@ export default function ContactUsPage() {
                               <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-3">
                                 <span class="text-2xl font-bold">${dev.name.charAt(0)}</span>
                               </div>
-                              <p class="text-sm">รูปภาพจะมาภายหลัง</p>
+                              <p class="text-sm">${t('photoComingSoon')}</p>
                             </div>
                           `;
                         }
                       }}
                     />
                   </div>
-                  <div className="absolute top-4 right-4 bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                  <div className="absolute top-4 right-4 text-white px-3 py-1 rounded-full text-xs font-medium"
+                       style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#4b5563'}}>
                     {dev.role}
                   </div>
                 </div>
 
                 {/* Profile Info */}
                 <div className="p-6">
-                  <h4 className="text-xl font-bold text-gray-900 mb-1">{dev.name}</h4>
-                  <p className="text-gray-600 font-medium mb-3">{dev.position}</p>
-                  <p className="text-gray-700 text-sm mb-4 leading-relaxed">{dev.description}</p>
+                  <h4 className="text-xl font-bold mb-1"
+                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                    {dev.name}
+                  </h4>
+                  <p className="font-medium mb-3"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}}>
+                    {dev.position}
+                  </p>
+                  <p className="text-sm mb-4 leading-relaxed"
+                     style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+                    {dev.description}
+                  </p>
 
                   {/* Contact Info */}
                   <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}}>
                       <Mail className="w-4 h-4 mr-2" />
                       <span>{dev.email}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}}>
                       <Phone className="w-4 h-4 mr-2" />
                       <span>{dev.phone}</span>
                     </div>
@@ -135,18 +190,23 @@ export default function ContactUsPage() {
                       href={dev.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                      className="p-2 rounded-full transition-colors"
+                      style={{
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6'
+                      }}
+                      onMouseEnter={(e) => {
+                        const target = e.target as HTMLAnchorElement;
+                        target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb';
+                      }}
+                      onMouseLeave={(e) => {
+                        const target = e.target as HTMLAnchorElement;
+                        target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6';
+                      }}
                     >
-                      <Github className="w-4 h-4 text-gray-600" />
+                      <Github className="w-4 h-4"
+                              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}} />
                     </a>
-                    <a
-                      href={dev.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-                    >
-                      <Linkedin className="w-4 h-4 text-gray-600" />
-                    </a>
+                  
                   </div>
                 </div>
               </div>
@@ -155,52 +215,86 @@ export default function ContactUsPage() {
         </div>
 
         {/* Contact Information */}
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">ข้อมูลการติดต่อ</h3>
+        <div className="rounded-lg shadow-md p-8"
+             style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+          <h3 className="text-xl font-semibold mb-6 text-center"
+              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+            {t('contactInformation')}
+          </h3>
           <div className="grid md:grid-cols-2 gap-8">
             {/* Company Info */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">ข้อมูลบริษัท</h4>
+              <h4 className="font-semibold mb-4"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                {t('companyInformation')}
+              </h4>
               <div className="space-y-3">
                 <div className="flex items-start">
-                  <MapPin className="w-5 h-5 text-gray-600 mr-3 mt-0.5" />
+                  <MapPin className="w-5 h-5 mr-3 mt-0.5"
+                          style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}} />
                   <div>
-                    <p className="font-medium text-gray-900">PharmaC Development</p>
-                    <p className="text-gray-700 text-sm">
-                      123 ถนนเทคโนโลยี<br />
-                      แขวงเทคโนโลยี เขตนวัตกรรม<br />
-                      กรุงเทพมหานคร 10400
+                    <p className="font-medium"
+                       style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                      {t('pharmacDevelopment')}
+                    </p>
+                    <p className="text-sm"
+                       style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+                      {t('companyAddress').split('\n').map((line, index) => (
+                        <span key={index}>
+                          {line}
+                          {index < t('companyAddress').split('\n').length - 1 && <br />}
+                        </span>
+                      ))}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <Phone className="w-5 h-5 text-gray-600 mr-3" />
-                  <span className="text-gray-700">02-xxx-xxxx</span>
+                  <Phone className="w-5 h-5 mr-3"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}} />
+                  <span style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+                    02-xxx-xxxx
+                  </span>
                 </div>
                 <div className="flex items-center">
-                  <Mail className="w-5 h-5 text-gray-600 mr-3" />
-                  <span className="text-gray-700">contact@pharmac.com</span>
+                  <Mail className="w-5 h-5 mr-3"
+                        style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'}} />
+                  <span style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
+                    contact@pharmac.com
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Support Info */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">การสนับสนุน</h4>
-              <div className="space-y-3 text-sm text-gray-700">
+              <h4 className="font-semibold mb-4"
+                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                {t('support')}
+              </h4>
+              <div className="space-y-3 text-sm"
+                   style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
                 <div>
-                  <p className="font-medium text-gray-900 mb-1">เวลาทำการ</p>
-                  <p>จันทร์ - ศุกร์: 9:00 - 18:00 น.</p>
-                  <p>เสาร์ - อาทิตย์: 9:00 - 17:00 น.</p>
+                  <p className="font-medium mb-1"
+                     style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                    {t('businessHours')}
+                  </p>
+                  <p>{t('mondayFriday')}</p>
+                  <p>{t('saturdaySunday')}</p>
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 mb-1">การตอบกลับ</p>
-                  <p>อีเมล์: ภายใน 24 ชั่วโมง</p>
-                  <p>โทรศัพท์: ทันทีในเวลาทำการ</p>
+                  <p className="font-medium mb-1"
+                     style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                    {t('responseTime')}
+                  </p>
+                  <p>{t('emailResponse')}</p>
+                  <p>{t('phoneResponse')}</p>
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 mb-1">ภาษาที่รองรับ</p>
-                  <p>ไทย, English</p>
+                  <p className="font-medium mb-1"
+                     style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
+                    {t('supportedLanguages')}
+                  </p>
+                  <p>{t('thaiEnglish')}</p>
                 </div>
               </div>
             </div>
@@ -211,9 +305,23 @@ export default function ContactUsPage() {
         <div className="mt-8 text-center">
           <button
             onClick={() => navigate('/settings')}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+            className="font-semibold px-8 py-3 rounded-lg shadow-md transition-all duration-200"
+            style={{
+              backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#4b5563',
+              color: 'white'
+            }}
+            onMouseEnter={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#374151' : '#374151';
+              target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            }}
+            onMouseLeave={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#4b5563';
+              target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+            }}
           >
-            กลับไปหน้าตั้งค่า
+            {t('backToSettings')}
           </button>
         </div>
       </div>

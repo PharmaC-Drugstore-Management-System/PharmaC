@@ -1,4 +1,5 @@
 import paymentService from "../services/payment.service";
+import { emitPaymentStatusUpdate } from "../../ws";
 
 const controller = {
   paymentIntents: async (req: any, res: any) => {
@@ -59,12 +60,29 @@ const controller = {
   },
   paymentCheck: async (req: any, res: any) => {
       try {
-        const { pi, order_id } = req.body;
+        const { pi, order_id, skipWebSocket = false } = req.body;
         const response = await paymentService.check(pi);
         console.log(response)
         if(response === 'succeeded'){
           await paymentService.updateStatus(order_id)
         }
+        
+        // Only emit WebSocket event if not skipped
+        if (!skipWebSocket) {
+          // Emit WebSocket event for real-time updates
+          const statusData = {
+            paymentIntentId: pi,
+            orderId: order_id,
+            status: response,
+            timestamp: new Date().toISOString()
+          };
+          
+          console.log("💳 Emitting payment status update via WebSocket:", statusData);
+          emitPaymentStatusUpdate(statusData);
+        } else {
+          console.log("🔇 Skipping WebSocket emission for database-only update");
+        }
+        
         return res.status(200).json({ success: true, status: response });
       } catch (error: any) {
         return res.status(500).json({ success: false, error: error.message });

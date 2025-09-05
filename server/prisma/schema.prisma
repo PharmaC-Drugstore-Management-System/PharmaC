@@ -152,8 +152,7 @@ model model {
 }
 
 model order {
-  time              DateTime?       @db.Date
-  date              DateTime?       @db.Date
+  date              DateTime?       @db.Timestamp(6)
   total_amount      Int?
   total_price       Float?          @db.Real
   vat               Float?          @db.Real
@@ -207,7 +206,7 @@ model product {
 
 model purchase_document {
   description          String?       @db.VarChar
-  issue_date           DateTime?     @db.Date
+  issue_date           DateTime?     @db.Timestamp(6)
   document_id          Int?
   employee_id          Int?
   pdf_file             Bytes?
@@ -324,10 +323,11 @@ model trend {
 }
 
 model po_signature {
-  signer_name        String              @db.VarChar(255)
-  cert_serial_number String?             @db.VarChar(128)
-  signature_hash     String?             @db.Char(64)
-  signed_at          DateTime?           @db.Timestamp(6)
-  id                 Int                 @id(map: "po_signature_pk") @default(autoincrement())
-  purchase_document  purchase_document[]
+  signer_name       String              @db.VarChar(255)
+  signed_at         DateTime?           @db.Timestamp(6)
+  id                Int                 @id(map: "po_signature_pk") @default(autoincrement())
+  signature_image   String?             @db.VarChar(500)
+  purchase_document purchase_document[]
+
+  @@map("po_signature")
 }

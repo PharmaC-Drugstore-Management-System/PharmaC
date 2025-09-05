@@ -1,14 +1,7 @@
-@import "tailwindcss";
+@import "tailwindcss/preflight"; /* reset CSS ของ Tailwind */
+@import "tailwindcss/theme";     /* utilities หลัก เช่น text, bg, flex */
+@import "tailwindcss/utilities"; /* class utilities */
 
-/* Dark mode styles */
-/* .dark {
-  color-scheme: dark;
-}
-
-.dark body {
-  background-color: #111827;
-  color: #f9fafb;
-} */
 
 @page {
   size: A3 portrait !important;

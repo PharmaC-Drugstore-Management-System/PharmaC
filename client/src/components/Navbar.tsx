@@ -9,7 +9,8 @@ import {
   ClipboardCheck,
   ShoppingCart
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // <-- Add this line
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // Tooltip Component
 interface TooltipProps {
@@ -42,19 +43,20 @@ const Tooltip: React.FC<TooltipProps> = ({ children, text }) => {
 };
 
 export default function NavbarComponent() {
-  const [activeTab, setActiveTab] = useState(0); // Set default
-  const navigate = useNavigate(); // <-- Add this line
+  const [activeTab, setActiveTab] = useState(0);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const navigationItems = [
-    { name: 'หน้าหลัก', icon: LayoutGrid, path: '/' },
-    { name: 'คลังสินค้า', icon: Inbox, path: '/inventory' },
-    { name: 'จุดขาย', icon: ShoppingCart, path: '/pos' },
-    { name: 'สถิติ', icon: BarChart3, path: '/statistic' },
-    { name: 'ติดตามหมดอายุ', icon: Clock, path: '/expiry-monitor' },
-    { name: 'บันทึกเอกสาร', icon: FileText, path: '/doc-record' },
-    { name: 'บันทึกคำสั่งซื้อ', icon: ClipboardCheck, path: '/order-record' },
-    { name: 'จัดการสมาชิก', icon: null, path: '/membership' }, // Custom icon
-    { name: 'ตั้งค่า', icon: Settings, path: '/settings' }
+    { name: t('home'), icon: LayoutGrid, path: '/' },
+    { name: t('inventory'), icon: Inbox, path: '/inventory' },
+    { name: t('pointOfSale'), icon: ShoppingCart, path: '/pos' },
+    { name: t('statistics'), icon: BarChart3, path: '/statistic' },
+    { name: t('expiryMonitor'), icon: Clock, path: '/expiry-monitor' },
+    { name: t('documentRecords'), icon: FileText, path: '/doc-record' },
+    { name: t('orderRecords'), icon: ClipboardCheck, path: '/order-record' },
+    { name: t('memberManagement'), icon: null, path: '/membership' },
+    { name: t('settings'), icon: Settings, path: '/settings' }
   ];
 
   const handleTabClick = (index: number): void => {
@@ -64,13 +66,13 @@ export default function NavbarComponent() {
 
    return (
     <div className="h-screen flex items-center">
-      <div className="bg-teal-600 flex flex-col items-center rounded-[20px]" style={{ width: '60px', height: '85vh', marginLeft: '20px', marginRight: '20px' }}>
+      <div className="bg-teal-600 dark:bg-teal-700 flex flex-col items-center rounded-[20px]" style={{ width: '60px', height: '85vh', marginLeft: '20px', marginRight: '20px' }}>
         <div className="flex flex-col items-center justify-between h-full py-8">
           <div className="flex flex-col space-y-6">
             {navigationItems.map((item, index) => (
               <Tooltip key={index} text={item.name}>
                 <div 
-                  className={`flex items-center justify-center w-10 h-10 ${activeTab === index ? 'bg-white rounded-full' : ''} cursor-pointer transition-all duration-200 hover:scale-110`}
+                  className={`flex items-center justify-center w-10 h-10 ${activeTab === index ? 'bg-white dark:bg-gray-200 rounded-full' : ''} cursor-pointer transition-all duration-200 hover:scale-110`}
                   onClick={() => handleTabClick(index)}
                 >
                   {item.icon ? (

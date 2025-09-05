@@ -51,6 +51,14 @@ export default function LoginPage() {
     console.log("Login attempt:", { email, password, rememberMe });
     handleLogin();
   };
+
+  // Handle Enter key press
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleLogin();
+    }
+  };
   // Show loading spinner while checking authentication
   if (loading) {
     return (
@@ -63,7 +71,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col lg:flex-row">
       {/* Left Panel - Login Form */}
-      <div className="w-full lg:w-1/2 bg-[#FAF9F8] flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0" style={{ fontFamily: "'Assistant', sans-serif" }}>
+      <div className="w-full lg:w-1/2 bg-gray-50 dark:bg-gray-900 flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0" style={{ fontFamily: "'Assistant', sans-serif" }}>
         <div className="w-full max-w-sm sm:max-w-md">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
@@ -79,7 +87,7 @@ export default function LoginPage() {
 
           {/* Login Form */}
           <div className="space-y-4 sm:space-y-6">
-            <div className=" bg-[#FAF9F8] rounded-lg p-4 sm:p-6 border border-gray-300 shadow-sm">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 sm:p-6 border border-gray-300 dark:border-gray-600 shadow-sm">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">
                 Login
               </h2>
@@ -92,6 +100,7 @@ export default function LoginPage() {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={handleKeyPress}
                   className="w-full pl-8 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   required
                 />
@@ -105,6 +114,7 @@ export default function LoginPage() {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={handleKeyPress}
                   className="w-full pl-8 sm:pl-10 pr-10 sm:pr-12 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   required
                 />
@@ -168,7 +178,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Panel - Promotional Content */}
-      <div className="w-full lg:w-1/2 bg-[#D6CCC2] flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0 relative overflow-hidden min-h-64 lg:min-h-screen">
+      <div className="w-full lg:w-1/2 bg-teal-100 dark:bg-teal-900 flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0 relative overflow-hidden min-h-64 lg:min-h-screen">
         {/* Main Content */}
         <div className="text-center z-10">
           <h2 className="font-tenor text-2xl sm:text-3xl lg:text-4xl  text-gray-800 mb-4 px-4" style={{ fontFamily: '"Tenor Sans", sans-serif' }}>

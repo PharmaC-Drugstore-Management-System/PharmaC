@@ -30,13 +30,15 @@ const forecast_service = {
   getForecastService: async (
     historicalData: HistoricalData[],
     forecastPeriods: number = 12,
-    testSizeMonths: number = 6
+    testSizeMonths: number = 6,
+    model_type : string
   ): Promise<ForecastResult> => {
     return new Promise((resolve, reject) => {
       const inputData = JSON.stringify({
         revenue_data: historicalData,
         forecast_periods: forecastPeriods,
         test_size_months: testSizeMonths,
+        model_type : model_type
       });
 
       console.log(`Attempting to run Python executable at: ${PYTHON_EXECUTABLE}`);
@@ -69,13 +71,13 @@ const forecast_service = {
         try {
           const result: ForecastResult = JSON.parse(pythonOutput);
           if (result.error) {
-            return reject({ error: 'ARIMA model error', details: result.error, rawOutput: result.rawOutput || pythonOutput });
+            return reject({ error: 'Model error', details: result.error, rawOutput: result.rawOutput || pythonOutput });
           }
           resolve(result);
         } catch (parseError: any) {
           console.error(`Failed to parse Python output: ${parseError}`);
           console.error(`Raw Python output: ${pythonOutput}`);
-          reject({ error: 'Failed to parse ARIMA model output', details: parseError.message, rawOutput: pythonOutput });
+          reject({ error: 'Failed to parse Model output', details: parseError.message, rawOutput: pythonOutput });
         }
       });
 
