@@ -38,12 +38,12 @@ const lot_service = {
 
       return getLots
   },
-  // updateLot: async (id, data) => {
-  //     return await prisma.lot.update({
-  //         where: { lot_id: id },
-  //         data
-  //     });
-  // },
+  updateLot: async (id: number, data: any) => {
+      return await prisma.lot.update({
+          where: { lot_id: id },
+          data
+      });
+  },
   // deleteLot: async (id) => {
   //     return await prisma.lot.delete({
   //         where: { lot_id: id }

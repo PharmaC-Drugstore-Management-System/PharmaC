@@ -337,7 +337,8 @@ function StockTransactionsTab({ productId }: { productId: string }) {
                                             transaction.trans_type === 'OUT' ? 'text-red-600' :
                                             'text-yellow-600'
                                         }`}>
-                                            {transaction.trans_type === 'IN' ? '+' : ''}{transaction.qty}
+                                            {transaction.trans_type === 'IN' ? '+' : 
+                                             transaction.trans_type === 'OUT' ? '-' : ''}{transaction.qty}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm"

@@ -21,6 +21,7 @@ interface Product {
 interface CartItem extends Product {
   quantity: number;
   total: number;
+  lots?: any[]; // เก็บข้อมูล lots ที่ใช้งาน เรียงตามวันหมดอายุ
 }
 
 interface Member {
@@ -115,6 +116,9 @@ export default function POSPage() {
           setQrPaymentStatus('success');
           setShowRequiresActionModal(false);
           setShowPaymentSuccessModal(true);
+          
+          // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
+          handlePaymentSuccess();
           
           // Call API to update database status without emitting WebSocket
           console.log('🔄 Updating database status...');
@@ -273,22 +277,67 @@ export default function POSPage() {
     product.barcode?.includes(searchQuery)
   );
 
-  const addToCart = (product: Product) => {
-    const existingItem = cart.find(item => item.product_id === product.product_id);
-    
-    if (existingItem) {
-      setCart(cart.map(item =>
-        item.product_id === product.product_id
-          ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * (item.price || 0) }
-          : item
-      ));
-    } else {
-      const newItem: CartItem = {
-        ...product,
-        quantity: 1,
-        total: product.price || 0,
-      };
-      setCart([...cart, newItem]);
+  const addToCart = async (product: Product) => {
+    try {
+      // ดึงข้อมูล lots ของ product นี้
+      const lotsResponse = await fetch(`http://localhost:5000/lot/get-lots-by-product/${product.product_id}`, {
+        credentials: "include",
+      });
+      
+      if (!lotsResponse.ok) {
+        console.error('Failed to fetch lots for product:', product.product_id);
+        return;
+      }
+      
+      const lotsData = await lotsResponse.json();
+      
+      if (!lotsData.status || !lotsData.data) {
+        console.error('No lots data available for product:', product.product_id);
+        return;
+      }
+      
+      // กรองและเรียง lots ตามวันหมดอายุ (ใกล้หมดอายุก่อน)
+      const today = new Date();
+      const availableLots = lotsData.data
+        .filter((lot: any) => {
+          const expDate = new Date(lot.expired_date);
+          return expDate > today && lot.init_amount > 0; // ยังไม่หมดอายุและมีของเหลือ
+        })
+        .sort((a: any, b: any) => {
+          return new Date(a.expired_date).getTime() - new Date(b.expired_date).getTime();
+        });
+      
+      if (availableLots.length === 0) {
+        alert('สินค้านี้หมดสต็อกหรือหมดอายุแล้ว');
+        return;
+      }
+      
+      const existingItem = cart.find(item => item.product_id === product.product_id);
+      
+      if (existingItem) {
+        setCart(cart.map(item =>
+          item.product_id === product.product_id
+            ? { 
+                ...item, 
+                quantity: item.quantity + 1, 
+                total: (item.quantity + 1) * (item.price || 0),
+                lots: availableLots // เก็บข้อมูล lots สำหรับใช้ตอน checkout
+              }
+            : item
+        ));
+      } else {
+        const newItem: CartItem = {
+          ...product,
+          quantity: 1,
+          total: product.price || 0,
+          lots: availableLots // เก็บข้อมูล lots สำหรับใช้ตอน checkout
+        };
+        setCart([...cart, newItem]);
+      }
+      
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('เกิดข้อผิดพลาดในการเพิ่มสินค้าลงตะกร้า');
     }
   };
 
@@ -419,18 +468,174 @@ export default function POSPage() {
     return paid - total;
   };
 
+  // ฟังก์ชันสำหรับการลดจำนวนสินค้าจาก lots ตามลำดับวันหมดอายุ
+  const processStockReduction = async () => {
+    console.log('🔄 ===== STARTING STOCK REDUCTION PROCESS =====');
+    console.log('📦 Cart items to process:', cart.map(item => ({
+      product_id: item.product_id,
+      product_name: item.product_name,
+      quantity: item.quantity,
+      lots_count: item.lots?.length || 0
+    })));
+    
+    for (const cartItem of cart) {
+      console.log(`\n🏷️ Processing product: ${cartItem.product_name} (ID: ${cartItem.product_id})`);
+      console.log(`📊 Quantity to reduce: ${cartItem.quantity}`);
+      
+      if (!cartItem.lots || cartItem.lots.length === 0) {
+        console.error(`❌ No lots data for product ${cartItem.product_id}`);
+        continue;
+      }
+
+      let remainingQuantity = cartItem.quantity;
+      const reductionHistory: any[] = [];
+      
+      console.log(`📋 Available lots for ${cartItem.product_name}:`, cartItem.lots.map(lot => ({
+        lot_id: lot.lot_id,
+        init_amount: lot.init_amount,
+        expired_date: lot.expired_date
+      })));
+
+      // ลดจำนวนจาก lots ตามลำดับวันหมดอายุ (ใกล้หมดอายุก่อน)
+      for (const lot of cartItem.lots) {
+        if (remainingQuantity <= 0) {
+          console.log(`✅ All quantity fulfilled for ${cartItem.product_name}, stopping lot processing`);
+          break;
+        }
+
+        const availableInLot = lot.init_amount || 0;
+        const toReduceFromLot = Math.min(remainingQuantity, availableInLot);
+        
+        console.log(`\n🔍 Processing lot ${lot.lot_id}:`);
+        console.log(`  📦 Available in lot: ${availableInLot}`);
+        console.log(`  📝 Remaining quantity to process: ${remainingQuantity}`);
+        console.log(`  ⬇️ Will reduce from this lot: ${toReduceFromLot}`);
+
+        if (toReduceFromLot > 0) {
+          try {
+            console.log(`🔄 Updating lot ${lot.lot_id} quantity...`);
+            // อัพเดตจำนวนใน lot
+            const updateResponse = await fetch(`http://localhost:5000/lot/update-lot/${lot.lot_id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                init_amount: availableInLot - toReduceFromLot
+              })
+            });
+
+            if (updateResponse.ok) {
+              console.log(`✅ Lot ${lot.lot_id} updated successfully. New amount: ${availableInLot - toReduceFromLot}`);
+              
+              // Prepare stock transaction data
+              const stockTransactionData = {
+                trans_type: 'OUT',
+                trans_date: new Date().toISOString(),
+                qty: toReduceFromLot,
+                ref_no: `POS-${Date.now()}-${lot.lot_id}`,
+                note: `POS Sale - ${cartItem.product_name}`,
+                lot_id_fk: lot.lot_id
+              };
+              
+              console.log(`📝 Creating stock transaction:`, stockTransactionData);
+              
+              // สร้าง stock transaction สำหรับการขาย
+              const stockTransResponse = await fetch('http://localhost:5000/stock/add-stock', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(stockTransactionData)
+              });
+
+              if (stockTransResponse.ok) {
+                const stockResponseData = await stockTransResponse.json();
+                console.log(`✅ Stock transaction created successfully:`, stockResponseData);
+                
+                reductionHistory.push({
+                  lot_id: lot.lot_id,
+                  quantity: toReduceFromLot,
+                  remaining_in_lot: availableInLot - toReduceFromLot,
+                  transaction_created: true
+                });
+                remainingQuantity -= toReduceFromLot;
+                console.log(`✅ Reduced ${toReduceFromLot} from lot ${lot.lot_id}, ${remainingQuantity} remaining to process`);
+              } else {
+                const errorData = await stockTransResponse.text();
+                console.error(`❌ Failed to create stock transaction for lot ${lot.lot_id}:`, errorData);
+              }
+            } else {
+              const errorData = await updateResponse.text();
+              console.error(`❌ Failed to update lot ${lot.lot_id}:`, errorData);
+            }
+          } catch (error) {
+            console.error(`❌ Error processing lot ${lot.lot_id}:`, error);
+          }
+        } else {
+          console.log(`⏭️ Skipping lot ${lot.lot_id} - no quantity to reduce (available: ${availableInLot})`);
+        }
+      }
+
+      if (remainingQuantity > 0) {
+        console.warn(`⚠️ Could not fulfill ${remainingQuantity} units for product ${cartItem.product_name}`);
+      }
+
+      console.log(`📊 Stock reduction summary for ${cartItem.product_name}:`, reductionHistory);
+      console.log(`✅ Completed processing ${cartItem.product_name}\n`);
+    }
+    
+    console.log('🎉 ===== STOCK REDUCTION PROCESS COMPLETED =====\n');
+  };
+
+  // ฟังก์ชันจัดการเมื่อการชำระเงินสำเร็จ
+  const handlePaymentSuccess = async () => {
+    console.log('🚨 ===== PAYMENT SUCCESS HANDLER CALLED =====');
+    console.log('⏰ Timestamp:', new Date().toISOString());
+    console.log('🛒 Current cart:', cart.map(item => ({
+      product_id: item.product_id,
+      product_name: item.product_name,
+      quantity: item.quantity
+    })));
+    
+    try {
+      console.log('💳 Payment successful - processing stock reduction...');
+      
+      // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
+      await processStockReduction();
+      
+      console.log('✅ Stock reduction completed in handlePaymentSuccess');
+    } catch (error) {
+      console.error('❌ Error during payment success handling:', error);
+    }
+    
+    console.log('🚨 ===== PAYMENT SUCCESS HANDLER FINISHED =====\n');
+  };
+
   const processPayment = async () => {
+    console.log('🎯 ===== PROCESS PAYMENT CALLED =====');
+    console.log('💰 Selected payment method:', selectedPayment);
+    
     setIsProcessing(true);
     try {
       
       if (selectedPayment === "promptpay") {
+        console.log('📱 PromptPay payment - showing QR confirmation modal');
         // Show QR confirmation modal first instead of creating payment immediately
         setShowQRConfirmModal(true);
         setIsProcessing(false); // Reset processing state since we're showing modal
         return;
       } else {
+        console.log('💵 Cash payment processing...');
         // Handle Cash Payment (existing logic)
         await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        console.log('🔄 CASH PAYMENT: About to call processStockReduction...');
+        // ลดจำนวนสินค้าจาก lots ก่อนสร้าง receipt
+        await processStockReduction();
+        console.log('✅ CASH PAYMENT: processStockReduction completed');
         
         const receipt = {
           id: `POS-${Date.now()}`,
@@ -449,6 +654,7 @@ export default function POSPage() {
         setShowReceipt(true);
         setCart([]);
         setCustomerPaid("");
+        console.log('💵 Cash payment completed successfully');
       }
       
     } catch (error) {
@@ -461,6 +667,8 @@ export default function POSPage() {
     } finally {
       setIsProcessing(false);
     }
+    
+    console.log('🎯 ===== PROCESS PAYMENT FINISHED =====\n');
   };
     const navigate = useNavigate();
     
@@ -566,10 +774,9 @@ export default function POSPage() {
       setIsProcessing(false);
     }
   };
-   const [points, setPoints] = useState<number>(0);
+   
   const addPoints = async () => {
     const calculated = calculatePoints();
-    setPoints(calculated);
     
     // Only add points if member exists and points are positive
     if (!currentMember?.id || calculated <= 0) {
@@ -642,6 +849,10 @@ export default function POSPage() {
       if (result.success && result.status === 'succeeded') {
         // Payment successful - show success modal
         setQrPaymentStatus('success');
+        
+        // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
+        await handlePaymentSuccess();
+        
         if(currentMember){
           addPoints();
           console.log("Addpoint successfully")
@@ -782,6 +993,9 @@ export default function POSPage() {
           setAutoVerifyInterval(null);
           setIsAutoVerifying(false);
           setQrPaymentStatus('success');
+          
+          // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
+          handlePaymentSuccess();
           
           if (currentMember) {
             addPoints();

@@ -59,6 +59,22 @@ const controller = {
       });
     }
   },
+  update: async (req: any, res: any) => {
+    try {
+      const { id } = req.params;
+      const updatedLot = await lot_service.updateLot(parseInt(id), req.body);
+      if (!updatedLot) {
+        return res.status(404).json({ status: false, error: "Lot not found" });
+      }
+      res.status(200).json({ status: true, data: updatedLot });
+    } catch (error) {
+      console.error("Update lot error:", error);
+      res.status(500).json({
+        status: false,
+        error: (error as Error).message || "Error updating lot",
+      });
+    }
+  },
 };
 
 export default controller;
