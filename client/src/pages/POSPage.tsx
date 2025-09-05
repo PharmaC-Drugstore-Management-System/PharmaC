@@ -214,12 +214,53 @@ export default function POSPage() {
       });
       if (response.ok) {
         const data = await response.json();
-        const productsWithPrices = data.data.map((product: Product) => ({
-          ...product,
-          price: productPrices[product.product_id] || 50.00, // Default price
-          stock: Math.floor(Math.random() * 100) + 10, // Mock stock
-        }));
-        setProducts(productsWithPrices);
+        
+        // ดึงข้อมูล lots และคำนวณ stock จริงสำหรับแต่ละ product
+        const productsWithRealStock = await Promise.all(
+          data.data.map(async (product: Product) => {
+            try {
+              // ดึงข้อมูล lots ของแต่ละ product
+              const lotsResponse = await fetch(`http://localhost:5000/lot/get-lots-by-product/${product.product_id}`, {
+                credentials: "include",
+              });
+              
+              let availableStock = 0;
+              
+              if (lotsResponse.ok) {
+                const lotsData = await lotsResponse.json();
+                
+                if (lotsData.status && lotsData.data) {
+                  // คำนวณ available stock (ไม่นับ lots ที่หมดอายุ)
+                  const today = new Date();
+                  availableStock = lotsData.data.reduce((sum: number, lot: any) => {
+                    const expDate = new Date(lot.expired_date);
+                    // ถ้ายังไม่หมดอายุ
+                    if (expDate > today) {
+                      return sum + (lot.init_amount || 0);
+                    }
+                    return sum;
+                  }, 0);
+                }
+              }
+              
+              return {
+                ...product,
+                price: productPrices[product.product_id] || 50.00, // Default price
+                stock: availableStock, // ใช้ stock จริงจาก lots
+              };
+            } catch (error) {
+              console.error(`Error fetching lots for product ${product.product_id}:`, error);
+              return {
+                ...product,
+                price: productPrices[product.product_id] || 50.00,
+                stock: 0, // ถ้า error ให้เป็น 0
+              };
+            }
+          })
+        );
+        
+        setProducts(productsWithRealStock);
+        console.log('Products with real stock:', productsWithRealStock);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
