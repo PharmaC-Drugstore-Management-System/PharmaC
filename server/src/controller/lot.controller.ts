@@ -12,14 +12,14 @@ const controller = {
             console.error('Lot controller error:', error); // Debug log
             res.status(500).json({ 
                 status: false, 
-                error: error.message || "Error creating lot" 
+                error: "Error creating lot" 
             });
         }
     },
     get: async (req:any, res:any) => {
         try {
             const lots = await lot_service.getAllLots();
-            res.status(200).json(lots);
+            res.status(200).json({status:true, data: lots});
         } catch (error) {
             res.status(500).json({ error: "Error fetching lot" });
         }
@@ -39,6 +39,18 @@ const controller = {
                 error: (error as Error).message || "Error fetching lot" 
             });
         }
+    },
+    getLotWithProuduct : async ( req : any, res : any) => {
+            try {
+             const getLotProduct = await lot_service.getLotWithProduct()
+             if(!getLotProduct) return res.status(404).json({status:false,error:'404 Not found get lot with product'})
+             return res.status(200).json({status:true, data: getLotProduct})   
+            } catch (error) {
+                res.status(500).json({ 
+                status: false, 
+                error: (error as Error).message || "Error fetching lot with product data" 
+            });
+            }
     },
     getByProductId: async (req:any, res:any) => {
         try {

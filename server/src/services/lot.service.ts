@@ -38,6 +38,19 @@ const lot_service = {
 
       return getLots
   },
+  getLotWithProduct : async() => {
+    try {
+      const get = await prisma.lot.findMany({
+        include: {
+          product: true
+        }
+      });
+      return get;
+    } catch (error) {
+       console.error('Error to get lot with product:', error); // Debug log
+      throw new Error(`Error to get lot with product`);
+    }
+  }
   // updateLot: async (id, data) => {
   //     return await prisma.lot.update({
   //         where: { lot_id: id },
