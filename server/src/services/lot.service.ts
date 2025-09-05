@@ -50,13 +50,13 @@ const lot_service = {
        console.error('Error to get lot with product:', error); // Debug log
       throw new Error(`Error to get lot with product`);
     }
-  }
-  // updateLot: async (id, data) => {
-  //     return await prisma.lot.update({
-  //         where: { lot_id: id },
-  //         data
-  //     });
-  // },
+  },
+  updateLot: async (id: number, data: any) => {
+      return await prisma.lot.update({
+          where: { lot_id: id },
+          data
+      });
+  },
   // deleteLot: async (id) => {
   //     return await prisma.lot.delete({
   //         where: { lot_id: id }
