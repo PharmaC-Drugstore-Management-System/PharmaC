@@ -3,6 +3,7 @@ import { Eye, EyeOff, User, Lock } from "lucide-react";
 import medicineImage from "../assets/medicine.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import Swal from 'sweetalert2';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -23,7 +24,14 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      alert('กรุณากรอกอีเมลและรหัสผ่าน');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Please fill in email and password',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
       return;
     }
 
@@ -32,13 +40,35 @@ export default function LoginPage() {
       const success = await authLogin(email, password);
       if (success) {
         console.log('Login successful, navigating to /');
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Login successful',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
         navigate("/", { replace: true });
       } else {
-        alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Invalid email or password',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Network error occurred. Please try again.',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
     } finally {
       setIsLoading(false);
     }

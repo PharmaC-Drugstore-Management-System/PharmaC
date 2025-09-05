@@ -2,6 +2,7 @@ import { ChevronLeft, Pencil, X, Plus, User, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -140,9 +141,27 @@ export default function EditRolePage() {
         console.log('Loaded employees:', transformedEmployees);
       } else {
         console.error('Failed to load employees');
+        // GET request - show error alert only
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to load employees',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
       }
     } catch (error) {
       console.error('Error loading employees:', error);
+      // GET request - show error alert only
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Network error occurred. Please try again.',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
     }
   };
 
@@ -198,14 +217,41 @@ export default function EditRolePage() {
         console.log('API Response:', result);
         console.log('Roles updated successfully');
         setEdit(false);
+        // POST request - show success alert
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Employee roles updated successfully',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
         // Reload employees to get fresh data
         await loadEmployees();
       } else {
         const errorText = await response.text();
         console.error('Failed to update roles. Status:', response.status, 'Error:', errorText);
+        // POST request - show error alert
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to update employee roles',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
       }
     } catch (error) {
       console.error('Error saving roles:', error);
+      // POST request - show error alert
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Network error occurred. Please try again.',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
     }
   };
 

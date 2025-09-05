@@ -4,7 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import BarcodeScanner from "react-qr-barcode-scanner";
 import type { Result } from "@zxing/library";
+import Swal from 'sweetalert2';
+
 const API_URL = import.meta.env.VITE_API_URL;
+
+
 export default function AddMedicinePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -39,6 +43,19 @@ export default function AddMedicinePage() {
     productType: "",
     unit: "",
   });
+
+  // Validation function to check if form is valid
+  const isFormValid = () => {
+    const productTypeValue = formData.productType === "other" ? customProductType : formData.productType;
+    const unitValue = formData.unit === "other" ? customUnit : formData.unit;
+
+    return (
+      formData.productName.trim() !== "" &&
+      formData.brand.trim() !== "" &&
+      productTypeValue.trim() !== "" &&
+      unitValue.trim() !== ""
+    );
+  };
 
   useEffect(() => {
     if (image) {
@@ -106,7 +123,14 @@ export default function AddMedicinePage() {
       if (!res.ok) {
         const text = await res.text();
         console.error("Failed to add medicine:", res.status, text);
-        alert("Failed to add medicine");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to add medicine',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
         return;
       }
 
@@ -121,16 +145,16 @@ export default function AddMedicinePage() {
 
   return (
     <div className="min-h-screen flex flex-col p-4 transition-colors duration-300"
-         style={{backgroundColor: isDark ? '#111827' : '#ffffff'}}>
+      style={{ backgroundColor: isDark ? '#111827' : '#ffffff' }}>
       <h1 className="text-3xl font-bold mb-8 transition-colors duration-300"
-          style={{color: isDark ? 'white' : '#1f2937'}}>{t('addMedication')}</h1>
+        style={{ color: isDark ? 'white' : '#1f2937' }}>{t('addMedication')}</h1>
 
       <div className="flex flex-col md:flex-row gap-6">
         <label className="rounded-lg p-6 flex flex-col items-center justify-center min-h-64 w-full md:w-1/3 border cursor-pointer transition-colors duration-300"
-               style={{
-                 backgroundColor: isDark ? '#374151' : '#f0fdfa',
-                 borderColor: isDark ? '#4b5563' : '#5eead4'
-               }}>
+          style={{
+            backgroundColor: isDark ? '#374151' : '#f0fdfa',
+            borderColor: isDark ? '#4b5563' : '#5eead4'
+          }}>
           {previewUrl ? (
             <div className="flex flex-col items-center gap-3">
               <img
@@ -139,7 +163,7 @@ export default function AddMedicinePage() {
                 className="max-h-40 object-contain rounded-md"
               />
               <div className="flex items-center gap-2 transition-colors duration-300"
-                   style={{color: isDark ? '#60a5fa' : '#0f766e'}}>
+                style={{ color: isDark ? '#60a5fa' : '#0f766e' }}>
                 <span className="text-sm">{image?.name}</span>
                 <button
                   type="button"
@@ -157,11 +181,11 @@ export default function AddMedicinePage() {
           ) : (
             <div className="flex flex-col items-center">
               <div className="mb-4 transition-colors duration-300"
-                   style={{color: isDark ? '#60a5fa' : '#0d9488'}}>
+                style={{ color: isDark ? '#60a5fa' : '#0d9488' }}>
                 <Upload size={48} />
               </div>
               <p className="transition-colors duration-300"
-                 style={{color: isDark ? '#60a5fa' : '#0d9488'}}>{t('clickToUploadImage')}</p>
+                style={{ color: isDark ? '#60a5fa' : '#0d9488' }}>{t('clickToUploadImage')}</p>
             </div>
           )}
           <input
@@ -174,10 +198,10 @@ export default function AddMedicinePage() {
 
         <div className="w-full md:w-2/3">
           <div className="rounded-lg p-6 shadow-sm border transition-colors duration-300"
-               style={{
-                 backgroundColor: isDark ? '#374151' : 'white',
-                 borderColor: isDark ? '#4b5563' : '#e5e7eb'
-               }}>
+            style={{
+              backgroundColor: isDark ? '#374151' : 'white',
+              borderColor: isDark ? '#4b5563' : '#e5e7eb'
+            }}>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
@@ -328,12 +352,12 @@ export default function AddMedicinePage() {
 
               <div>
                 <label className="block mb-2 font-medium transition-colors duration-300"
-                       style={{color: isDark ? '#d1d5db' : '#374151'}}>
+                  style={{ color: isDark ? '#d1d5db' : '#374151' }}>
                   {t('isControlledMedicine')}
                 </label>
                 <div className="flex gap-6">
                   <label className="flex items-center gap-2 transition-colors duration-300"
-                         style={{color: isDark ? '#d1d5db' : '#374151'}}>
+                    style={{ color: isDark ? '#d1d5db' : '#374151' }}>
                     <input
                       type="radio"
                       name="isControlled"
@@ -347,7 +371,7 @@ export default function AddMedicinePage() {
                     {t('no')}
                   </label>
                   <label className="flex items-center gap-2 transition-colors duration-300"
-                         style={{color: isDark ? '#d1d5db' : '#374151'}}>
+                    style={{ color: isDark ? '#d1d5db' : '#374151' }}>
                     <input
                       type="radio"
                       name="isControlled"
@@ -409,18 +433,25 @@ export default function AddMedicinePage() {
               />
 
               <button
-                className="w-full p-3 text-white rounded-lg transition-all duration-200"
+                className="w-full p-3 text-white rounded-lg transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
                 type="submit"
+                disabled={!isFormValid()}
                 style={{
-                  backgroundColor: isDark ? '#059669' : '#065f46'
+                  backgroundColor: !isFormValid() 
+                    ? (isDark ? '#6b7280' : '#9ca3af')
+                    : (isDark ? '#059669' : '#065f46')
                 }}
                 onMouseEnter={(e) => {
-                  const target = e.target as HTMLButtonElement;
-                  target.style.backgroundColor = isDark ? '#047857' : '#064e3b';
+                  if (isFormValid()) {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.backgroundColor = isDark ? '#047857' : '#064e3b';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  const target = e.target as HTMLButtonElement;
-                  target.style.backgroundColor = isDark ? '#059669' : '#065f46';
+                  if (isFormValid()) {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.backgroundColor = isDark ? '#059669' : '#065f46';
+                  }
                 }}
               >
                 {t('submit')}
@@ -453,8 +484,8 @@ export default function AddMedicinePage() {
         >
           <div className="flex flex-col items-center">
             <span className="text-sm font-medium mb-1 transition-colors duration-300"
-                  style={{color: isDark ? '#d1d5db' : '#374151'}}>{t('addByBarcode')}</span>
-            <div style={{color: isDark ? '#60a5fa' : '#374151'}}>
+              style={{ color: isDark ? '#d1d5db' : '#374151' }}>{t('addByBarcode')}</span>
+            <div style={{ color: isDark ? '#60a5fa' : '#374151' }}>
               <Barcode size={40} />
             </div>
           </div>
@@ -464,12 +495,12 @@ export default function AddMedicinePage() {
       {showScanner && (
         <div className="flex flex-col items-center">
           <h2 className="text-lg font-bold mt-4 transition-colors duration-300"
-              style={{color: isDark ? '#d1d5db' : '#1f2937'}}>{t('scanBarcode')}</h2>
+            style={{ color: isDark ? '#d1d5db' : '#1f2937' }}>{t('scanBarcode')}</h2>
           <div className="relative mt-6 flex flex-col items-center w-fit p-4 rounded-xl shadow-md border transition-colors duration-300"
-               style={{
-                 backgroundColor: isDark ? '#374151' : '#f9fafb',
-                 borderColor: isDark ? '#4b5563' : '#e5e7eb'
-               }}>
+            style={{
+              backgroundColor: isDark ? '#374151' : '#f9fafb',
+              borderColor: isDark ? '#4b5563' : '#e5e7eb'
+            }}>
             {!hasScanned && (
               <div className="w-full flex flex-row justify-end mb-2">
                 <button
@@ -491,7 +522,7 @@ export default function AddMedicinePage() {
             )}
 
             <p className="mt-2 text-sm transition-colors duration-300"
-               style={{color: isDark ? '#d1d5db' : '#374151'}}>
+              style={{ color: isDark ? '#d1d5db' : '#374151' }}>
               {t('scannedData')}{" "}
               <span
                 className="font-bold"

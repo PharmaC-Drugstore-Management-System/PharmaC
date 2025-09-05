@@ -30,19 +30,25 @@ const orderService = {
             const cartIds = createdCartItems.map(cart => cart.cart_id);
 
             // Step 4: Create single order first
+            const orderData: any = {
+                employee: {
+                    connect: { employee_id: employee_id }
+                },
+                total_amount: total_amount,
+                total_price: total_price,
+                date: new Date(), // ใช้ timestamp แทน time+date แยก
+                status: 'PENDING'
+            };
+
+            // Only connect customer if customer_id is provided
+            if (customer_id) {
+                orderData.customer = {
+                    connect: { customer_id: customer_id }
+                };
+            }
+
             const order = await prisma.order.create({
-                data: {
-                    employee: {
-                        connect: { employee_id: employee_id }
-                    },
-                    customer: {
-                        connect: { customer_id: customer_id }
-                    },
-                    total_amount: total_amount,
-                    total_price: total_price,
-                    date: new Date(), // ใช้ timestamp แทน time+date แยก
-                    status: 'PENDING'
-                }
+                data: orderData
             });
 
             // Step 5: Update cart items to link them to the created order
