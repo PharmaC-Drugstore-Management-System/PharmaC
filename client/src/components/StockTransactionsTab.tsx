@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, RotateCcw, Box, Search } from 'lucide-react';
-
+const API_URL = import.meta.env.VITE_API_URL;
 type StockTransaction = {
     stock_trans_id: number;
     trans_type: 'IN' | 'OUT' | 'ADJUST';
@@ -34,7 +34,7 @@ function StockTransactionsTab({ productId }: { productId: string }) {
                 setError(null);
 
                 // Call the API endpoint to get stock transactions by product ID (all lots)
-                const response = await fetch(`http://localhost:5000/stock/product/${productId}`);
+                const response = await fetch(`${API_URL}/stock/product/${productId}`);
 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch transactions: ${response.statusText}`);
@@ -42,7 +42,7 @@ function StockTransactionsTab({ productId }: { productId: string }) {
                 
                 const data = await response.json();
                 console.log('=== DEBUG STOCK TRANSACTIONS ===');
-                console.log('API URL:', `http://localhost:5000/stock/product/${productId}`);
+                console.log('API URL:', `${API_URL}/stock/product/${productId}`);
                 console.log('Response status:', response.status);
                 console.log('Response headers:', Object.fromEntries(response.headers.entries()));
                 console.log('Raw response data:', data);
