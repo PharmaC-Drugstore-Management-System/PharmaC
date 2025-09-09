@@ -14,6 +14,7 @@ const stock_trans_service = {
         },
       });
       return newStockTrans;
+      
     } catch (error) {
       throw new Error("Error creating stock transaction");
     }

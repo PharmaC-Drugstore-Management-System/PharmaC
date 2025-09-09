@@ -747,7 +747,7 @@ export default function LotPage() {
                                 <div className="col-span-2">Lot no.</div>
                                 <div className="col-span-2">Stocked Date</div>
                                 <div className="col-span-2">Total Stock Unit</div>
-                                <div className="col-span-2">Reserved Stock Unit</div>
+                                <div className="col-span-2">Sold items</div>
                                 <div className="col-span-2">Available Stock Unit</div>
                                 <div className="col-span-2">Expiration Date</div>
                             </div>

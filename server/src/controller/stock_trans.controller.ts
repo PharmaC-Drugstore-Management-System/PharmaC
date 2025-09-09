@@ -3,6 +3,7 @@ import stock_trans_service from "../services/stock_trans.service";
 const controller = {
     add: async (req: any, res: any) => {
         try {
+            console.log('STOCKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK',req.body)
             const newStockTrans = await stock_trans_service.createStockTrans(req.body);
             res.status(201).json(newStockTrans);
         } catch (error) {

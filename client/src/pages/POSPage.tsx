@@ -470,18 +470,9 @@ export default function POSPage() {
 
   // ฟังก์ชันสำหรับการลดจำนวนสินค้าจาก lots ตามลำดับวันหมดอายุ
   const processStockReduction = async () => {
-    console.log('🔄 ===== STARTING STOCK REDUCTION PROCESS =====');
-    console.log('📦 Cart items to process:', cart.map(item => ({
-      product_id: item.product_id,
-      product_name: item.product_name,
-      quantity: item.quantity,
-      lots_count: item.lots?.length || 0
-    })));
-    
+    console.log('🎉 ===== STARTING STOCK REDUCTION PROCESS =====');
     for (const cartItem of cart) {
-      console.log(`\n🏷️ Processing product: ${cartItem.product_name} (ID: ${cartItem.product_id})`);
-      console.log(`📊 Quantity to reduce: ${cartItem.quantity}`);
-      
+      console.log("IN FOR LOOP", cartItem);
       if (!cartItem.lots || cartItem.lots.length === 0) {
         console.error(`❌ No lots data for product ${cartItem.product_id}`);
         continue;
@@ -597,6 +588,11 @@ export default function POSPage() {
         } catch (error) {
           console.error(`❌ Error during batch processing:`, error);
         }
+        
+       
+       
+      } else {
+        console.log(`❌ No available lots for product ${cartItem.product_name}`);
       }
 
       if (remainingQuantity > 0) {
@@ -629,9 +625,8 @@ export default function POSPage() {
       
     
       await processStockReduction();
- 
-      // await updateDatabaseStatus();
-      
+
+      console.log('✅ Stock reduction completed in handlePaymentSuccess');
     } catch (error) {
       console.error('❌ Error during payment success handling:', error);
     } 
@@ -659,7 +654,6 @@ export default function POSPage() {
         
         console.log('🔄 CASH PAYMENT: About to call processStockReduction...');
         // ลดจำนวนสินค้าจาก lots ก่อนสร้าง receipt
-        await processStockReduction();
         console.log('✅ CASH PAYMENT: processStockReduction completed');
         
         const receipt = {
@@ -876,8 +870,8 @@ export default function POSPage() {
         setQrPaymentStatus('success');
         
         // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
-        // await handlePaymentSuccess();
-        
+        await handlePaymentSuccess();
+
         if(currentMember){
           addPoints();
           console.log("Addpoint successfully")
@@ -1029,8 +1023,7 @@ export default function POSPage() {
     //       setIsAutoVerifying(false);
     //       setQrPaymentStatus('success');
           
-    //       // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
-    //       // handlePaymentSuccess();
+          // Stock reduction is now handled in updateDatabaseStatus via PUT request
           
     //       if (currentMember) {
     //         addPoints();

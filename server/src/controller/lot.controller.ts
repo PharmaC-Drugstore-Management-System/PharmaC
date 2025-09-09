@@ -25,7 +25,7 @@ const controller = {
   get: async (req: any, res: any) => {
     try {
       const lots = await lot_service.getAllLots();
-      res.status(200).json(lots);
+      res.status(200).json({ status: true, data: lots });
     } catch (error) {
       res.status(500).json({ error: "Error fetching lot" });
     }
@@ -46,6 +46,22 @@ const controller = {
       });
     }
   },
+  getLotWithProuduct: async (req: any, res: any) => {
+    try {
+      const getLotProduct = await lot_service.getLotWithProduct();
+      if (!getLotProduct)
+        return res
+          .status(404)
+          .json({ status: false, error: "404 Not found get lot with product" });
+      return res.status(200).json({ status: true, data: getLotProduct });
+    } catch (error) {
+      res.status(500).json({
+        status: false,
+        error:
+          (error as Error).message || "Error fetching lot with product data",
+      });
+    }
+  },
   getByProductId: async (req: any, res: any) => {
     try {
       const { productId } = req.params;
@@ -63,6 +79,7 @@ const controller = {
     try {
       const { id } = req.params;
       const updatedLot = await lot_service.updateLot(parseInt(id), req.body);
+      console.log("UPDATE LOT:", updatedLot)
       if (!updatedLot) {
         return res.status(404).json({ status: false, error: "Lot not found" });
       }

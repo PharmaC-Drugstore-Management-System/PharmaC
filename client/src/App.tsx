@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { useTheme } from './contexts/ThemeProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import CustomerPaymentPage from './pages/CustomerPaymentPage';
 import Navbar from '../src/components/Navbar.tsx';
@@ -29,6 +28,7 @@ import ContactUsPage from "./pages/ContactUsPage.tsx";
 import RevenueDetail from "./pages/RevenueDetail.tsx";
 import { useEffect } from 'react';
 import LotPage from "./pages/InventoryLotPage.tsx";
+import OtpAuth from "./pages/otpPage.tsx";
 
 function AppContent() {
   const location = useLocation();
@@ -43,7 +43,8 @@ function AppContent() {
   const isContactPage = location.pathname === '/contactUs';
   const isRegisterPage = location.pathname === '/register'
   const isLoginPage = location.pathname === '/login'
-  const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage || isEditRolePage || isTermsPage || isContactPage || isRegisterPage || isLoginPage;
+  const isOtpPage = location.pathname === '/otp'
+  const hideNavAndHeader = isSettingsPage || isAccountPage || isThemePage || isEditRolePage || isTermsPage || isContactPage || isRegisterPage || isLoginPage || isOtpPage;
 
   // Force Customer to stay on CustomerPaymentPage
   useEffect(() => {
@@ -88,6 +89,7 @@ function AppContent() {
         <div className={`flex-1 overflow-y-auto ${!hideNavAndHeader ? 'p-6' : ''}`}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/otp" element={<OtpAuth />} />
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes for Admin/Staff */}

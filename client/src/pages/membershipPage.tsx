@@ -523,7 +523,7 @@ export default function MemberManagementPage() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  {t('birthday')}
+                  {t('birthdate')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>

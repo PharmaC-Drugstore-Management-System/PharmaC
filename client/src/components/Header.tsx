@@ -27,6 +27,7 @@ interface Notification {
 }
 
 export default function Header() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -45,7 +46,7 @@ export default function Header() {
       console.log("Loading profile data from API...");
 
       // Step 1: Get employee_id from JWT token
-      const authResponse = await fetch("http://localhost:5000/api/me", {
+      const authResponse = await fetch(`${API_URL}/api/me`, {
         method: "GET",
         credentials: "include",
       });
@@ -56,6 +57,7 @@ export default function Header() {
       }
 
       const authResult = await authResponse.json();
+      console.log("Auth API result:", authResult);
       const employeeIdFromToken =
         authResult.user.employee_id || authResult.user.id;
 
@@ -69,7 +71,7 @@ export default function Header() {
 
       // Step 2: Use employee_id to get full account details
       const accountResponse = await fetch(
-        "http://localhost:5000/acc/account-detail",
+        `${API_URL}/acc/account-detail`,
         {
           method: "POST",
           headers: {
@@ -115,7 +117,7 @@ export default function Header() {
       );
 
       const response = await fetch(
-        "http://localhost:5000/order/latest?limit=20",
+        `${API_URL}/order/latest?limit=20`,
         {
           method: "GET",
           credentials: "include",
@@ -213,7 +215,7 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       // Call logout API
-      await fetch("http://localhost:5000/api/logout", {
+      await fetch(`${API_URL}/api/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -244,7 +246,7 @@ export default function Header() {
     loadInitialNotifications();
 
     // Initialize Socket.IO connection for real-time notifications
-    const socketConnection = io("http://localhost:5000", {
+    const socketConnection = io(`${API_URL}`, {
       transports: ["websocket"],
     });
 
@@ -452,7 +454,7 @@ export default function Header() {
 
   return (
     <div className="sticky top-0 z-10 w-full transition-colors duration-300"
-         style={{backgroundColor: isDark ? '#111827' : '#FAF9F8'}}>
+         style={{backgroundColor: isDark ? '#111827' : '#f9fafb'}}>
       <div className="flex items-center p-4">
         <h1 className="font-bold text-2xl transition-colors duration-300"
             style={{color: isDark ? 'white' : '#1f2937'}}>PharmaC</h1>
