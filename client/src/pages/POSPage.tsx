@@ -470,18 +470,9 @@ export default function POSPage() {
 
   // ฟังก์ชันสำหรับการลดจำนวนสินค้าจาก lots ตามลำดับวันหมดอายุ
   const processStockReduction = async () => {
-    console.log('🔄 ===== STARTING STOCK REDUCTION PROCESS =====');
-    console.log('📦 Cart items to process:', cart.map(item => ({
-      product_id: item.product_id,
-      product_name: item.product_name,
-      quantity: item.quantity,
-      lots_count: item.lots?.length || 0
-    })));
-    
+    console.log('🎉 ===== STARTING STOCK REDUCTION PROCESS =====');
     for (const cartItem of cart) {
-      console.log(`\n🏷️ Processing product: ${cartItem.product_name} (ID: ${cartItem.product_id})`);
-      console.log(`📊 Quantity to reduce: ${cartItem.quantity}`);
-      
+      console.log("IN FOR LOOP", cartItem);
       if (!cartItem.lots || cartItem.lots.length === 0) {
         console.error(`❌ No lots data for product ${cartItem.product_id}`);
         continue;
@@ -490,19 +481,12 @@ export default function POSPage() {
       let remainingQuantity = cartItem.quantity;
       const reductionHistory: any[] = [];
       
-      console.log(`📋 Available lots for ${cartItem.product_name}:`, cartItem.lots.map(lot => ({
-        lot_id: lot.lot_id,
-        init_amount: lot.init_amount,
-        expired_date: lot.expired_date
-      })));
-
-      // ลดจำนวนจาก lots ตามลำดับวันหมดอายุ (ใกล้หมดอายุก่อน)
-      for (const lot of cartItem.lots) {
-        if (remainingQuantity <= 0) {
-          console.log(`✅ All quantity fulfilled for ${cartItem.product_name}, stopping lot processing`);
-          break;
-        }
-
+      // ลดจำนวนจาก lot แรกที่มีสต็อกเพียงพอ (ใกล้หมดอายุก่อน)
+      const firstAvailableLot = cartItem.lots.find(lot => lot.init_amount > 0);
+      if (firstAvailableLot) {
+        const lot = firstAvailableLot;
+        console.log("CHECK LOPPPP", lot);
+        
         const availableInLot = lot.init_amount || 0;
         const toReduceFromLot = Math.min(remainingQuantity, availableInLot);
         
@@ -577,6 +561,11 @@ export default function POSPage() {
         } else {
           console.log(`⏭️ Skipping lot ${lot.lot_id} - no quantity to reduce (available: ${availableInLot})`);
         }
+        
+        remainingQuantity -= toReduceFromLot;
+        console.log(`✅ Processed first available lot ${lot.lot_id}, used single lot only`);
+      } else {
+        console.log(`❌ No available lots for product ${cartItem.product_name}`);
       }
 
       if (remainingQuantity > 0) {
@@ -603,9 +592,9 @@ export default function POSPage() {
     try {
       console.log('💳 Payment successful - processing stock reduction...');
       
-      // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
+    
       await processStockReduction();
-      
+
       console.log('✅ Stock reduction completed in handlePaymentSuccess');
     } catch (error) {
       console.error('❌ Error during payment success handling:', error);
@@ -634,7 +623,6 @@ export default function POSPage() {
         
         console.log('🔄 CASH PAYMENT: About to call processStockReduction...');
         // ลดจำนวนสินค้าจาก lots ก่อนสร้าง receipt
-        await processStockReduction();
         console.log('✅ CASH PAYMENT: processStockReduction completed');
         
         const receipt = {
@@ -852,7 +840,7 @@ export default function POSPage() {
         
         // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
         await handlePaymentSuccess();
-        
+
         if(currentMember){
           addPoints();
           console.log("Addpoint successfully")
@@ -942,7 +930,14 @@ export default function POSPage() {
       console.log('📊 Database status update result:', result);
       
       if (result.success && result.status === 'succeeded') {
-        console.log('✅ Database status updated successfully');
+        console.log('✅ Database status updated successfully - Auto verification: paid status detected');
+        
+        // Auto verify when status is paid
+        console.log('✅ Stock reduction completed for auto verified payment');
+        
+        if (currentMember) {
+          addPoints();
+        }
       }
     } catch (error) {
       console.error('❌ Error updating database status:', error);
@@ -994,8 +989,7 @@ export default function POSPage() {
           setIsAutoVerifying(false);
           setQrPaymentStatus('success');
           
-          // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
-          handlePaymentSuccess();
+          // Stock reduction is now handled in updateDatabaseStatus via PUT request
           
           if (currentMember) {
             addPoints();

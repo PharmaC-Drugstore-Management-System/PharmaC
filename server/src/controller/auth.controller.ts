@@ -50,6 +50,80 @@ const controller = {
         .json({ message: "Error status 500", error: error.message });
     }
   },
+
+  authenAndSendOtp: async (req: any, res: any) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res
+          .status(400)
+          .json({ message: "Email and password are required" });
+      }
+      const authenticate = await auth_service.login({ email, password });
+      if (!authenticate) {
+        res
+          .status(500)
+          .json({ status: false, message: "Failed to Authenticate" });
+      }
+      await auth_service.sendOtp(email);
+
+      return res.status(200).json({
+        status: true,
+        message: `OTP has been sent to your email : ${email}`,
+      });
+    } catch (error: any) {
+      console.error("Authentication/OTP send error:", error.message);
+      if (error.message.includes("Invalid email or password")) {
+        return res.status(401).json({ message: error.message });
+      }
+      return res
+        .status(500)
+        .json({ message: "Internal Server Error", error: error.message });
+    }
+  },
+
+  verifyLogin: async (req: any, res: any) => {
+    try {
+      const { email, otp } = req.body;
+      if (!email || !otp) {
+        return res
+          .status(400)
+          .json({ status: false, message: "Email and OTP are required" });
+      }
+      const user = await auth_service.verifyOtp({ email, otp });
+      const token = jwt.sign(
+        {
+          employee_id: user.employee_id,
+          email: user.email,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          role_id: user.role_id,
+        },
+        JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res
+        .status(200)
+        .json({ status: true, message: "Login Successful!", data: user });
+    } catch (error: any) {
+      console.error("OTP verification error:", error.message);
+      if (error.message.includes("Invalid or expired OTP")) {
+        return res.status(401).json({ message: error.message });
+      }
+      return res
+        .status(500)
+        .json({ message: "Internal Server Error", error: error.message });
+    }
+  },
+
   login: async (req: any, res: any, next: any) => {
     try {
       const { email, password } = req.body;
@@ -110,9 +184,7 @@ const controller = {
         maxAge: 0, // Expire immediately
       });
 
-      return res
-        .status(200)
-        .json({ message: "Logout Successfully" });
+      return res.status(200).json({ message: "Logout Successfully" });
     } catch (error: any) {
       console.log("Logout controller error:", error);
       return res

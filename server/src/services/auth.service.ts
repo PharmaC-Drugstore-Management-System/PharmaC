@@ -1,6 +1,7 @@
 import prisma from "../utils/prisma.utils";
 import bcrypt from "bcrypt";
-
+import googleMailer from "../utils/mailer";
+let otpStore: { [email: string]: { otp: string; expires: number } } = {};
 const auth_service = {
   register: async (data: any) => {
     try {
@@ -56,6 +57,49 @@ const auth_service = {
       return user;
     } catch (error: any) {
       console.error("Error in login service:", error.message);
+      throw error;
+    }
+  },
+
+  sendOtp: async (email: string) => {
+    try {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      otpStore[email] = { otp, expires: Date.now() + 5 * 60 * 1000 }; // 5 min expiry
+
+      await googleMailer.sendOtp(email, otp);
+
+      return { message: "OTP has been sent to your email." };
+    } catch (error: any) {
+      console.error("Error sending OTP:", error.message);
+      throw new Error("Failed to send OTP.");
+    }
+  },
+
+  verifyOtp: async (data: { email: string; otp: string }) => {
+    try {
+      const storedOtp = otpStore[data.email];
+
+      if (
+        !storedOtp ||
+        storedOtp.otp !== data.otp ||
+        Date.now() > storedOtp.expires
+      ) {
+        throw new Error("Invalid or expired OTP.");
+      }
+
+      // OTP is valid, find the user to return
+      const user = await prisma.employee.findUnique({
+        where: { email: data.email },
+      });
+      if (!user) {
+        throw new Error("User not found after OTP verification.");
+      }
+      // Clean up the used OTP
+      delete otpStore[data.email];
+
+      return user
+    } catch (error: any) {
+      console.error("Error in OTP verification:", error.message);
       throw error;
     }
   },

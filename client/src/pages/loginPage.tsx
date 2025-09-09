@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import medicineImage from "../assets/medicine.png";
 import { useNavigate } from "react-router-dom";
@@ -7,20 +7,13 @@ import Swal from 'sweetalert2';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login: authLogin, user, loading } = useAuth();
+  const { authLogin, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if user is already logged in
-  useEffect(() => {
-    if (!loading && user) {
-      console.log('User already logged in, redirecting...');
-      navigate("/", { replace: true });
-    }
-  }, [user, loading, navigate]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -38,17 +31,12 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const success = await authLogin(email, password);
+      console.log("Login attempt result:", success);
       if (success) {
-        console.log('Login successful, navigating to /');
-        Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: 'Login successful',
-          showConfirmButton: false,
-          timer: 2000,
-          timerProgressBar: true
+        navigate("/otp", { 
+          replace: true,
+          state: { email } // Pass email to OTP page
         });
-        navigate("/", { replace: true });
       } else {
         Swal.fire({
           icon: 'error',
@@ -92,16 +80,16 @@ export default function LoginPage() {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-gray-100 flex flex-col lg:flex-row">
       {/* Left Panel - Login Form */}
-      <div className="w-full lg:w-1/2 bg-gray-50 dark:bg-gray-900 flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0" style={{ fontFamily: "'Assistant', sans-serif" }}>
+      <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0" style={{ fontFamily: "'Assistant', sans-serif" }}>
         <div className="w-full max-w-sm sm:max-w-md">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
@@ -117,7 +105,7 @@ export default function LoginPage() {
 
           {/* Login Form */}
           <div className="space-y-4 sm:space-y-6">
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 sm:p-6 border border-gray-300 dark:border-gray-600 shadow-sm">
+            <div className="bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-300 shadow-sm">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">
                 Login
               </h2>
@@ -162,7 +150,7 @@ export default function LoginPage() {
               </div>
 
               {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-3">
                 <label className="flex items-center">
                   <input
                     type="checkbox"
@@ -182,16 +170,22 @@ export default function LoginPage() {
                 </a>
               </div>
 
+              <div className="mb-4 text-xs sm:text-sm text-gray-600 flex gap-2">
+                <h3>Don’t have an account? </h3>
+                <h3 className="text-green-600 hover:text-green-700 font-bold cursor-pointer" onClick={() => navigate('/register')}> Sign up </h3>
+                <h3 className="text-xs sm:text-sm text-gray-600"> here </h3>
+              </div>
+
+
               {/* Submit Button */}
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className={`w-full py-2.5 sm:py-3 rounded-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm sm:text-base ${
-                  isLoading 
-                    ? 'bg-gray-400 cursor-not-allowed' 
+                className={`w-full py-2.5 sm:py-3 rounded-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm sm:text-base ${isLoading
+                    ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-green-700 text-white hover:bg-green-800'
-                }`}
+                  }`}
               >
                 {isLoading ? 'กำลังเข้าสู่ระบบ...' : 'Submit'}
               </button>
@@ -208,7 +202,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Panel - Promotional Content */}
-      <div className="w-full lg:w-1/2 bg-teal-100 dark:bg-teal-900 flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0 relative overflow-hidden min-h-64 lg:min-h-screen">
+      <div className="w-full lg:w-1/2 bg-teal-100 flex flex-col justify-center items-center px-6 sm:px-8 md:px-12 py-8 lg:py-0 relative overflow-hidden min-h-64 lg:min-h-screen">
         {/* Main Content */}
         <div className="text-center z-10">
           <h2 className="font-tenor text-2xl sm:text-3xl lg:text-4xl  text-gray-800 mb-4 px-4" style={{ fontFamily: '"Tenor Sans", sans-serif' }}>

@@ -5,7 +5,10 @@ import {verifyToken} from "../middleware/verifyToken.ts"
 const router = Router();
 
 router.post('/register',controller.register)
-router.post('/login',controller.login)
+
+router.post('/login',controller.authenAndSendOtp)
+router.post('/verify',controller.verifyLogin)
+
 router.post('/logout',controller.logout)
 router.get('/me',verifyToken,controller.me)
 

@@ -26,7 +26,7 @@ interface Notification {
   orderStatus?: string; // เพิ่มฟิลด์สำหรับสถานะ order
 }
 
-export default function Header() {\
+export default function Header() {
   const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -57,6 +57,7 @@ export default function Header() {\
       }
 
       const authResult = await authResponse.json();
+      console.log("Auth API result:", authResult);
       const employeeIdFromToken =
         authResult.user.employee_id || authResult.user.id;
 
@@ -70,7 +71,7 @@ export default function Header() {\
 
       // Step 2: Use employee_id to get full account details
       const accountResponse = await fetch(
-        `${API_URL}/account-detail`,
+        `${API_URL}/acc/account-detail`,
         {
           method: "POST",
           headers: {
@@ -453,7 +454,7 @@ export default function Header() {\
 
   return (
     <div className="sticky top-0 z-10 w-full transition-colors duration-300"
-         style={{backgroundColor: isDark ? '#111827' : '#FAF9F8'}}>
+         style={{backgroundColor: isDark ? '#111827' : '#f9fafb'}}>
       <div className="flex items-center p-4">
         <h1 className="font-bold text-2xl transition-colors duration-300"
             style={{color: isDark ? 'white' : '#1f2937'}}>PharmaC</h1>
