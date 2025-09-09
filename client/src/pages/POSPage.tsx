@@ -64,6 +64,9 @@ export default function POSPage() {
   const [isAutoVerifying, setIsAutoVerifying] = useState(false);
   const [autoVerifyInterval, setAutoVerifyInterval] = useState<NodeJS.Timeout | null>(null);
   
+  // Add flag to prevent multiple stock reduction executions
+  const [isProcessingStockReduction, setIsProcessingStockReduction] = useState(false);
+  
   // Member System States
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberPhone, setMemberPhone] = useState("");
@@ -118,11 +121,8 @@ export default function POSPage() {
           setShowPaymentSuccessModal(true);
           
           // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
+          // รวม updateDatabaseStatus เข้าไปใน handlePaymentSuccess เพื่อไม่ให้ทำงานแยกกัน
           handlePaymentSuccess();
-          
-          // Call API to update database status without emitting WebSocket
-          console.log('🔄 Updating database status...');
-          updateDatabaseStatus();
           
           // Add points if member exists
           if (currentMember) {
@@ -496,52 +496,70 @@ export default function POSPage() {
         expired_date: lot.expired_date
       })));
 
-      // ลดจำนวนจาก lots ตามลำดับวันหมดอายุ (ใกล้หมดอายุก่อน)
+      // 🚀 BATCH PROCESSING - ลดจำนวนจาก lots แบบ batch เพื่อป้องกันการเบิ้ล
+      console.log(`\n🎯 Starting BATCH processing for ${cartItem.product_name}`);
+      
+      // สร้าง batch data สำหรับ lots ที่ต้องการลด
+      const batchOperations = [];
+      let tempRemainingQuantity = remainingQuantity;
+      
       for (const lot of cartItem.lots) {
-        if (remainingQuantity <= 0) {
-          console.log(`✅ All quantity fulfilled for ${cartItem.product_name}, stopping lot processing`);
-          break;
-        }
-
-        const availableInLot = lot.init_amount || 0;
-        const toReduceFromLot = Math.min(remainingQuantity, availableInLot);
+        if (tempRemainingQuantity <= 0) break;
         
-        console.log(`\n🔍 Processing lot ${lot.lot_id}:`);
-        console.log(`  📦 Available in lot: ${availableInLot}`);
-        console.log(`  📝 Remaining quantity to process: ${remainingQuantity}`);
-        console.log(`  ⬇️ Will reduce from this lot: ${toReduceFromLot}`);
-
+        const availableInLot = lot.init_amount || 0;
+        const toReduceFromLot = Math.min(tempRemainingQuantity, availableInLot);
+        
         if (toReduceFromLot > 0) {
-          try {
-            console.log(`🔄 Updating lot ${lot.lot_id} quantity...`);
-            // อัพเดตจำนวนใน lot
-            const updateResponse = await fetch(`http://localhost:5000/lot/update-lot/${lot.lot_id}`, {
+          batchOperations.push({
+            lot_id: lot.lot_id,
+            current_amount: availableInLot,
+            reduce_amount: toReduceFromLot,
+            new_amount: availableInLot - toReduceFromLot,
+            product_name: cartItem.product_name
+          });
+          tempRemainingQuantity -= toReduceFromLot;
+        }
+      }
+      
+      console.log(`📦 Batch operations prepared:`, batchOperations);
+      
+      if (batchOperations.length > 0) {
+        try {
+          // สร้าง unique batch ID เพื่อป้องกันการเบิ้ล
+          const batchId = `batch-${Date.now()}-${cartItem.product_id}`;
+          console.log(`🆔 Batch ID: ${batchId}`);
+          
+          // ทำการอัพเดต lots และสร้าง stock transactions แบบ batch
+          for (const operation of batchOperations) {
+            console.log(`\n🔄 Processing lot ${operation.lot_id} in batch...`);
+            
+            // 1. อัพเดต lot quantity
+            const updateResponse = await fetch(`http://localhost:5000/lot/update-lot/${operation.lot_id}`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
               },
               credentials: 'include',
               body: JSON.stringify({
-                init_amount: availableInLot - toReduceFromLot
+                init_amount: operation.new_amount
               })
             });
 
             if (updateResponse.ok) {
-              console.log(`✅ Lot ${lot.lot_id} updated successfully. New amount: ${availableInLot - toReduceFromLot}`);
+              console.log(`✅ Lot ${operation.lot_id} updated successfully. New amount: ${operation.new_amount}`);
               
-              // Prepare stock transaction data
+              // 2. สร้าง stock transaction with unique batch reference
               const stockTransactionData = {
                 trans_type: 'OUT',
                 trans_date: new Date().toISOString(),
-                qty: toReduceFromLot,
-                ref_no: `POS-${Date.now()}-${lot.lot_id}`,
-                note: `POS Sale - ${cartItem.product_name}`,
-                lot_id_fk: lot.lot_id
+                qty: operation.reduce_amount,
+                ref_no: `${batchId}-lot-${operation.lot_id}`, // Unique ref per batch and lot
+                note: `POS Sale - ${operation.product_name} (Batch: ${batchId})`,
+                lot_id_fk: operation.lot_id
               };
               
-              console.log(`📝 Creating stock transaction:`, stockTransactionData);
+              console.log(`📝 Creating stock transaction for batch:`, stockTransactionData);
               
-              // สร้าง stock transaction สำหรับการขาย
               const stockTransResponse = await fetch('http://localhost:5000/stock/add-stock', {
                 method: 'POST',
                 headers: {
@@ -553,29 +571,31 @@ export default function POSPage() {
 
               if (stockTransResponse.ok) {
                 const stockResponseData = await stockTransResponse.json();
-                console.log(`✅ Stock transaction created successfully:`, stockResponseData);
+                console.log(`✅ Stock transaction created successfully for lot ${operation.lot_id}:`, stockResponseData);
                 
                 reductionHistory.push({
-                  lot_id: lot.lot_id,
-                  quantity: toReduceFromLot,
-                  remaining_in_lot: availableInLot - toReduceFromLot,
-                  transaction_created: true
+                  lot_id: operation.lot_id,
+                  quantity: operation.reduce_amount,
+                  remaining_in_lot: operation.new_amount,
+                  transaction_created: true,
+                  batch_id: batchId
                 });
-                remainingQuantity -= toReduceFromLot;
-                console.log(`✅ Reduced ${toReduceFromLot} from lot ${lot.lot_id}, ${remainingQuantity} remaining to process`);
+                remainingQuantity -= operation.reduce_amount;
               } else {
                 const errorData = await stockTransResponse.text();
-                console.error(`❌ Failed to create stock transaction for lot ${lot.lot_id}:`, errorData);
+                console.error(`❌ Failed to create stock transaction for lot ${operation.lot_id}:`, errorData);
+                console.error(`❌ Response status: ${stockTransResponse.status}`);
               }
             } else {
               const errorData = await updateResponse.text();
-              console.error(`❌ Failed to update lot ${lot.lot_id}:`, errorData);
+              console.error(`❌ Failed to update lot ${operation.lot_id}:`, errorData);
+              console.error(`❌ Response status: ${updateResponse.status}`);
             }
-          } catch (error) {
-            console.error(`❌ Error processing lot ${lot.lot_id}:`, error);
           }
-        } else {
-          console.log(`⏭️ Skipping lot ${lot.lot_id} - no quantity to reduce (available: ${availableInLot})`);
+          
+          console.log(`✅ Batch processing completed for ${cartItem.product_name}`);
+        } catch (error) {
+          console.error(`❌ Error during batch processing:`, error);
         }
       }
 
@@ -594,22 +614,27 @@ export default function POSPage() {
   const handlePaymentSuccess = async () => {
     console.log('🚨 ===== PAYMENT SUCCESS HANDLER CALLED =====');
     console.log('⏰ Timestamp:', new Date().toISOString());
-    console.log('🛒 Current cart:', cart.map(item => ({
+    console.log('� Is already processing stock reduction:', isProcessingStockReduction);
+    console.log('�🛒 Current cart:', cart.map(item => ({
       product_id: item.product_id,
       product_name: item.product_name,
       quantity: item.quantity
     })));
     
+    
+    // setIsProcessingStockReduction(true);
+    
     try {
       console.log('💳 Payment successful - processing stock reduction...');
       
-      // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
+    
       await processStockReduction();
+ 
+      // await updateDatabaseStatus();
       
-      console.log('✅ Stock reduction completed in handlePaymentSuccess');
     } catch (error) {
       console.error('❌ Error during payment success handling:', error);
-    }
+    } 
     
     console.log('🚨 ===== PAYMENT SUCCESS HANDLER FINISHED =====\n');
   };
@@ -851,7 +876,7 @@ export default function POSPage() {
         setQrPaymentStatus('success');
         
         // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
-        await handlePaymentSuccess();
+        // await handlePaymentSuccess();
         
         if(currentMember){
           addPoints();
@@ -916,38 +941,48 @@ export default function POSPage() {
   };
 
   // Update database status without WebSocket emission (for WebSocket events)
-  const updateDatabaseStatus = async () => {
-    if (!orderId || !paymentIntentId) {
-      console.log('❌ Missing orderId or paymentIntentId for database update');
-      return;
-    }
+  // const updateDatabaseStatus = async () => {
+  //   console.log('🔔 ===== UPDATE DATABASE STATUS CALLED =====');
+  //   console.log('⏰ Timestamp:', new Date().toISOString());
+  //   console.log('📋 Order ID:', orderId);
+  //   console.log('💳 Payment Intent ID:', paymentIntentId);
+    
+  //   // Add stack trace to see where this is called from
+  //   console.trace('📍 Called from:');
+    
+  //   if (!orderId || !paymentIntentId) {
+  //     console.log('❌ Missing orderId or paymentIntentId for database update');
+  //     return;
+  //   }
 
-    try {
-      console.log('📊 Updating database status for order:', orderId);
+  //   try {
+  //     console.log('📊 Updating database status for order:', orderId);
       
-      const response = await fetch('http://localhost:5000/payment/check', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          order_id: orderId,
-          pi: paymentIntentId,
-          skipWebSocket: true  // Skip WebSocket emission to prevent loop
-        })
-      });
+  //     const response = await fetch('http://localhost:5000/payment/check', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       credentials: 'include',
+  //       body: JSON.stringify({
+  //         order_id: orderId,
+  //         pi: paymentIntentId,
+  //         skipWebSocket: true  // Skip WebSocket emission to prevent loop
+  //       })
+  //     });
 
-      const result = await response.json();
-      console.log('📊 Database status update result:', result);
+  //     const result = await response.json();
+  //     console.log('📊 Database status update result:', result);
       
-      if (result.success && result.status === 'succeeded') {
-        console.log('✅ Database status updated successfully');
-      }
-    } catch (error) {
-      console.error('❌ Error updating database status:', error);
-    }
-  };
+  //     if (result.success && result.status === 'succeeded') {
+  //       console.log('✅ Database status updated successfully');
+  //     }
+  //   } catch (error) {
+  //     console.error('❌ Error updating database status:', error);
+  //   }
+    
+  //   console.log('🔔 ===== UPDATE DATABASE STATUS FINISHED =====\n');
+  // };
 
   // Start auto verification with polling
   const startAutoVerification = () => {
@@ -968,67 +1003,67 @@ export default function POSPage() {
     console.log('🚀 Starting auto verification for order:', orderId);
     setIsAutoVerifying(true);
 
-    const interval = setInterval(async () => {
-      try {
-        console.log('🔍 Auto verification check...');
+    // const interval = setInterval(async () => {
+    //   try {
+    //     console.log('🔍 Auto verification check...');
         
-        const response = await fetch('http://localhost:5000/payment/check', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            order_id: orderId,
-            pi: paymentIntentId
-          })
-        });
+    //     const response = await fetch('http://localhost:5000/payment/check', {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //       },
+    //       credentials: 'include',
+    //       body: JSON.stringify({
+    //         order_id: orderId,
+    //         pi: paymentIntentId
+    //       })
+    //     });
 
-        const result = await response.json();
-        console.log('🔍 Auto verification result:', result);
+    //     const result = await response.json();
+    //     console.log('🔍 Auto verification result:', result);
         
-        if (result.success && result.status === 'succeeded') {
-          console.log('✅ Auto verification success!');
-          clearInterval(interval);
-          setAutoVerifyInterval(null);
-          setIsAutoVerifying(false);
-          setQrPaymentStatus('success');
+    //     if (result.success && result.status === 'succeeded') {
+    //       console.log('✅ Auto verification success!');
+    //       clearInterval(interval);
+    //       setAutoVerifyInterval(null);
+    //       setIsAutoVerifying(false);
+    //       setQrPaymentStatus('success');
           
-          // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
-          handlePaymentSuccess();
+    //       // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
+    //       // handlePaymentSuccess();
           
-          if (currentMember) {
-            addPoints();
-          }
-          setShowRequiresActionModal(false);
-          setShowPaymentSuccessModal(true);
-        } else if (result.status === 'failed' || result.status === 'canceled') {
-          console.log('❌ Auto verification failed');
-          clearInterval(interval);
-          setAutoVerifyInterval(null);
-          setIsAutoVerifying(false);
-          setQrPaymentStatus('failed');
-          setErrorMessage(`Payment ${result.status} - Please try again`);
-          setShowErrorPopup(true);
-          setTimeout(() => setShowErrorPopup(false), 5000);
-        }
-        // Continue polling for pending status
-      } catch (error) {
-        console.error('Auto verification error:', error);
-      }
-    }, 3000); // Check every 3 seconds
+    //       if (currentMember) {
+    //         addPoints();
+    //       }
+    //       setShowRequiresActionModal(false);
+    //       setShowPaymentSuccessModal(true);
+    //     } else if (result.status === 'failed' || result.status === 'canceled') {
+    //       console.log('❌ Auto verification failed');
+    //       clearInterval(interval);
+    //       setAutoVerifyInterval(null);
+    //       setIsAutoVerifying(false);
+    //       setQrPaymentStatus('failed');
+    //       setErrorMessage(`Payment ${result.status} - Please try again`);
+    //       setShowErrorPopup(true);
+    //       setTimeout(() => setShowErrorPopup(false), 5000);
+    //     }
+    //     // Continue polling for pending status
+    //   } catch (error) {
+    //     console.error('Auto verification error:', error);
+    //   }
+    // }, 3000); // Check every 3 seconds
 
-    setAutoVerifyInterval(interval);
+  //   setAutoVerifyInterval(interval);
 
-    // Stop auto verification after 5 minutes
-    setTimeout(() => {
-      if (interval) {
-        console.log('⏱️ Auto verification timeout after 5 minutes');
-        clearInterval(interval);
-        setAutoVerifyInterval(null);
-        setIsAutoVerifying(false);
-      }
-    }, 300000); // 5 minutes
+  //   // Stop auto verification after 5 minutes
+  //   setTimeout(() => {
+  //     if (interval) {
+  //       console.log('⏱️ Auto verification timeout after 5 minutes');
+  //       clearInterval(interval);
+  //       setAutoVerifyInterval(null);
+  //       setIsAutoVerifying(false);
+  //     }
+  //   }, 300000); // 5 minutes
   };
 
   // Handle new transaction - reset all states including auto verification
@@ -1051,6 +1086,7 @@ export default function POSPage() {
     setQrCodeData(null);
     setSelectedPayment('cash');
     setIsVerifyingPayment(false);
+    setIsProcessingStockReduction(false); // Reset stock reduction flag
     
     console.log('🔄 New transaction started, all states reset');
   };
