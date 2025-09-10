@@ -29,6 +29,12 @@ router.use("/customer", customerRoute);
 import signatureRoute from "./signature.routes.ts";
 router.use("/signature", signatureRoute);
 
+import supplierRoute from "./supplier.routes.ts";
+router.use("/api/suppliers", supplierRoute);
+
+import productSupplierRoute from "./product-supplier.routes.ts";
+router.use("/api", productSupplierRoute);
+
 import revenueRoute from "./revenue.routes.ts";
 router.use("/revenue", revenueRoute);
 
