@@ -8,3 +8,4 @@ payment-test.md
 server/package-lock.json
 server/prisma/schema.prisma
 server/.env
+/server
