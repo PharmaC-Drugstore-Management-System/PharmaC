@@ -4,9 +4,6 @@ import { useNavigate } from "react-router-dom";
 import {
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -261,15 +258,75 @@ export default function PharmaDashboard() {
     await forecastMonthly(selectedModel, modelId);
   };
 
-  const trendData = [
-    { name: "Amoxicillin", value: 40 },
-    { name: "Ibuprofen", value: 30 },
-    { name: "Alprazolam", value: 13.3 },
-    { name: "Benzonatate", value: 10 },
-    { name: "Cephalexin", value: 6.7 },
+  // Mock data for sales trends
+  const salesTrendData = [
+    { 
+      id: 1,
+      name: "Paracetamol 500mg", 
+      category: "Pain Relief",
+      soldThisMonth: 245, 
+      soldLastMonth: 180,
+      trend: "up",
+      trendPercentage: 36.1,
+      status: "hot",
+      stock: 150
+    },
+    { 
+      id: 2,
+      name: "Amoxicillin 250mg", 
+      category: "Antibiotic",
+      soldThisMonth: 189, 
+      soldLastMonth: 210,
+      trend: "down",
+      trendPercentage: -10.0,
+      status: "normal",
+      stock: 89
+    },
+    { 
+      id: 3,
+      name: "Vitamin C 1000mg", 
+      category: "Supplement",
+      soldThisMonth: 156, 
+      soldLastMonth: 98,
+      trend: "up",
+      trendPercentage: 59.2,
+      status: "hot",
+      stock: 203
+    },
+    { 
+      id: 4,
+      name: "Ibuprofen 400mg", 
+      category: "Pain Relief",
+      soldThisMonth: 134, 
+      soldLastMonth: 145,
+      trend: "down",
+      trendPercentage: -7.6,
+      status: "normal",
+      stock: 67
+    },
+    { 
+      id: 5,
+      name: "Cough Syrup", 
+      category: "Cold & Flu",
+      soldThisMonth: 78, 
+      soldLastMonth: 156,
+      trend: "down",
+      trendPercentage: -50.0,
+      status: "cold",
+      stock: 234
+    },
+    { 
+      id: 6,
+      name: "Aspirin 100mg", 
+      category: "Cardiovascular",
+      soldThisMonth: 92, 
+      soldLastMonth: 89,
+      trend: "up",
+      trendPercentage: 3.4,
+      status: "normal",
+      stock: 178
+    }
   ];
-
-  const COLORS = ["#79e2f2", "#7ab8f2", "#4d82bf", "#38618c", "#213559"];
 
   const checkme = async () => {
     try {
@@ -339,162 +396,8 @@ export default function PharmaDashboard() {
         </button>
       </div>
 
-      {/* Charts Section - Improved Grid Layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-        {/* Revenue Chart - Enhanced */}
-        <div className="xl:col-span-2">
-          <div
-            className="rounded-xl shadow-lg border p-6"
-            style={{
-              backgroundColor: document.documentElement.classList.contains("dark")
-                ? "#374151"
-                : "white",
-              borderColor: document.documentElement.classList.contains("dark")
-                ? "#4b5563"
-                : "#e5e7eb",
-            }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3
-                className="text-xl font-bold"
-                style={{
-                  color: document.documentElement.classList.contains("dark")
-                    ? "white"
-                    : "#111827",
-                }}
-              >
-                {t("revenueForecast")}
-              </h3>
-              <div className="flex items-center space-x-3">
-                {isLoading && (
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {t("loadingForecast")}
-                    </span>
-                  </div>
-                )}
-
-                {/* Forecast Options Dropdown - Enhanced */}
-                <select
-                  value={selectedModel}
-                  onChange={(e) => handleModelChange(e.target.value)}
-                  disabled={isLoading}
-                  className="px-4 py-2 border rounded-lg shadow-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:shadow-md"
-                  style={{
-                    backgroundColor: document.documentElement.classList.contains("dark")
-                      ? "#4b5563"
-                      : "white",
-                    borderColor: document.documentElement.classList.contains("dark")
-                      ? "#6b7280"
-                      : "#d1d5db",
-                    color: document.documentElement.classList.contains("dark")
-                      ? "white"
-                      : "#111827",
-                  }}
-                >
-                  {forecastOptions.map((model) => (
-                    <option key={model.id} value={model.id}>
-                      {model.name}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Forecast Model Dropdown - Enhanced */}
-                <select
-                  value={selectedForecastModel}
-                  onChange={(e) => handleForecastModelChange(e.target.value)}
-                  disabled={isLoading}
-                  className="px-4 py-2 border rounded-lg shadow-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:shadow-md"
-                  style={{
-                    backgroundColor: document.documentElement.classList.contains("dark")
-                      ? "#4b5563"
-                      : "white",
-                    borderColor: document.documentElement.classList.contains("dark")
-                      ? "#6b7280"
-                      : "#d1d5db",
-                    color: document.documentElement.classList.contains("dark")
-                      ? "white"
-                      : "#111827",
-                  }}
-                >
-                  {forecastModels.map((model) => (
-                    <option key={model.id} value={model.id}>
-                      {model.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Model Description - Enhanced */}
-            <div
-              className="mb-4 p-3 rounded-lg text-sm"
-              style={{
-                backgroundColor: document.documentElement.classList.contains("dark")
-                  ? "#4b5563"
-                  : "#f8fafc",
-                color: document.documentElement.classList.contains("dark")
-                  ? "#d1d5db"
-                  : "#64748b",
-              }}
-            >
-              {forecastOptions.find((option) => option.id === selectedModel)?.description}
-            </div>
-
-            <Link to="/revenue-detail">
-              <div className="cursor-pointer hover:shadow-lg transition-all duration-300 rounded-lg p-4"
-                   style={{
-                     backgroundColor: document.documentElement.classList.contains("dark")
-                       ? "#4b5563"
-                       : "#f8fafc",
-                   }}>
-                <div className="flex justify-center">
-                  <LineChart width={600} height={300} data={filteredChartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 11 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(value) => `₿${value.toLocaleString()}`}
-                    />
-                    <Tooltip
-                      formatter={(value, name) => [
-                        `${value?.toLocaleString() || 0} ฿`,
-                        name === 'actual' ? 'Historical Revenue' : 'Forecast Revenue'
-                      ]}
-                    />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="actual"
-                      stroke="#2563eb"
-                      strokeWidth={3}
-                      name={t("historicalRevenue")}
-                      dot={{ fill: "#2563eb", strokeWidth: 2, r: 4 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="forecast"
-                      stroke="#dc2626"
-                      strokeWidth={3}
-                      strokeDasharray="5 5"
-                      name={t("forecastRevenue")}
-                      dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Trend Pie Chart - Enhanced */}
+      {/* Revenue Chart Section - Full Width */}
+      <div className="mb-8">
         <div
           className="rounded-xl shadow-lg border p-6"
           style={{
@@ -506,41 +409,143 @@ export default function PharmaDashboard() {
               : "#e5e7eb",
           }}
         >
-          <h3
-            className="text-xl font-bold mb-6"
+          <div className="flex items-center justify-between mb-6">
+            <h3
+              className="text-xl font-bold"
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}
+            >
+              {t("revenueForecast")}
+            </h3>
+            <div className="flex items-center space-x-3">
+              {isLoading && (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <span className="text-sm text-blue-600 font-medium">
+                    {t("loadingForecast")}
+                  </span>
+                </div>
+              )}
+
+              {/* Forecast Options Dropdown - Enhanced */}
+              <select
+                value={selectedModel}
+                onChange={(e) => handleModelChange(e.target.value)}
+                disabled={isLoading}
+                className="px-4 py-2 border rounded-lg shadow-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:shadow-md"
+                style={{
+                  backgroundColor: document.documentElement.classList.contains("dark")
+                    ? "#4b5563"
+                    : "white",
+                  borderColor: document.documentElement.classList.contains("dark")
+                    ? "#6b7280"
+                    : "#d1d5db",
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {forecastOptions.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* Forecast Model Dropdown - Enhanced */}
+              <select
+                value={selectedForecastModel}
+                onChange={(e) => handleForecastModelChange(e.target.value)}
+                disabled={isLoading}
+                className="px-4 py-2 border rounded-lg shadow-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:shadow-md"
+                style={{
+                  backgroundColor: document.documentElement.classList.contains("dark")
+                    ? "#4b5563"
+                    : "white",
+                  borderColor: document.documentElement.classList.contains("dark")
+                    ? "#6b7280"
+                    : "#d1d5db",
+                  color: document.documentElement.classList.contains("dark")
+                    ? "white"
+                    : "#111827",
+                }}
+              >
+                {forecastModels.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Model Description - Enhanced */}
+          <div
+            className="mb-4 p-3 rounded-lg text-sm"
             style={{
+              backgroundColor: document.documentElement.classList.contains("dark")
+                ? "#4b5563"
+                : "#f8fafc",
               color: document.documentElement.classList.contains("dark")
-                ? "white"
-                : "#111827",
+                ? "#d1d5db"
+                : "#64748b",
             }}
           >
-            {t("trend")}
-          </h3>
-          <div className="flex justify-center">
-            <PieChart width={350} height={300}>
-              <Pie
-                data={trendData}
-                cx={175}
-                cy={150}
-                innerRadius={0}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) =>
-                  `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
-                }
-                labelLine={false}
-              >
-                {trendData.map((_entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
+            {forecastOptions.find((option) => option.id === selectedModel)?.description}
           </div>
+
+          <Link to="/revenue-detail">
+            <div className="cursor-pointer hover:shadow-lg transition-all duration-300 rounded-lg p-4"
+                 style={{
+                   backgroundColor: document.documentElement.classList.contains("dark")
+                     ? "#4b5563"
+                     : "#f8fafc",
+                 }}>
+              <div className="flex justify-center">
+                <LineChart width={800} height={300} data={filteredChartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => `₿${value.toLocaleString()}`}
+                  />
+                  <Tooltip
+                    formatter={(value, name) => [
+                      `${value?.toLocaleString() || 0} ฿`,
+                      name === 'actual' ? 'Historical Revenue' : 'Forecast Revenue'
+                    ]}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="actual"
+                    stroke="#2563eb"
+                    strokeWidth={3}
+                    name={t("historicalRevenue")}
+                    dot={{ fill: "#2563eb", strokeWidth: 2, r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="forecast"
+                    stroke="#dc2626"
+                    strokeWidth={3}
+                    strokeDasharray="5 5"
+                    name={t("forecastRevenue")}
+                    dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
 
@@ -683,6 +688,197 @@ export default function PharmaDashboard() {
             </div>
             <div className="p-3 bg-yellow-100 rounded-full">
               <ShoppingCart className="h-8 w-8 text-yellow-600" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sales Trends Section */}
+      <div className="rounded-xl shadow-lg border p-8 mb-8"
+           style={{
+             backgroundColor: document.documentElement.classList.contains("dark")
+               ? "#374151"
+               : "white",
+             borderColor: document.documentElement.classList.contains("dark")
+               ? "#4b5563"
+               : "#e5e7eb",
+           }}>
+        
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold flex items-center"
+              style={{
+                color: document.documentElement.classList.contains("dark")
+                  ? "white"
+                  : "#111827",
+              }}>
+            <div className="w-1 h-6 bg-blue-500 mr-3 rounded-full"></div>
+            Sales Trends & Performance
+          </h3>
+          <div className="text-sm font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-800">
+            This Month
+          </div>
+        </div>
+
+        {/* Trend Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {salesTrendData.map((item) => {
+            const isHot = item.status === "hot";
+            const isCold = item.status === "cold";
+            const trendUp = item.trend === "up";
+            
+            return (
+              <div key={item.id}
+                   className="rounded-lg border p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                   style={{
+                     backgroundColor: document.documentElement.classList.contains("dark")
+                       ? "#4b5563"
+                       : "white",
+                     borderColor: document.documentElement.classList.contains("dark")
+                       ? "#6b7280"
+                       : "#e5e7eb",
+                   }}>
+                
+                {/* Product Header */}
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h4 className="font-bold text-lg leading-tight"
+                        style={{
+                          color: document.documentElement.classList.contains("dark")
+                            ? "white"
+                            : "#1e293b",
+                        }}>
+                      {item.name}
+                    </h4>
+                    <p className="text-sm mt-1"
+                       style={{
+                         color: document.documentElement.classList.contains("dark")
+                           ? "#9ca3af"
+                           : "#64748b",
+                       }}>
+                      {item.category}
+                    </p>
+                  </div>
+                  
+                  {/* Status Badge */}
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    isHot 
+                      ? "bg-red-100 text-red-700 border border-red-200" 
+                      : isCold 
+                      ? "bg-blue-100 text-blue-700 border border-blue-200"
+                      : "bg-green-100 text-green-700 border border-green-200"
+                  }`}>
+                    {isHot ? "🔥 Hot" : isCold ? "❄️ Cold" : "📊 Normal"}
+                  </span>
+                </div>
+
+                {/* Sales Numbers */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <p className="text-sm font-medium"
+                       style={{
+                         color: document.documentElement.classList.contains("dark")
+                           ? "#9ca3af"
+                           : "#64748b",
+                       }}>
+                      This Month
+                    </p>
+                    <p className="text-2xl font-bold"
+                       style={{
+                         color: document.documentElement.classList.contains("dark")
+                           ? "white"
+                           : "#1e293b",
+                       }}>
+                      {item.soldThisMonth}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium"
+                       style={{
+                         color: document.documentElement.classList.contains("dark")
+                           ? "#9ca3af"
+                           : "#64748b",
+                       }}>
+                      Last Month
+                    </p>
+                    <p className="text-2xl font-bold"
+                       style={{
+                         color: document.documentElement.classList.contains("dark")
+                           ? "white"
+                           : "#1e293b",
+                       }}>
+                      {item.soldLastMonth}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Trend Indicator */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className={`flex items-center px-3 py-1 rounded-full ${
+                      trendUp 
+                        ? "bg-green-100 text-green-700" 
+                        : "bg-red-100 text-red-700"
+                    }`}>
+                      <span className="text-sm font-bold mr-1">
+                        {trendUp ? "↗️" : "↘️"}
+                      </span>
+                      <span className="text-sm font-bold">
+                        {Math.abs(item.trendPercentage)}%
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right">
+                    <p className="text-xs"
+                       style={{
+                         color: document.documentElement.classList.contains("dark")
+                           ? "#9ca3af"
+                           : "#64748b",
+                       }}>
+                      Stock: {item.stock}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Quick Insights */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <span className="text-2xl mr-3">🔥</span>
+              <div>
+                <p className="font-bold text-red-800">Hot Sellers</p>
+                <p className="text-sm text-red-600">
+                  {salesTrendData.filter(item => item.status === "hot").length} products trending up
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <span className="text-2xl mr-3">❄️</span>
+              <div>
+                <p className="font-bold text-blue-800">Cold Products</p>
+                <p className="text-sm text-blue-600">
+                  {salesTrendData.filter(item => item.status === "cold").length} products need attention
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <span className="text-2xl mr-3">📊</span>
+              <div>
+                <p className="font-bold text-green-800">Stable Sales</p>
+                <p className="text-sm text-green-600">
+                  {salesTrendData.filter(item => item.status === "normal").length} products performing steady
+                </p>
+              </div>
             </div>
           </div>
         </div>
