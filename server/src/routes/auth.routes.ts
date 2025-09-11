@@ -9,6 +9,9 @@ router.post('/register',controller.register)
 router.post('/login',controller.authenAndSendOtp)
 router.post('/verify',controller.verifyLogin)
 
+router.post('/otp-status',controller.getOtpStatus)
+router.post('/resend-otp',controller.resendOtp)
+
 router.post('/logout',controller.logout)
 router.get('/me',verifyToken,controller.me)
 

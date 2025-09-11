@@ -26,6 +26,7 @@ export default function AddMedicinePage() {
     "Syrup",
     "Injection",
   ] as string[]);
+  
   const [units] = useState(["Pack", "Capsule", "Bottle", "Box"] as string[]);
 
   const [customProductType, setCustomProductType] = useState("");

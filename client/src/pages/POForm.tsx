@@ -12,6 +12,27 @@ const SupplierDetailsForm = () => {
   // Check if dark mode is enabled
   const isDark = document.documentElement.classList.contains('dark');
 
+  // โหลดข้อมูล supplier ที่ส่งมาจาก POEdit
+  useEffect(() => {
+    const selectedSupplier = location.state?.selectedSupplier;
+    const today = new Date().toISOString().split('T')[0]; // format: YYYY-MM-DD
+    
+    setSupplierDetails(prev => ({
+      ...prev,
+      issueDate: today, // ตั้งวันที่ปัจจุบันอัตโนมัติ
+      ...(selectedSupplier && {
+        supplier: selectedSupplier.name || '',
+        taxId: selectedSupplier.tax_id || '',
+        address: selectedSupplier.address || '',
+        comments: selectedSupplier.description || ''
+      })
+    }));
+
+    if (selectedSupplier) {
+      console.log("Loading supplier data:", selectedSupplier);
+    }
+  }, [location.state]);
+
   const [supplierDetails, setSupplierDetails] = useState<{
     contactName: string;
     supplier: string;

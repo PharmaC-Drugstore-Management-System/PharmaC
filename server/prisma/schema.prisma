@@ -198,6 +198,7 @@ model product {
   lot                lot[]
   revenue            revenue[]
   trend              trend[]
+  product_suppliers  product_supplier[]
 }
 
 model purchase_document {
@@ -272,6 +273,22 @@ model supplier {
   description       String?             @db.VarChar
   supplier_id       Int                 @id @default(autoincrement())
   purchase_document purchase_document[]
+  product_suppliers product_supplier[]
+}
+
+model product_supplier {
+  product_id   Int
+  supplier_id  Int
+  cost         Float?    @db.Real
+  is_active    Boolean?  @default(true)
+  created_at   DateTime? @default(now())
+  updated_at   DateTime? @updatedAt
+  
+  product      product   @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  supplier     supplier  @relation(fields: [supplier_id], references: [supplier_id], onDelete: Cascade)
+  
+  @@id([product_id, supplier_id])
+  @@map("product_supplier")
 }
 
 model time_period {

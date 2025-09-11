@@ -64,14 +64,54 @@ const auth_service = {
   sendOtp: async (email: string) => {
     try {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      otpStore[email] = { otp, expires: Date.now() + 5 * 60 * 1000 }; // 5 min expiry
+      const expires = Date.now() + 5 * 60 * 1000; // 5 min expiry
+      otpStore[email] = { otp, expires };
 
       await googleMailer.sendOtp(email, otp);
 
-      return { message: "OTP has been sent to your email." };
+      return { 
+        message: "OTP has been sent to your email.",
+        expires: expires // Send expires timestamp to frontend
+      };
     } catch (error: any) {
       console.error("Error sending OTP:", error.message);
       throw new Error("Failed to send OTP.");
+    }
+  },
+
+  resendOtp: async (email: string) => {
+    try {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const expires = Date.now() + 5 * 60 * 1000; // 5 min expiry
+      otpStore[email] = { otp, expires };
+
+      await googleMailer.sendOtp(email, otp);
+
+      return { 
+        message: "New OTP has been sent to your email.",
+        expires: expires // Send new expires timestamp to frontend
+      };
+    } catch (error: any) {
+      console.error("Error resending OTP:", error.message);
+      throw new Error("Failed to resend OTP.");
+    }
+  },
+
+  getOtpStatus: async (email: string) => {
+    try {
+      const storedOtp = otpStore[email];
+      
+      if (!storedOtp) {
+        throw new Error("No OTP found for this email.");
+      }
+
+      return {
+        expires: storedOtp.expires,
+        isExpired: Date.now() > storedOtp.expires
+      };
+    } catch (error: any) {
+      console.error("Error getting OTP status:", error.message);
+      throw error;
     }
   },
 

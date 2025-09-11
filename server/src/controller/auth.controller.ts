@@ -192,6 +192,36 @@ const controller = {
         .json({ message: "Error during logout", error: error.message });
     }
   },
+
+  getOtpStatus: async (req: any, res: any) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const otpStatus = await auth_service.getOtpStatus(email);
+      return res.status(200).json(otpStatus);
+    } catch (error: any) {
+      console.error("Error getting OTP status:", error.message);
+      return res.status(400).json({ message: error.message });
+    }
+  },
+
+  resendOtp: async (req: any, res: any) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const result = await auth_service.resendOtp(email);
+      return res.status(200).json(result);
+    } catch (error: any) {
+      console.error("Error resending OTP:", error.message);
+      return res.status(400).json({ message: error.message });
+    }
+  },
 };
 
 export default controller;
