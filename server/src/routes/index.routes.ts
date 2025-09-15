@@ -20,6 +20,9 @@ router.use("/arima", forecastRoute);
 import purchaseRoute from "./purchase.routes.ts";
 router.use("/purchase", purchaseRoute);
 
+import purchaseDocumentsRoute from "./purchase-documents.route.ts";
+router.use("/purchase", purchaseDocumentsRoute);
+
 import orderRoute from "./order.routes.ts";
 router.use("/order", orderRoute);
 
