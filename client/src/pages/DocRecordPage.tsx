@@ -936,22 +936,7 @@ export default function DocumentRecord() {
                         : doc.pdf_filename}
                     </p>
 
-                    {/* Employee Info */}
-                    {doc.employee && (
-                      <p
-                        className="text-xs truncate"
-                        style={{
-                          color: document.documentElement.classList.contains(
-                            "dark"
-                          )
-                            ? "#a78bfa"
-                            : "#7c3aed",
-                        }}
-                        title={`${doc.employee.firstname} ${doc.employee.lastname}`}
-                      >
-                        � {doc.employee.firstname} {doc.employee.lastname}
-                      </p>
-                    )}
+                   
 
                     {/* Signature Status */}
                     {doc.po_signature ? (
