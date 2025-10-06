@@ -30,13 +30,19 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const success = await authLogin(email, password);
-      console.log("Login attempt result:", success);
-      if (success) {
-        navigate("/otp", { 
-          replace: true,
-          state: { email } // Pass email to OTP page
-        });
+      const result = await authLogin(email, password);
+      console.log("Login attempt result:", result);
+      if (result.success) {
+        // If customer (skip OTP), redirect to customer payment page
+        if (result.skipOtp) {
+          navigate("/customer-payment", { replace: true });
+        } else {
+          // For non-customers, go to OTP page
+          navigate("/otp", { 
+            replace: true,
+            state: { email } // Pass email to OTP page
+          });
+        }
       } else {
         Swal.fire({
           icon: 'error',

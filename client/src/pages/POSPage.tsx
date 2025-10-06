@@ -691,6 +691,7 @@ export default function POSPage() {
   };
     const navigate = useNavigate();
     
+    
     const checkme = async () => {
       try {
         const authme = await fetch('http://localhost:5000/api/me', {
@@ -698,7 +699,8 @@ export default function POSPage() {
           credentials: 'include'
         })
         const data = await authme.json();
-        setEmployeeId(data.user.id)
+        console.log(data)
+        setEmployeeId(data.user.employee_id)
         if (authme.status === 401 || authme.status === 403) {
           navigate('/login');
           return;
@@ -721,7 +723,7 @@ export default function POSPage() {
   const confirmQRPayment = async () => {
     setIsProcessing(true);
     setShowQRConfirmModal(false);
-    
+    console.log('Employee ID:', employee_id);
     try {
       const orderData = {
         items: cart.map(item => ({

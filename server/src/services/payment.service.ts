@@ -61,15 +61,25 @@ const paymentService = {
       return retrieveIntent.status;
     } catch (error) {}
   },
-  updateStatus: async(order_id: number) => {
+  updateStatus: async(order_id: number | string) => {
     try {
+      // Ensure order_id is a number since Prisma expects Int
+      const orderIdNum = typeof order_id === 'string' ? parseInt(order_id) : order_id;
+      
+      if (isNaN(orderIdNum)) {
+        throw new Error(`Invalid order_id: ${order_id}`);
+      }
+      
+      console.log(`💳 Updating order ${orderIdNum} status to PAID`);
       const update = await prisma.order.update({
-        where: { order_id: order_id },
+        where: { order_id: orderIdNum },
         data: { status: "PAID" },
       });
+      console.log(`✅ Successfully updated order ${orderIdNum} status to PAID`);
       return update;
     } catch (error) {
-      
+      console.error("Error updating order status:", error);
+      throw error; // Re-throw the error so the caller knows it failed
     }
   }
 };
