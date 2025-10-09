@@ -17,7 +17,6 @@ type MedicineItem = {
   id: number;
   name: string;
   brand: string;
-  price: number;
   image?: string | null;
   productType?: string | null;
   unit?: string | null;
@@ -49,7 +48,6 @@ export default function PharmacInventoryPage() {
           id: item.product_id,
           name: item.product_name || "-",
           brand: item.brand || "-",
-          price: item.price ?? 0,
           image: item.image || null,
           productType: item.producttype ?? null,
           unit: item.unit ?? item.unit_name ?? item.unitName ?? null,
@@ -61,10 +59,13 @@ export default function PharmacInventoryPage() {
             false,
           expiredDate:
             (item.lot && item.lot[0] && item.lot[0].expired_date) || "-",
-          amount:
-            item.stock && item.stock.length > 0 && item.stock[0].quantity_id_fk
-              ? item.stock[0].quantity_id_fk
-              : item.amount ?? 0,
+          // Sum all stock from all lots for this product
+          amount: item.lot && item.lot.length > 0 
+            ? item.lot.reduce((total: number, lot: any) => {
+                const lotAmount = lot.init_amount || lot.quantity || lot.amount || 0;
+                return total + lotAmount;
+              }, 0)
+            : item.amount ?? 0,
         })
       );
       setItems(formattedItems);
@@ -327,7 +328,6 @@ export default function PharmacInventoryPage() {
             >
               <option>Sort by Name</option>
               <option>Sort by Stock</option>
-              <option>Sort by Price</option>
               <option>Sort by Expiry</option>
             </select>
 
@@ -377,7 +377,7 @@ export default function PharmacInventoryPage() {
         </div>
 
         {/* Modern Table Header */}
-        <div className="hidden lg:grid lg:grid-cols-8 gap-4 px-6 py-4 border-b text-sm font-semibold"
+        <div className="hidden lg:grid lg:grid-cols-7 gap-4 px-6 py-4 border-b text-sm font-semibold"
              style={{
                backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f1f5f9',
                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e2e8f0'
@@ -399,9 +399,6 @@ export default function PharmacInventoryPage() {
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
             Controlled
-          </div>
-          <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Price (฿)
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
             Stock Level
@@ -444,7 +441,7 @@ export default function PharmacInventoryPage() {
                   {/* Desktop Layout */}
                   <div
                     onClick={() => !editMode && openItem(item.id)}
-                    className={`hidden lg:grid lg:grid-cols-8 gap-4 px-6 py-5 transition-all duration-300 ${
+                    className={`hidden lg:grid lg:grid-cols-7 gap-4 px-6 py-5 transition-all duration-300 ${
                       isDimmed ? "opacity-50" : "opacity-100"
                     } ${!editMode ? "cursor-pointer hover:bg-opacity-75" : "cursor-default"}
                     ${isSelected ? "ring-2 ring-green-500 bg-green-50" : ""}`}
@@ -606,16 +603,6 @@ export default function PharmacInventoryPage() {
                       </span>
                     </div>
 
-                    {/* Price cell */}
-                    <div className="flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-lg font-bold"
-                             style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1e293b'}}>
-                          ฿{item.price.toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Stock Level cell */}
                     <div className="flex items-center justify-center">
                       <div className="text-center">
@@ -688,17 +675,7 @@ export default function PharmacInventoryPage() {
                           )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mt-3">
-                          <div>
-                            <p className="text-xs font-medium"
-                               style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
-                              Price
-                            </p>
-                            <p className="text-lg font-bold"
-                               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1e293b'}}>
-                              ฿{item.price.toLocaleString()}
-                            </p>
-                          </div>
+                        <div className="mt-3">
                           <div>
                             <p className="text-xs font-medium"
                                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>

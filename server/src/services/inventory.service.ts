@@ -32,7 +32,20 @@ const inventory_service = {
 
   get_service: async () => {
     try {
-      const get = await prisma.product.findMany();
+      const get = await prisma.product.findMany({
+        include: {
+          lot: {
+            select: {
+              lot_id: true,
+              lot_no: true,
+              init_amount: true,
+              added_date: true,
+              expired_date: true,
+              cost: true
+            }
+          }
+        }
+      });
       return get;
     } catch (error: any) {
       console.error("Error in inventory_service.get_service():", error.message);

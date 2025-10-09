@@ -4,7 +4,7 @@
     "forecast_days": 7,
     "model_used": "arima",
     "drugs_processed": 2,
-    "timestamp": "2025-10-06T14:33:22.409290",
+    "timestamp": "2025-10-09T14:13:24.866941",
     "available_drugs": [
       "Capsule",
       "Tablet"
