@@ -273,7 +273,7 @@ export default function PharmaDashboard() {
 
   const checkme = async () => {
     try {
-      const authme = await fetch(`${API_URL}/api/me`, {
+      const authme = await fetch(`${API_URL}/me`, {
         method: "GET",
         credentials: "include",
       });

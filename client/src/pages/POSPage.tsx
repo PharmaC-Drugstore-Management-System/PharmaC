@@ -93,8 +93,14 @@ export default function POSPage() {
     checkme();
     loadQuickCustomers();
 
-    // Initialize socket connection
-    const socket = io(API_URL);
+    // Initialize socket connection using env
+    const SOCKET_BASE = import.meta.env.VITE_SOCKET_BASE || API_URL;
+    const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || '/socket.io';
+    const socket = io(SOCKET_BASE, {
+      withCredentials: true,
+      path: SOCKET_PATH,
+      transports: ['websocket', 'polling'],
+    });
 
     // Listen for payment status updates
     socket.on('payment-status-update', (data: any) => {
@@ -165,7 +171,7 @@ export default function POSPage() {
     try {
       console.log(qrCodeData?.pi)
       console.log(qrCodeData?.order_id)
-      const response = await fetch('http://localhost:5000/payment/check', {
+  const response = await fetch(`${API_URL}/payment/check`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +219,7 @@ export default function POSPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:5000/inventory/get-medicine", {
+  const response = await fetch(`${API_URL}/inventory/get-medicine`, {
         credentials: "include",
       });
       if (response.ok) {
@@ -224,7 +230,7 @@ export default function POSPage() {
           data.data.map(async (product: Product) => {
             try {
               // ดึงข้อมูล lots ของแต่ละ product
-              const lotsResponse = await fetch(`http://localhost:5000/lot/get-lots-by-product/${product.product_id}`, {
+              const lotsResponse = await fetch(`${API_URL}/lot/get-lots-by-product/${product.product_id}`, {
                 credentials: "include",
               });
               
@@ -280,7 +286,7 @@ export default function POSPage() {
   const addToCart = async (product: Product) => {
     try {
       // ดึงข้อมูล lots ของ product นี้
-      const lotsResponse = await fetch(`http://localhost:5000/lot/get-lots-by-product/${product.product_id}`, {
+  const lotsResponse = await fetch(`${API_URL}/lot/get-lots-by-product/${product.product_id}`, {
         credentials: "include",
       });
       
@@ -363,7 +369,7 @@ export default function POSPage() {
     setMemberSearching(true);
     try {
       // Call real API to get all customers and search by phone
-      const response = await fetch("http://localhost:5000/customer/get-customers");
+  const response = await fetch(`${API_URL}/customer/get-customers`);
       if (!response.ok) {
         throw new Error('Failed to fetch customers');
       }
@@ -416,7 +422,7 @@ export default function POSPage() {
         point: 0 // Start with 0 points
       };
 
-      const response = await fetch("http://localhost:5000/customer/add-customer", {
+  const response = await fetch(`${API_URL}/customer/add-customer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -525,7 +531,7 @@ export default function POSPage() {
             console.log(`\n🔄 Processing lot ${operation.lot_id} in batch...`);
             
             // 1. อัพเดต lot quantity
-            const updateResponse = await fetch(`http://localhost:5000/lot/update-lot/${operation.lot_id}`, {
+            const updateResponse = await fetch(`${API_URL}/lot/update-lot/${operation.lot_id}`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
@@ -551,7 +557,7 @@ export default function POSPage() {
               
               console.log(`📝 Creating stock transaction for batch:`, stockTransactionData);
               
-              const stockTransResponse = await fetch('http://localhost:5000/stock/add-stock', {
+              const stockTransResponse = await fetch(`${API_URL}/stock/add-stock`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -693,7 +699,7 @@ export default function POSPage() {
     
     const checkme = async () => {
       try {
-        const authme = await fetch('http://localhost:5000/api/me', {
+  const authme = await fetch(`${API_URL}/me`, {
           method: 'GET',
           credentials: 'include'
         })
@@ -737,7 +743,7 @@ export default function POSPage() {
 
       console.log('Sending order data to create QR for customer display:', orderData);
 
-      const response = await fetch('http://localhost:5000/order/createOrder', {
+  const response = await fetch(`${API_URL}/order/createOrder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -804,7 +810,7 @@ export default function POSPage() {
     }
     
     try {
-      const response = await fetch(`http://localhost:5000/customer/add-point/${currentMember.id}`, {
+  const response = await fetch(`${API_URL}/customer/add-point/${currentMember.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -850,7 +856,7 @@ export default function POSPage() {
     try {
       console.log('Verifying payment with order_id:', orderId, 'pi:', paymentIntentId);
 
-      const response = await fetch('http://localhost:5000/payment/check', {
+  const response = await fetch(`${API_URL}/payment/check`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

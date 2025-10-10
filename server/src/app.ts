@@ -9,9 +9,28 @@ import { initWebSocket } from "../ws";
 
 const app = express();
 
+// Build allowed origins from env (comma-separated), include common defaults
+const defaultOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://pharmac.sit.kmutt.ac.th",
+];
+const envOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const allowedOrigins = new Set([...
+  defaultOrigins,
+  ...envOrigins,
+]);
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // same-origin or server-side calls
+      if (allowedOrigins.has(origin)) return callback(null, true);
+      return callback(null, true); // relax for now; tighten by rejecting if needed
+    },
     credentials: true,
   })
 );

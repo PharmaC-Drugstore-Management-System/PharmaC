@@ -151,7 +151,7 @@ export default function RegisterPage() {
         role_id: Number(formData.role_id),
       };
 
-      const response = await fetch(`${API_URL}/api/register`, {
+      const response = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

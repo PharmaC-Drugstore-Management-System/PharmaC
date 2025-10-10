@@ -6,31 +6,31 @@ import authRoute from "./auth.routes.ts";
 router.use("/api", authRoute);
 
 import accountRoute from "./account.routes.ts";
-router.use("/acc", accountRoute);
+router.use("/api/account", accountRoute);
 
 import roleRoute from "./role.routes.ts";
-router.use("/role", roleRoute);
+router.use("/api/role", roleRoute);
 
 import inventoryRoute from "./medicine.routes.ts";
-router.use("/inventory", inventoryRoute);
+router.use("/api/inventory", inventoryRoute);
 
 import forecastRoute from "./forecast.routes.ts";
-router.use("/arima", forecastRoute);
+router.use("/api/arima", forecastRoute);
 
 import purchaseRoute from "./purchase.routes.ts";
-router.use("/purchase", purchaseRoute);
+router.use("/api/purchase", purchaseRoute);
 
 import purchaseDocumentsRoute from "./purchase-documents.route.ts";
-router.use("/purchase", purchaseDocumentsRoute);
+router.use("/api/purchase-documents", purchaseDocumentsRoute);
 
 import orderRoute from "./order.routes.ts";
-router.use("/order", orderRoute);
+router.use("/api/order", orderRoute);
 
 import customerRoute from "./customer.routes.ts";
-router.use("/customer", customerRoute);
+router.use("/api/customer", customerRoute);
 
 import signatureRoute from "./signature.routes.ts";
-router.use("/signature", signatureRoute);
+router.use("/api/signature", signatureRoute);
 
 import supplierRoute from "./supplier.routes.ts";
 router.use("/api/suppliers", supplierRoute);
@@ -39,15 +39,15 @@ import productSupplierRoute from "./product-supplier.routes.ts";
 router.use("/api", productSupplierRoute);
 
 import revenueRoute from "./revenue.routes.ts";
-router.use("/revenue", revenueRoute);
+router.use("/api/revenue", revenueRoute);
 
 import paymentRoute from "./payment.routes.ts";
-router.use("/payment", paymentRoute);
+router.use("/api/payment", paymentRoute);
 
 import lotRoute from "./lot.routes.ts";
-router.use("/lot", lotRoute);
+router.use("/api/lot", lotRoute);
 
 import stockTransRoute from "./stock_trans.routes.ts"
-router.use("/stock", stockTransRoute);
+router.use("/api/stock", stockTransRoute);
 
 export default router;

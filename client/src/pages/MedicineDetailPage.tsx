@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 
 export default function MedicineDetailPage() {
+    const API_URL = import.meta.env.VITE_API_URL;
     const analyticsData = [
         { name: 'Jan', purple: 26.1, blue: 26.7 },
         { name: 'Feb', purple: 26.7, blue: 27.3 },
@@ -18,7 +19,7 @@ export default function MedicineDetailPage() {
     const navigate = useNavigate();
     const checkme = async () => {
         try {
-            const authme = await fetch('http://localhost:5000/api/me', {
+            const authme = await fetch(`${API_URL}/me`, {
                 method: 'GET',
                 credentials: 'include'
             })

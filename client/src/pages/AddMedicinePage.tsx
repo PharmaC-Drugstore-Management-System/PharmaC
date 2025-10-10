@@ -73,7 +73,7 @@ export default function AddMedicinePage() {
     }
   }, [scannedData, hasScanned]);
 
-  const handleScan = (err: unknown, result?: Result) => {
+  const handleScan = (_err: unknown, result?: Result) => {
     if (result && !hasScanned) {
       const code = result.getText();
       setScannedData(code);

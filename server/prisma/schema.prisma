@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -164,6 +165,7 @@ model order {
   customer          customer?       @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "order_customer_fk")
   employee          employee?       @relation(fields: [employee_id], references: [employee_id], onDelete: NoAction, onUpdate: NoAction, map: "order_employee_fk")
   revenue_source    revenue_source? @relation(fields: [revenue_source_id], references: [revenue_source_id], onDelete: NoAction, onUpdate: NoAction, map: "order_revenue_source_fk")
+  order_item        order_item[]
   revenue           revenue[]
 }
 
@@ -196,9 +198,10 @@ model product {
   cost               cost[]
   forecasted_product forecasted_product[]
   lot                lot[]
+  order_item         order_item[]
+  product_suppliers  product_supplier[]
   revenue            revenue[]
   trend              trend[]
-  product_suppliers  product_supplier[]
 }
 
 model purchase_document {
@@ -272,21 +275,20 @@ model supplier {
   address           String?             @db.VarChar
   description       String?             @db.VarChar
   supplier_id       Int                 @id @default(autoincrement())
-  purchase_document purchase_document[]
   product_suppliers product_supplier[]
+  purchase_document purchase_document[]
 }
 
 model product_supplier {
-  product_id   Int
-  supplier_id  Int
-  cost         Float?    @db.Real
-  is_active    Boolean?  @default(true)
-  created_at   DateTime? @default(now())
-  updated_at   DateTime? @updatedAt
-  
-  product      product   @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
-  supplier     supplier  @relation(fields: [supplier_id], references: [supplier_id], onDelete: Cascade)
-  
+  product_id  Int
+  supplier_id Int
+  cost        Float?    @db.Real
+  is_active   Boolean?  @default(true)
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+  product     product   @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  supplier    supplier  @relation(fields: [supplier_id], references: [supplier_id], onDelete: Cascade)
+
   @@id([product_id, supplier_id])
   @@map("product_supplier")
 }
@@ -330,4 +332,13 @@ model stock_transaction {
   ref_no         String?   @db.VarChar(120)
   note           String?   @db.VarChar(255)
   lot            lot?      @relation(fields: [lot_id_fk], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_lot_fk")
+}
+
+model order_item {
+  order_item_id Int     @id @default(autoincrement())
+  order_id      Int
+  product_id    Int
+  quantity      Int
+  order         order   @relation(fields: [order_id], references: [order_id])
+  product       product @relation(fields: [product_id], references: [product_id])
 }

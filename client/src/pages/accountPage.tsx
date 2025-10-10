@@ -6,24 +6,24 @@ import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-interface AccountDetailResponse {
-    data: {
-        employee_id: number;
-        firstname: string;
-        lastname: string;
-        email: string;
-        tax_id: string;
-        gender?: string;
-        phonenumber: string;
-        birthdate: string;
-        address?: string;
-        additional_info?: string;
-        country?: string;
-        province?: string;
-        storecode?: string;
-        zipcode?: string;
-    };
-}
+// interface AccountDetailResponse {
+//     data: {
+//         employee_id: number;
+//         firstname: string;
+//         lastname: string;
+//         email: string;
+//         tax_id: string;
+//         gender?: string;
+//         phonenumber: string;
+//         birthdate: string;
+//         address?: string;
+//         additional_info?: string;
+//         country?: string;
+//         province?: string;
+//         storecode?: string;
+//         zipcode?: string;
+//     };
+// }
 
 export default function AccountPage() {
     const navigate = useNavigate();
@@ -126,7 +126,7 @@ export default function AccountPage() {
             console.log('Loading profile data from API...');
 
             // Step 1: Get employee_id from JWT token
-            const authResponse = await fetch(`${API_URL}/api/me`, {
+            const authResponse = await fetch(`${API_URL}/me`, {
                 method: 'GET',
                 credentials: 'include'
             });

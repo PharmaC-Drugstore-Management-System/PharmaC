@@ -134,7 +134,7 @@ export default function ExpiryMonitor() {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/me`, {
+      const response = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include'
       });

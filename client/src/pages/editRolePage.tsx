@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Swal from 'sweetalert2';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 interface Employee {
   employee_id: number;
@@ -32,7 +32,7 @@ export default function EditRolePage() {
   const { t } = useTranslation();
   const API_URL = import.meta.env.VITE_API_URL;
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [_currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [edit, setEdit] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newEmail, setNewEmail] = useState('');

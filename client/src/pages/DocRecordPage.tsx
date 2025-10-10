@@ -49,7 +49,7 @@ export default function DocumentRecord() {
 
   const checkme = async () => {
     try {
-      const authme = await fetch(`${API_URL}/api/me`, {
+      const authme = await fetch(`${API_URL}/me`, {
         method: "GET",
         credentials: "include",
       });
@@ -162,15 +162,15 @@ export default function DocumentRecord() {
   };
 
   // Bulk Actions Functions
-  const toggleDocumentSelection = (docId: number) => {
-    const newSelected = new Set(selectedDocuments);
-    if (newSelected.has(docId)) {
-      newSelected.delete(docId);
-    } else {
-      newSelected.add(docId);
-    }
-    setSelectedDocuments(newSelected);
-  };
+  // const toggleDocumentSelection = (docId: number) => {
+  //   const newSelected = new Set(selectedDocuments);
+  //   if (newSelected.has(docId)) {
+  //     newSelected.delete(docId);
+  //   } else {
+  //     newSelected.add(docId);
+  //   }
+  //   setSelectedDocuments(newSelected);
+  // };
 
   const selectAllDocuments = () => {
     if (selectedDocuments.size === filteredDocuments.length) {
@@ -1137,7 +1137,7 @@ export default function DocumentRecord() {
                   <button
                     onClick={() =>
                       window.open(
-                        `http://localhost:5000/purchase/pdf/${selectedPDF}`,
+                        `${API_URL}/purchase/pdf/${selectedPDF}`,
                         "_blank"
                       )
                     }
@@ -1176,7 +1176,7 @@ export default function DocumentRecord() {
               {/* PDF Viewer */}
               <div className="flex-1 overflow-hidden">
                 <iframe
-                  src={`http://localhost:5000/purchase/pdf/${selectedPDF}`}
+                  src={`${API_URL}/purchase/pdf/${selectedPDF}`}
                   className="w-full h-full border-0"
                   title="PDF Preview"
                 />

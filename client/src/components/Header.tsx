@@ -36,7 +36,7 @@ export default function Header() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotificationDropdown, setShowNotificationDropdown] =
     useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [_socket, setSocket] = useState<Socket | null>(null);
 
   // Check if dark mode is enabled
   const isDark = document.documentElement.classList.contains('dark');
@@ -46,7 +46,7 @@ export default function Header() {
       console.log("Loading profile data from API...");
 
       // Step 1: Get employee_id from JWT token
-      const authResponse = await fetch(`${API_URL}/api/me`, {
+      const authResponse = await fetch(`${API_URL}/me`, {
         method: "GET",
         credentials: "include",
       });
@@ -151,6 +151,8 @@ export default function Header() {
                 "→",
                 order.date
               );
+              
+              console.log(statusText)
 
               // ตรวจสอบว่า notification นี้เป็น unread อยู่แล้วหรือไม่
               const existingUnread = currentUnreadNotifications.find(
@@ -215,7 +217,7 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       // Call logout API
-      await fetch(`${API_URL}/api/logout`, {
+      await fetch(`${API_URL}/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -246,8 +248,12 @@ export default function Header() {
     loadInitialNotifications();
 
     // Initialize Socket.IO connection for real-time notifications
-    const socketConnection = io(`${API_URL}`, {
-      transports: ["websocket"],
+    const SOCKET_BASE = import.meta.env.VITE_SOCKET_BASE || API_URL;
+    const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || '/ws';
+    const socketConnection = io(SOCKET_BASE, {
+      path: SOCKET_PATH,
+      transports: ["websocket", "polling"],
+      withCredentials: true,
     });
 
     socketConnection.on("connect", () => {
@@ -555,7 +561,7 @@ export default function Header() {
                     src={
                       userProfile.profile_image.startsWith("http")
                         ? userProfile.profile_image
-                        : `http://localhost:5000/uploads/${userProfile.profile_image}`
+                        : `${API_URL}/uploads/${userProfile.profile_image}`
                     }
                     alt="Profile"
                     className="w-full h-full object-cover rounded-full"
@@ -597,7 +603,7 @@ export default function Header() {
                           src={
                             userProfile.profile_image.startsWith("http")
                               ? userProfile.profile_image
-                              : `http://localhost:5000/uploads/${userProfile.profile_image}`
+                              : `${API_URL}/uploads/${userProfile.profile_image}`
                           }
                           alt="Profile"
                           className="w-full h-full object-cover rounded-full"

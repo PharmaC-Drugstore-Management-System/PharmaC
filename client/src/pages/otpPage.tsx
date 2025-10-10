@@ -29,7 +29,7 @@ export default function OtpPage() {
         const fetchOtpStatus = async () => {
             try {
                 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-                const response = await fetch(`${API_URL}/api/otp-status`, {
+                const response = await fetch(`${API_URL}/otp-status`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -124,7 +124,7 @@ export default function OtpPage() {
         try {
             // Call resend OTP API
             const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-            const response = await fetch(`${API_URL}/api/resend-otp`, {
+            const response = await fetch(`${API_URL}/resend-otp`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
