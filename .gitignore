@@ -1,5 +1,7 @@
 client/package-lock.json
+
 client/package.json
+client/.env
 client/package-lock.json
 server/prisma/schema.prisma
 server/prisma/schema.prisma
@@ -8,3 +10,22 @@ payment-test.md
 server/package-lock.json
 server/prisma/schema.prisma
 server/.env
+
+
+# Ignore generated data
+*.csv
+*.png
+*.txt
+*.pyc
+*.env
+# Ignore Python virtual environments
+venv/
+.venv/
+
+# Ignore caches and compiled files
+__pycache__/
+*.pyc
+
+# Ignore build and output
+dist/
+build/

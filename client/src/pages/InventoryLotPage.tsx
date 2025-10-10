@@ -126,6 +126,7 @@ export default function LotPage() {
 
             if (response.ok) {
                 const data = await response.json();
+                console.log("Data of medicine", data)
                 
                 if (data.status && data.data) {
                     // Transform API data to match our Medicine interface

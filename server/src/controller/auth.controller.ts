@@ -59,17 +59,50 @@ const controller = {
           .status(400)
           .json({ message: "Email and password are required" });
       }
-      const authenticate = await auth_service.login({ email, password });
-      if (!authenticate) {
+      const user = await auth_service.login({ email, password });
+      if (!user) {
         res
           .status(500)
           .json({ status: false, message: "Failed to Authenticate" });
       }
+
+      // Check if user is Customer (role_id = 1), if so skip OTP and directly login
+      if (user.role_id === 1) {
+        // Create JWT token for customer and log them in directly
+        const token = jwt.sign(
+          {
+            employee_id: user.employee_id,
+            email: user.email,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            role_id: user.role_id,
+          },
+          JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        return res.status(200).json({
+          status: true,
+          message: "Customer login successful!",
+          data: user,
+          skipOtp: true
+        });
+      }
+
+      // For non-customer users, send OTP as usual
       await auth_service.sendOtp(email);
 
       return res.status(200).json({
         status: true,
         message: `OTP has been sent to your email : ${email}`,
+        skipOtp: false
       });
     } catch (error: any) {
       console.error("Authentication/OTP send error:", error.message);

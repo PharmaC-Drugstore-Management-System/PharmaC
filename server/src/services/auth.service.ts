@@ -1,6 +1,6 @@
 import prisma from "../utils/prisma.utils";
 import bcrypt from "bcrypt";
-import googleMailer from "../utils/mailer";
+import googleMailer from "../utils/mailer.ts";
 let otpStore: { [email: string]: { otp: string; expires: number } } = {};
 const auth_service = {
   register: async (data: any) => {

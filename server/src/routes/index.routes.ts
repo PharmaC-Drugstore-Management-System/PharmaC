@@ -50,4 +50,16 @@ router.use("/api/lot", lotRoute);
 import stockTransRoute from "./stock_trans.routes.ts"
 router.use("/api/stock", stockTransRoute);
 
+import predictorRoute from "./predictor.route.ts";
+router.use("/predictor", predictorRoute);
+
+import salesDataRoute from "./salesData.route.ts";
+router.use("/sales", salesDataRoute);
+
+import productTypeRoute from "./producttype.route.ts";
+router.use("/product", productTypeRoute);
+
+import dashboardRoute from "./dashboard.routes.ts"; 
+router.use("/dashboard", dashboardRoute);
+
 export default router;

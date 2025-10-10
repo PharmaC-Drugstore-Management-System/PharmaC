@@ -11,7 +11,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  authLogin: (email: string, password: string) => Promise<boolean>; // New function for auth only
+  authLogin: (email: string, password: string) => Promise<{ success: boolean; skipOtp?: boolean; userData?: any }>; // Updated return type
   verifyOtp: (email: string, otp: string) => Promise<boolean>; // New function for OTP verification
   logout: () => void;
   checkAuth: () => Promise<void>;
@@ -86,8 +86,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Step 1: Authenticate credentials and send OTP (doesn't log user in)
-  const authLogin = async (email: string, password: string): Promise<boolean> => {
+  // Step 1: Authenticate credentials and send OTP (doesn't log user in for non-customers)
+  const authLogin = async (email: string, password: string): Promise<{ success: boolean; skipOtp?: boolean; userData?: any }> => {
     try {
       const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
@@ -99,12 +99,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (response.ok) {
-        return true; // OTP sent successfully
+        const responseData = await response.json();
+        
+        // If it's a customer, they skip OTP and are logged in directly
+        if (responseData.skipOtp) {
+          const userData = responseData.data;
+          const roleId = userData?.role_id || userData.roleId || userData.role || userData.user_role;
+          const mappedRole = mapRoleIdToRoleName(roleId);
+          
+          const user: User = {
+            id: userData?.employee_id || userData.id || userData.user_id || userData.userId,
+            email: userData?.email,
+            role: mappedRole,
+            name: userData?.firstname || userData.name || userData.username || userData.full_name,
+          };
+          
+          setUser(user); // Log in the customer directly
+          return { success: true, skipOtp: true, userData: user };
+        }
+        
+        // For non-customers, OTP was sent
+        return { success: true, skipOtp: false };
       }
-      return false;
+      return { success: false };
     } catch (error) {
       console.error('Authentication failed:', error);
-      return false;
+      return { success: false };
     }
   };
 
