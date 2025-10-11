@@ -199,13 +199,13 @@ const dashboardService = {
         }
     },
 
-    // Calculate restock recommendations based on sales history and current inventory
+    // Simple restock recommendations
     getRestockRecommendations: async () => {
         try {
             // Get current inventory by product type
             const inventory = await dashboardService.getInventoryByProductType();
             
-            // Get sales data for the last 30 days by product type to calculate average daily consumption
+            // Get sales data for the last 30 days
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             
@@ -226,7 +226,7 @@ const dashboardService = {
                 }
             });
 
-            // Get product details to map product_id to producttype
+            // Get product details
             const products = await prisma.product.findMany({
                 select: {
                     product_id: true,
@@ -234,7 +234,7 @@ const dashboardService = {
                 }
             });
 
-            // Group sales by product type
+            // Calculate sales by product type
             const salesByType: { [key: string]: number } = {};
             salesData.forEach((sale: any) => {
                 const product = products.find(p => p.product_id === sale.product_id);
@@ -246,48 +246,48 @@ const dashboardService = {
                 }
             });
 
-            // Calculate recommendations
+            // Generate simple recommendations
             const recommendations = inventory.map((inv, index) => {
-                const monthlyConsumption = salesByType[inv.productType] || 0;
-                const dailyConsumption = monthlyConsumption / 30;
-                const weeklyForecast = Math.ceil(dailyConsumption * 7); // 7-day forecast
-                const bufferStock = Math.ceil(weeklyForecast * 0.2); // 20% buffer
-                const recommendedStock = weeklyForecast + bufferStock;
-                const restockNeeded = Math.max(0, recommendedStock - inv.totalStock);
+                const totalSold = salesByType[inv.productType] || 0;
+                const dailyAverage = totalSold / 30;
+                const weeklyAverage = dailyAverage * 7;
                 
-                // Calculate priority based on stock coverage days
-                const stockCoverageDays = dailyConsumption > 0 ? inv.totalStock / dailyConsumption : 999;
-                let priority = 'none';
-                let color = 'text-gray-600 bg-gray-50 border-gray-200';
+                // Simple restock logic: if current stock is less than 2 weeks of average sales
+                const twoWeeksSupply = weeklyAverage * 2;
+                const restockNeeded = Math.max(0, Math.ceil(twoWeeksSupply - inv.totalStock));
                 
-                if (stockCoverageDays < 3) {
+                // Simple priority based on stock levels
+                let priority = 'low';
+                let color = 'text-green-600 bg-green-50 border-green-200';
+                
+                if (inv.totalStock < weeklyAverage) {
+                    priority = 'critical';
+                    color = 'text-red-700 bg-red-100 border-red-300';
+                } else if (inv.totalStock < twoWeeksSupply) {
                     priority = 'high';
                     color = 'text-red-600 bg-red-50 border-red-200';
-                } else if (stockCoverageDays < 7) {
+                } else if (inv.totalStock < weeklyAverage * 3) {
                     priority = 'medium';
                     color = 'text-yellow-600 bg-yellow-50 border-yellow-200';
-                } else if (stockCoverageDays < 14) {
-                    priority = 'low';
-                    color = 'text-green-600 bg-green-50 border-green-200';
                 }
-                
+
                 return {
-                    group: String.fromCharCode(65 + index), // A, B, C, D...
+                    group: String.fromCharCode(65 + index),
                     name: inv.productType,
                     available: inv.totalStock,
-                    expected: recommendedStock,
+                    expected: Math.ceil(twoWeeksSupply * 1.5), // Target stock level
                     restock: restockNeeded,
                     priority,
-                    color,
-                    dailyConsumption: Math.round(dailyConsumption * 10) / 10,
-                    stockCoverageDays: Math.round(stockCoverageDays * 10) / 10,
-                    monthlyConsumption
+                    color
                 };
             });
 
-            // Sort by priority (high -> medium -> low -> none)
-            const priorityOrder = { 'high': 0, 'medium': 1, 'low': 2, 'none': 3 };
-            recommendations.sort((a, b) => priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder]);
+            // Sort by priority
+            const priorityOrder = { 'critical': 0, 'high': 1, 'medium': 2, 'low': 3 };
+            recommendations.sort((a, b) => 
+                priorityOrder[a.priority as keyof typeof priorityOrder] - 
+                priorityOrder[b.priority as keyof typeof priorityOrder]
+            );
             
             return recommendations;
         } catch (error) {

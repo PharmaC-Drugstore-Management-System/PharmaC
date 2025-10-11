@@ -64,9 +64,6 @@ export default function POSPage() {
   const [isAutoVerifying, setIsAutoVerifying] = useState(false);
   const [autoVerifyInterval, setAutoVerifyInterval] = useState<NodeJS.Timeout | null>(null);
   
-  // Add flag to prevent multiple stock reduction executions
-  const [isProcessingStockReduction, setIsProcessingStockReduction] = useState(false);
-  
   // Member System States
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberPhone, setMemberPhone] = useState("");
@@ -80,13 +77,6 @@ export default function POSPage() {
     address: ''
   });
   const [quickMembers, setQuickMembers] = useState<any[]>([]);
-
-  // Mock price data - you can fetch this from your API
-  const productPrices: Record<number, number> = {
-    26: 120.00,
-    27: 85.50,
-    // Add more product prices as needed
-  };
 
   useEffect(() => {
     fetchProducts();
@@ -163,8 +153,7 @@ export default function POSPage() {
 
   const verifyStatus  = async () => {
     try {
-      console.log(qrCodeData?.pi)
-      console.log(qrCodeData?.order_id)
+
       const response = await fetch('http://localhost:5000/payment/check', {
         method: 'POST',
         headers: {
@@ -229,34 +218,44 @@ export default function POSPage() {
               });
               
               let availableStock = 0;
+              let sellingPrice = 50.00; // Default fallback price
               
               if (lotsResponse.ok) {
                 const lotsData = await lotsResponse.json();
                 
                 if (lotsData.status && lotsData.data) {
-                  // คำนวณ available stock (ไม่นับ lots ที่หมดอายุ)
+                  // คำนวณ available stock และหา selling price (ไม่นับ lots ที่หมดอายุ)
                   const today = new Date();
+                  const validLots: any[] = [];
+                  
                   availableStock = lotsData.data.reduce((sum: number, lot: any) => {
                     const expDate = new Date(lot.expired_date);
                     // ถ้ายังไม่หมดอายุ
                     if (expDate > today) {
+                      validLots.push(lot);
                       return sum + (lot.init_amount || 0);
                     }
                     return sum;
                   }, 0);
+                  
+                  // ใช้ sell_price จาก lot ล่าสุด (หรือ lot แรกที่มี sell_price)
+                  const lotWithPrice = validLots.find(lot => lot.sell_price && lot.sell_price > 0);
+                  if (lotWithPrice) {
+                    sellingPrice = lotWithPrice.sell_price;
+                  }
                 }
               }
               
               return {
                 ...product,
-                price: productPrices[product.product_id] || 50.00, // Default price
+                price: sellingPrice, // ใช้ selling price จาก lot
                 stock: availableStock, // ใช้ stock จริงจาก lots
               };
             } catch (error) {
               console.error(`Error fetching lots for product ${product.product_id}:`, error);
               return {
                 ...product,
-                price: productPrices[product.product_id] || 50.00,
+                price: 50.00, // Fallback price if error
                 stock: 0, // ถ้า error ให้เป็น 0
               };
             }
@@ -264,7 +263,6 @@ export default function POSPage() {
         );
         
         setProducts(productsWithRealStock);
-        console.log('Products with real stock:', productsWithRealStock);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -610,15 +608,11 @@ export default function POSPage() {
   const handlePaymentSuccess = async () => {
     console.log('🚨 ===== PAYMENT SUCCESS HANDLER CALLED =====');
     console.log('⏰ Timestamp:', new Date().toISOString());
-    console.log('� Is already processing stock reduction:', isProcessingStockReduction);
-    console.log('�🛒 Current cart:', cart.map(item => ({
+    console.log('🛒 Current cart:', cart.map(item => ({
       product_id: item.product_id,
       product_name: item.product_name,
       quantity: item.quantity
     })));
-    
-    
-    // setIsProcessingStockReduction(true);
     
     try {
       console.log('💳 Payment successful - processing stock reduction...');
@@ -1081,7 +1075,6 @@ export default function POSPage() {
     setQrCodeData(null);
     setSelectedPayment('cash');
     setIsVerifyingPayment(false);
-    setIsProcessingStockReduction(false); // Reset stock reduction flag
     
     console.log('🔄 New transaction started, all states reset');
   };
@@ -1139,12 +1132,20 @@ export default function POSPage() {
               {filteredProducts.map((product) => (
                 <div
                   key={product.product_id}
-                  className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                  className={`border rounded-lg p-4 transition-shadow ${
+                    (product.stock || 0) > 0 
+                      ? 'hover:shadow-md cursor-pointer' 
+                      : 'cursor-not-allowed opacity-75'
+                  }`}
                   style={{
-                    borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
-                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white'
+                    borderColor: (product.stock || 0) > 0 
+                      ? (document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb')
+                      : '#9ca3af',
+                    backgroundColor: (product.stock || 0) > 0 
+                      ? (document.documentElement.classList.contains('dark') ? '#4b5563' : 'white')
+                      : (document.documentElement.classList.contains('dark') ? '#374151' : '#f3f4f6')
                   }}
-                  onClick={() => addToCart(product)}
+                  onClick={() => (product.stock || 0) > 0 ? addToCart(product) : null}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-sm truncate"
@@ -1159,9 +1160,15 @@ export default function POSPage() {
                   <p className="text-xs mb-2"
                      style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{product.brand}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-green-600">
-                      ฿{product.price?.toFixed(2)}
-                    </span>
+                    {(product.stock || 0) > 0 ? (
+                      <span className="text-lg font-bold text-green-600">
+                        ฿{product.price?.toFixed(2)}
+                      </span>
+                    ) : (
+                      <span className="text-lg font-bold text-gray-500">
+                        SOLD OUT
+                      </span>
+                    )}
                     <span className="text-xs"
                           style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280'}}>{product.unit}</span>
                   </div>

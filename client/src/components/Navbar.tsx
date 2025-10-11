@@ -51,7 +51,6 @@ export default function NavbarComponent() {
     { name: t('home'), icon: LayoutGrid, path: '/' },
     { name: t('inventory'), icon: Inbox, path: '/inventory' },
     { name: t('pointOfSale'), icon: ShoppingCart, path: '/pos' },
-    { name: t('statistics'), icon: BarChart3, path: '/statistic' },
     { name: t('expiryMonitor'), icon: Clock, path: '/expiry-monitor' },
     { name: t('documentRecords'), icon: FileText, path: '/doc-record' },
     { name: t('orderRecords'), icon: ClipboardCheck, path: '/order-record' },

@@ -603,7 +603,7 @@ export default function PharmaDashboard() {
                 </h2>
                 <p className="text-sm lg:text-base mt-1 transition-colors"
                   style={{ color: isDark ? '#d1d5db' : '#4b5563' }}>
-                  AI-powered inventory insights using sales history analysis
+                  Advanced analytics with ABC classification, sales velocity trends, and safety stock calculations
                 </p>
               </div>
             </div>
@@ -615,17 +615,17 @@ export default function PharmaDashboard() {
                 backgroundColor: isDark ? '#4b5563' : '#f9fafb'
               }}>
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold transition-colors"
+                  <th className="px-4 py-4 text-left text-sm font-semibold transition-colors"
                     style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Group</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold transition-colors"
+                  <th className="px-4 py-4 text-left text-sm font-semibold transition-colors"
                     style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Product Type</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Current Stock</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Recommended Stock</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Restock Needed</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold transition-colors"
+                  <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Available</th>
+                  <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Expected</th>
+                  <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Restock</th>
+                  <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
                     style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Priority</th>
                 </tr>
               </thead>
@@ -661,7 +661,7 @@ export default function PharmaDashboard() {
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'transparent';
                     }}>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <span className="inline-flex items-center justify-center w-8 h-8 font-mono font-bold text-sm rounded-full"
                         style={{
                           backgroundColor: isDark ? '#6b7280' : '#f3f4f6',
@@ -670,26 +670,27 @@ export default function PharmaDashboard() {
                         {item.group}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium"
+                    <td className="px-4 py-4 text-sm font-medium"
                       style={{ color: isDark ? '#f3f4f6' : '#111827' }}>
                       {item.name}
                     </td>
-                    <td className="px-6 py-4 text-center text-sm transition-colors"
+                    <td className="px-4 py-4 text-center text-sm font-medium"
                       style={{ color: isDark ? '#f3f4f6' : '#111827' }}>
                       {item.available?.toLocaleString() || 0}
                     </td>
-                    <td className="px-6 py-4 text-center text-sm transition-colors"
+                    <td className="px-4 py-4 text-center text-sm font-medium"
                       style={{ color: isDark ? '#f3f4f6' : '#111827' }}>
                       {item.expected?.toLocaleString() || 0}
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`text-sm font-bold ${item.restock > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                        {item.restock > 0 ? item.restock.toLocaleString() : '—'}
-                      </span>
+                    <td className="px-4 py-4 text-center text-sm font-bold text-blue-600">
+                      {item.restock?.toLocaleString() || 0}
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${item.color}`}>
-                        {item.priority === 'high' ? 'High' : item.priority === 'medium' ? 'Medium' : item.priority === 'low' ? 'Low' : 'None'}
+                    <td className="px-4 py-4 text-center">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold border ${item.color}`}>
+                        {item.priority === 'critical' ? 'Critical' : 
+                         item.priority === 'high' ? 'High' : 
+                         item.priority === 'medium' ? 'Medium' : 
+                         item.priority === 'low' ? 'Low' : 'None'}
                       </span>
                     </td>
                   </tr>

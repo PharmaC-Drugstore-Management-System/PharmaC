@@ -57,19 +57,20 @@ export default function LotPage() {
     const [activeTab, setActiveTab] = useState<'lots' | 'transactions'>('lots');
     const [newLot, setNewLot] = useState({
         lotNo: '',
-        stockedDate: '',
+        stockedDate: new Date().toISOString().split('T')[0], // Always current date
         totalStock: '',
         reservedStock: '',
         availableStock: '',
         expirationDate: '',
-        cost: ''
+        cost: '',
+        sellPrice:''
     });
 
     // Fetch lots by product ID from new API endpoint
     const fetchLotsByProductId = useCallback(async () => {
         try {
             setLotsLoading(true);
-            
+
             const response = await fetch(`${API_URL}/lot/get-lots-by-product/${id}`, {
                 method: 'GET',
                 credentials: 'include',
@@ -80,7 +81,7 @@ export default function LotPage() {
 
             if (response.ok) {
                 const data = await response.json();
-                
+
                 if (data.status && data.data) {
                     // Transform API lot data to match our LotRow interface
                     const transformedLots: LotRow[] = data.data.map((lot: any) => ({
@@ -91,7 +92,7 @@ export default function LotPage() {
                         availableStock: lot.init_amount, // For now, assuming all stock is available
                         expirationDate: lot.expired_date,
                     }));
-                    
+
                     // Update the medicine state with real lot data
                     setMedicine(prev => prev ? { ...prev, lots: transformedLots } : null);
                 } else {
@@ -115,7 +116,7 @@ export default function LotPage() {
         try {
             setLoading(true);
             setError(null);
-            
+
             const response = await fetch(`${API_URL}/inventory/get-prouduct/${id}`, {
                 method: 'POST',
                 credentials: 'include',
@@ -127,7 +128,7 @@ export default function LotPage() {
             if (response.ok) {
                 const data = await response.json();
                 console.log("Data of medicine", data)
-                
+
                 if (data.status && data.data) {
                     // Transform API data to match our Medicine interface
                     const product = data.data;
@@ -169,7 +170,7 @@ export default function LotPage() {
                             }
                         ]
                     };
-                    
+
                     setMedicine(transformedMedicine);
                 } else {
                     throw new Error('Product not found');
@@ -223,7 +224,8 @@ export default function LotPage() {
             reservedStock: '0',
             availableStock: '',
             expirationDate: '',
-            cost: ''
+            cost: '',
+            sellPrice: ''
         });
     };
 
@@ -236,21 +238,35 @@ export default function LotPage() {
             reservedStock: '',
             availableStock: '',
             expirationDate: '',
-            cost: ''
+            cost: '',
+            sellPrice: ''
         });
     };
 
     const handleLotInputChange = (field: string, value: string) => {
+        // Prevent changes to stockedDate as it should always be current date
+        if (field === 'stockedDate') {
+            return;
+        }
+
+        // For lotNo field, only allow numbers
+        if (field === 'lotNo') {
+            // Remove any non-numeric characters
+            const numericValue = value.replace(/[^0-9]/g, '');
+            setNewLot(prev => ({ ...prev, [field]: numericValue }));
+            return;
+        }
+
         setNewLot(prev => {
             const updated = { ...prev, [field]: value };
-            
+
             // Auto-calculate available stock when total or reserved changes
             if (field === 'totalStock' || field === 'reservedStock') {
                 const total = field === 'totalStock' ? parseInt(value) || 0 : parseInt(prev.totalStock) || 0;
                 const reserved = field === 'reservedStock' ? parseInt(value) || 0 : parseInt(prev.reservedStock) || 0;
                 updated.availableStock = Math.max(0, total - reserved).toString();
             }
-            
+
             return updated;
         });
     };
@@ -308,7 +324,7 @@ export default function LotPage() {
         // API integration to actually add the lot
         try {
             setIsAddingLot(true); // Set loading state
-            
+
             const lotData = {
                 lot_no: newLot.lotNo,
                 init_amount: parseInt(newLot.totalStock),
@@ -331,10 +347,10 @@ export default function LotPage() {
 
             if (response.ok) {
                 const data = await response.json();
-                
+
                 if (data.status && data.data && data.data.lot_id) {
                     const newLotId = data.data.lot_id;
-                    
+
                     // Create stock transaction record for the new lot
                     try {
                         const stockTransactionData = {
@@ -367,7 +383,7 @@ export default function LotPage() {
                         console.error('Error creating stock transaction:', stockError);
                         // Don't fail the entire operation if stock transaction fails
                     }
-                    
+
                     // Success - show success message and refresh data
                     Swal.fire({
                         icon: 'success',
@@ -377,7 +393,7 @@ export default function LotPage() {
                         timer: 2000,
                         timerProgressBar: true
                     });
-                    
+
                     // Close modal and refresh data to show new lot
                     handleCloseAddLotModal();
                     await fetchLotsByProductId(); // Refresh the lots data specifically
@@ -466,8 +482,8 @@ export default function LotPage() {
                         style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
                         {error || 'The requested product could not be found.'}
                     </p>
-                    <Link 
-                        to="/inventory" 
+                    <Link
+                        to="/inventory"
                         className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
                     >
                         Back to Inventory
@@ -478,7 +494,7 @@ export default function LotPage() {
     }
 
     return (
-   
+
         <div className="min-h-screen"
             style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f7f8fa' }}>
             {/* Top */}
@@ -568,18 +584,17 @@ export default function LotPage() {
                 {/* Tab Navigation */}
                 <div className="mb-6">
                     <div className="border-b"
-                         style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
+                        style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
                         <nav className="-mb-px flex space-x-8">
                             <button
                                 onClick={() => setActiveTab('lots')}
-                                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                                    activeTab === 'lots'
+                                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'lots'
                                         ? 'border-emerald-500 text-emerald-600'
                                         : 'border-transparent hover:border-gray-300'
-                                }`}
+                                    }`}
                                 style={{
-                                    color: activeTab === 'lots' 
-                                        ? '#059669' 
+                                    color: activeTab === 'lots'
+                                        ? '#059669'
                                         : (document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280')
                                 }}
                             >
@@ -587,14 +602,13 @@ export default function LotPage() {
                             </button>
                             <button
                                 onClick={() => setActiveTab('transactions')}
-                                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                                    activeTab === 'transactions'
+                                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'transactions'
                                         ? 'border-emerald-500 text-emerald-600'
                                         : 'border-transparent hover:border-gray-300'
-                                }`}
+                                    }`}
                                 style={{
-                                    color: activeTab === 'transactions' 
-                                        ? '#059669' 
+                                    color: activeTab === 'transactions'
+                                        ? '#059669'
                                         : (document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280')
                                 }}
                             >
@@ -609,27 +623,27 @@ export default function LotPage() {
                     <div>
                         {/* Main grid: medicine card + lots table */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    {/* Medicine details */}
-                    <div className="lg:col-span-3">
-                        <div className="border rounded-lg p-4"
-                            style={{
-                                backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
-                                borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
-                            }}>
-                            <div className="h-48 md:h-56 w-full overflow-hidden rounded-md mb-4 border"
-                                style={{
-                                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#f3f4f6'
-                                }}>
-                                {imageSrc ? (
-                                    <img
-                                        src={imageSrc}
-                                        alt={medicine.name}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            // Replace with SVG placeholder on error
-                                            const svgPlaceholder = `data:image/svg+xml;utf8,${encodeURIComponent(
-                                                `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'>
+                            {/* Medicine details */}
+                            <div className="lg:col-span-3">
+                                <div className="border rounded-lg p-4"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                                    }}>
+                                    <div className="h-48 md:h-56 w-full overflow-hidden rounded-md mb-4 border"
+                                        style={{
+                                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                                            borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#f3f4f6'
+                                        }}>
+                                        {imageSrc ? (
+                                            <img
+                                                src={imageSrc}
+                                                alt={medicine.name}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    // Replace with SVG placeholder on error
+                                                    const svgPlaceholder = `data:image/svg+xml;utf8,${encodeURIComponent(
+                                                        `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'>
                                                     <rect width='100%' height='100%' fill='#ecfdf5'/>
                                                     <g fill='none' stroke='#059669' stroke-width='2'>
                                                         <path d='M170 120 l60 60'/>
@@ -637,185 +651,185 @@ export default function LotPage() {
                                                     </g>
                                                     <text x='50%' y='90%' text-anchor='middle' fill='#065f46' font-family='sans-serif' font-size='14'>No image — ${medicine.productType || "Medicine"}</text>
                                                 </svg>`
-                                            )}`;
-                                            e.currentTarget.src = svgPlaceholder;
-                                        }}
-                                    />
-                                ) : (
-                                    // Show SVG placeholder directly when no image
-                                    <div className="w-full h-full flex items-center justify-center"
-                                        style={{ backgroundColor: '#ecfdf5' }}>
-                                        <svg xmlns='http://www.w3.org/2000/svg' width='200' height='150' viewBox='0 0 400 300'>
-                                            <rect width='100%' height='100%' fill='#ecfdf5'/>
-                                            <g fill='none' stroke='#059669' strokeWidth='2'>
-                                                <path d='M170 120 l60 60'/>
-                                                <path d='M230 180 a35 35 0 1 1 -50 -50 l20 -20 a35 35 0 1 1 50 50 l-20 20'/>
-                                            </g>
-                                            <text x='50%' y='90%' textAnchor='middle' fill='#065f46' fontFamily='sans-serif' fontSize='14'>
-                                                No image — {medicine.productType || "Medicine"}
-                                            </text>
-                                        </svg>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <div>
-                                    <div className="text-xs"
-                                        style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Name</div>
-                                    <div className="font-medium"
-                                        style={{ color: document.documentElement.classList.contains('dark') ? 'white' : '#111827' }}>{medicine.name}</div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <div className="text-xs"
-                                            style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Brand</div>
-                                        <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.brand}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs"
-                                            style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Type</div>
-                                        <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.productType ?? "-"}</div>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <div className="text-xs"
-                                            style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Unit</div>
-                                        <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.unit ?? "-"}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs"
-                                            style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Controlled</div>
-                                        <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.isControlled ? "Yes" : "No"}</div>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <div className="text-xs"
-                                            style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Price</div>
-                                        <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.price}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs"
-                                            style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Next Expiration</div>
-                                        <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{fmt(medicine.expiredDate)}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Lots table */}
-                    <div className="lg:col-span-9">
-                        <div className="border rounded-lg overflow-hidden"
-                            style={{
-                                backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
-                                borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
-                            }}>
-                            <div className="p-4 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <button 
-                                        onClick={handleOpenAddLotModal}
-                                        className="inline-flex items-center px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
-                                        <Plus className="w-4 h-4 mr-1" /> Add New Lot
-                                    </button>
-                                    <button 
-                                        onClick={fetchLotsByProductId}
-                                        disabled={lotsLoading}
-                                        className="inline-flex items-center px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                                        style={{
-                                            color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151',
-                                            backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'
-                                        }}>
-                                        {lotsLoading ? (
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-1"></div>
+                                                    )}`;
+                                                    e.currentTarget.src = svgPlaceholder;
+                                                }}
+                                            />
                                         ) : (
-                                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                            </svg>
+                                            // Show SVG placeholder directly when no image
+                                            <div className="w-full h-full flex items-center justify-center"
+                                                style={{ backgroundColor: '#ecfdf5' }}>
+                                                <svg xmlns='http://www.w3.org/2000/svg' width='200' height='150' viewBox='0 0 400 300'>
+                                                    <rect width='100%' height='100%' fill='#ecfdf5' />
+                                                    <g fill='none' stroke='#059669' strokeWidth='2'>
+                                                        <path d='M170 120 l60 60' />
+                                                        <path d='M230 180 a35 35 0 1 1 -50 -50 l20 -20 a35 35 0 1 1 50 50 l-20 20' />
+                                                    </g>
+                                                    <text x='50%' y='90%' textAnchor='middle' fill='#065f46' fontFamily='sans-serif' fontSize='14'>
+                                                        No image — {medicine.productType || "Medicine"}
+                                                    </text>
+                                                </svg>
+                                            </div>
                                         )}
-                                        {lotsLoading ? 'Refreshing...' : 'Refresh Lots'}
-                                    </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div>
+                                            <div className="text-xs"
+                                                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Name</div>
+                                            <div className="font-medium"
+                                                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : '#111827' }}>{medicine.name}</div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <div className="text-xs"
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Brand</div>
+                                                <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.brand}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs"
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Type</div>
+                                                <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.productType ?? "-"}</div>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <div className="text-xs"
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Unit</div>
+                                                <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.unit ?? "-"}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs"
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Controlled</div>
+                                                <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.isControlled ? "Yes" : "No"}</div>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <div className="text-xs"
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Price</div>
+                                                <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{medicine.price}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs"
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Next Expiration</div>
+                                                <div style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{fmt(medicine.expiredDate)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-12 gap-4 px-6 py-3 border-t border-b text-sm font-medium"
-                                style={{
-                                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
-                                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
-                                    color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
-                                }}>
-                                <div className="col-span-2">Lot no.</div>
-                                <div className="col-span-2">Stocked Date</div>
-                                <div className="col-span-2">Total Stock Unit</div>
-                                <div className="col-span-2">Sold items</div>
-                                <div className="col-span-2">Available Stock Unit</div>
-                                <div className="col-span-2">Expiration Date</div>
-                            </div>
+                            {/* Lots table */}
+                            <div className="lg:col-span-9">
+                                <div className="border rounded-lg overflow-hidden"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                                    }}>
+                                    <div className="p-4 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={handleOpenAddLotModal}
+                                                className="inline-flex items-center px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                                                <Plus className="w-4 h-4 mr-1" /> Add New Lot
+                                            </button>
+                                            <button
+                                                onClick={fetchLotsByProductId}
+                                                disabled={lotsLoading}
+                                                className="inline-flex items-center px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                                                style={{
+                                                    color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151',
+                                                    backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'
+                                                }}>
+                                                {lotsLoading ? (
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-1"></div>
+                                                ) : (
+                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
+                                                )}
+                                                {lotsLoading ? 'Refreshing...' : 'Refresh Lots'}
+                                            </button>
+                                        </div>
+                                    </div>
 
-                            <div className="divide-y"
-                                style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
-                                {lotsLoading ? (
-                                    <div className="px-6 py-8 text-center">
-                                        <div className="inline-flex items-center text-sm" 
-                                            style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                                            Loading lots data...
-                                        </div>
+                                    <div className="grid grid-cols-12 gap-4 px-6 py-3 border-t border-b text-sm font-medium"
+                                        style={{
+                                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                                            borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                                            color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                                        }}>
+                                        <div className="col-span-2">Lot no.</div>
+                                        <div className="col-span-2">Stocked Date</div>
+                                        <div className="col-span-2">Total Stock Unit</div>
+                                        <div className="col-span-2">Sold items</div>
+                                        <div className="col-span-2">Available Stock Unit</div>
+                                        <div className="col-span-2">Expiration Date</div>
                                     </div>
-                                ) : lots.length === 0 ? (
-                                    <div className="px-6 py-8 text-center">
-                                        <div className="text-sm"
-                                            style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
-                                            No lots found for this product.
-                                        </div>
-                                    </div>
-                                ) : (
-                                    lots.map((r) => {
-                                        const exp = expStatus(r.expirationDate);
-                                        return (
-                                            <div key={r.lotNo} className="grid grid-cols-12 gap-4 px-6 py-4"
-                                                style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>
-                                                <div className="col-span-2">{r.lotNo}</div>
-                                                <div className="col-span-2">{fmt(r.stockedDate)}</div>
-                                                <div className="col-span-2">{r.totalStock}</div>
-                                                <div className="col-span-2">{r.reservedStock}</div>
-                                                <div className="col-span-2">{r.availableStock}</div>
-                                                <div className="col-span-2 flex items-center justify-between">
-                                                    <span className={`flex items-center ${exp.text}`}>
-                                                        <span className={`inline-block w-2 h-2 rounded-full mr-2 ${exp.dot}`} />
-                                                        {exp.label}
-                                                    </span>
-                                                    <button className="hover:text-gray-600"
-                                                        style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
-                                                        <MoreVertical className="w-5 h-5" />
-                                                    </button>
+
+                                    <div className="divide-y"
+                                        style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
+                                        {lotsLoading ? (
+                                            <div className="px-6 py-8 text-center">
+                                                <div className="inline-flex items-center text-sm"
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                                                    Loading lots data...
                                                 </div>
                                             </div>
-                                        );
-                                    })
-                                )}
-                            </div>
+                                        ) : lots.length === 0 ? (
+                                            <div className="px-6 py-8 text-center">
+                                                <div className="text-sm"
+                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                                                    No lots found for this product.
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            lots.map((r) => {
+                                                const exp = expStatus(r.expirationDate);
+                                                return (
+                                                    <div key={r.lotNo} className="grid grid-cols-12 gap-4 px-6 py-4"
+                                                        style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>
+                                                        <div className="col-span-2">{r.lotNo}</div>
+                                                        <div className="col-span-2">{fmt(r.stockedDate)}</div>
+                                                        <div className="col-span-2">{r.totalStock}</div>
+                                                        <div className="col-span-2">{r.reservedStock}</div>
+                                                        <div className="col-span-2">{r.availableStock}</div>
+                                                        <div className="col-span-2 flex items-center justify-between">
+                                                            <span className={`flex items-center ${exp.text}`}>
+                                                                <span className={`inline-block w-2 h-2 rounded-full mr-2 ${exp.dot}`} />
+                                                                {exp.label}
+                                                            </span>
+                                                            <button className="hover:text-gray-600"
+                                                                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                                                                <MoreVertical className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
 
-                            <div className="px-6 py-3 text-sm"
-                                style={{
-                                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
-                                    color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
-                                }}>
-                                Total stock: <span className="font-medium"
-                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{total}</span> • Available:{" "}
-                                <span className="font-medium"
-                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{available}</span>
+                                    <div className="px-6 py-3 text-sm"
+                                        style={{
+                                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
+                                            color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
+                                        }}>
+                                        Total stock: <span className="font-medium"
+                                            style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{total}</span> • Available:{" "}
+                                        <span className="font-medium"
+                                            style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>{available}</span>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4">
+                                    <Link to="/inventory" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
+                                        ← Back to Inventory
+                                    </Link>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="mt-4">
-                            <Link to="/inventory" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
-                                ← Back to Inventory
-                            </Link>
-                        </div>
-                    </div>
-                </div>
                     </div>
                 )}
 
@@ -858,10 +872,11 @@ export default function LotPage() {
                                     Lot Number *
                                 </label>
                                 <input
-                                    type="text"
+                                    type="number"
                                     value={newLot.lotNo}
                                     onChange={(e) => handleLotInputChange('lotNo', e.target.value)}
-                                    placeholder="Enter lot number (e.g., L001, B12345)"
+                                    placeholder="Enter lot number (e.g., 001, 12345)"
+                                    min="0"
                                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                     style={{
                                         backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
@@ -879,13 +894,14 @@ export default function LotPage() {
                                 </label>
                                 <input
                                     type="date"
-                                    value={newLot.stockedDate}
-                                    onChange={(e) => handleLotInputChange('stockedDate', e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    value={new Date().toISOString().split('T')[0]}
+                                    readOnly
+                                    className="w-full px-3 py-2 border rounded-md cursor-not-allowed"
                                     style={{
-                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#2d3748' : '#f7fafc',
                                         borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
-                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                        color: document.documentElement.classList.contains('dark') ? '#a0aec0' : '#718096',
+                                        opacity: 0.7
                                     }}
                                 />
                             </div>
@@ -932,6 +948,27 @@ export default function LotPage() {
                                     }}
                                 />
                             </div>
+                              {/* Selling Price */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    Selling Price per unit *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={newLot.cost}
+                                    onChange={(e) => handleLotInputChange('sellPrice', e.target.value)}
+                                    placeholder="Selling Price per unit"
+                                    min="0"
+                                    step="0.01"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
 
                             {/* Expiration Date */}
                             <div>
@@ -960,11 +997,10 @@ export default function LotPage() {
                             <button
                                 onClick={handleCloseAddLotModal}
                                 disabled={isAddingLot}
-                                className={`px-4 py-2 border rounded-md transition-colors ${
-                                    isAddingLot 
-                                        ? 'opacity-50 cursor-not-allowed' 
+                                className={`px-4 py-2 border rounded-md transition-colors ${isAddingLot
+                                        ? 'opacity-50 cursor-not-allowed'
                                         : 'hover:bg-gray-50'
-                                }`}
+                                    }`}
                                 style={{
                                     borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
                                     color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151',
@@ -975,11 +1011,10 @@ export default function LotPage() {
                             <button
                                 onClick={handleAddLot}
                                 disabled={isAddingLot}
-                                className={`px-4 py-2 rounded-md transition-colors ${
-                                    isAddingLot 
-                                        ? 'bg-emerald-400 cursor-not-allowed' 
+                                className={`px-4 py-2 rounded-md transition-colors ${isAddingLot
+                                        ? 'bg-emerald-400 cursor-not-allowed'
                                         : 'bg-emerald-600 hover:bg-emerald-700'
-                                } text-white`}>
+                                    } text-white`}>
                                 {isAddingLot ? (
                                     <span className="flex items-center">
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
