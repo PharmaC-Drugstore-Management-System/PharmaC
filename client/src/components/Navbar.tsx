@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   LayoutGrid,
   Inbox,
-  BarChart3,
   Clock,
   FileText,
   Settings,

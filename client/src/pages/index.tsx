@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeProvider';
 import {
   ShoppingCart,
-  TrendingUp,
   Package,
   AlertCircle,
   DollarSign,
@@ -94,6 +93,18 @@ export default function PharmaDashboard() {
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [restockRecommendations, setRestockRecommendations] = useState<any[]>([]);
   const [loadingRestock, setLoadingRestock] = useState(true);
+  
+  // Forecast configuration states
+  const [forecastDays, setForecastDays] = useState(7);
+  const [startDate, setStartDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 30); // Default to 30 days ago
+    return date.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const date = new Date();
+    return date.toISOString().split('T')[0];
+  });
 
   const loadProductType = async () => {
     try {
@@ -235,6 +246,45 @@ export default function PharmaDashboard() {
     }
   }
 
+  const loadForecastData = async () => {
+    try {
+      setLoadingForecast(true);
+      
+      // Get product types if not already loaded
+      let types = productType;
+      if (types.length === 0) {
+        types = await loadProductType();
+      }
+      
+      if (types.length > 0) {
+        const info = await fetch(`${API_URL}/predictor/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            forecastDays: forecastDays,
+            drugFilter: types,
+            model: "arima",
+            startDate: startDate,
+            endDate: endDate
+          })
+        });
+
+        const data = await info.json();
+        console.log("Forecast response:", data);
+        
+        if (data.status && data.data.results.success) {
+          setForecastData(data.data.results);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading forecast:", error);
+    } finally {
+      setLoadingForecast(false);
+    }
+  }
+
   useEffect(() => {
     loadTotalSales();
     loadTotalOrders();
@@ -256,7 +306,7 @@ export default function PharmaDashboard() {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              forecastDays: 7,
+              forecastDays: forecastDays,
               drugFilter: types,
               model: "arima"
             })
@@ -276,7 +326,7 @@ export default function PharmaDashboard() {
       }
     };
     loadData();
-  }, []);
+  }, [forecastDays]);
 
 
   return (
@@ -371,15 +421,66 @@ export default function PharmaDashboard() {
 
         {/* Product Types Analysis */}
         <div className="space-y-6">
-          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <h2 className="text-2xl lg:text-3xl font-bold transition-colors"
               style={{ color: isDark ? 'white' : '#111827' }}>
               Product Types Performance
             </h2>
-            <div className="flex items-center space-x-2 text-sm lg:text-base font-medium transition-colors"
-              style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-              <TrendingUp className="w-5 h-5" />
-              <span>Weekly Analysis</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              {/* Forecast Days Selector */}
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium transition-colors"
+                  style={{ color: isDark ? '#d1d5db' : '#374151' }}>
+                  Forecast Days:
+                </label>
+                <select 
+                  value={forecastDays} 
+                  onChange={(e) => setForecastDays(Number(e.target.value))}
+                  className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    backgroundColor: isDark ? '#374151' : 'white',
+                    borderColor: isDark ? '#4b5563' : '#d1d5db',
+                    color: isDark ? 'white' : '#111827'
+                  }}>
+                  <option value={3}>3 Days</option>
+                  <option value={7}>7 Days</option>
+                  <option value={14}>14 Days</option>
+                  <option value={30}>30 Days</option>
+                </select>
+              </div>
+              {/* Date Range Selector */}
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    backgroundColor: isDark ? '#374151' : 'white',
+                    borderColor: isDark ? '#4b5563' : '#d1d5db',
+                    color: isDark ? 'white' : '#111827'
+                  }}
+                />
+                <span className="text-sm transition-colors"
+                  style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>to</span>
+                <input 
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    backgroundColor: isDark ? '#374151' : 'white',
+                    borderColor: isDark ? '#4b5563' : '#d1d5db',
+                    color: isDark ? 'white' : '#111827'
+                  }}
+                />
+              </div>
+              <button
+                onClick={() => loadForecastData()}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Update Forecast
+              </button>
             </div>
           </div>
 
@@ -388,16 +489,45 @@ export default function PharmaDashboard() {
             {productType.map((type: string, index: number) => {
               // Get forecast data for this product type
               const typeForecast = forecastData?.forecasts?.[type]?.ARIMA;
-              const performance = forecastData?.model_performance?.[type]?.ARIMA;
               
-              // Transform forecast data for chart
-              const chartData = typeForecast ? typeForecast.dates.map((date: string, idx: number) => ({
-                day: `Day ${idx + 1}`,
-                date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                prediction: Math.round(typeForecast.predictions[idx] * 100) / 100,
-                upper: Math.round(typeForecast.upper_confidence[idx] * 100) / 100,
-                lower: Math.round(typeForecast.lower_confidence[idx] * 100) / 100
-              })) : [];
+              // Transform forecast data for chart with better day labels
+              const chartData = typeForecast ? typeForecast.dates.map((date: string, idx: number) => {
+                const dateObj = new Date(date);
+                const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                
+                return {
+                  day: dayNames[dateObj.getDay()],
+                  date: `${monthNames[dateObj.getMonth()]} ${dateObj.getDate()}`,
+                  fullDate: date,
+                  forecast: Math.round(typeForecast.predictions[idx] * 100) / 100,
+                  upper: Math.round(typeForecast.upper_confidence[idx] * 100) / 100,
+                  lower: Math.round(typeForecast.lower_confidence[idx] * 100) / 100,
+                  // Add historical data if available (mock for now - you can integrate real historical API)
+                  historical: idx === 0 ? Math.round(typeForecast.predictions[idx] * 0.9 * 100) / 100 : null
+                };
+              }) : [];
+
+              // Add some mock historical data points for better visualization
+              if (chartData.length > 0) {
+                const historicalDays = 3; // Show 3 days of historical data
+                for (let i = 0; i < historicalDays; i++) {
+                  const histDate = new Date(chartData[0].fullDate);
+                  histDate.setDate(histDate.getDate() - (historicalDays - i));
+                  const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                  
+                  chartData.unshift({
+                    day: dayNames[histDate.getDay()],
+                    date: `${monthNames[histDate.getMonth()]} ${histDate.getDate()}`,
+                    fullDate: histDate.toISOString().split('T')[0],
+                    forecast: null,
+                    upper: null,
+                    lower: null,
+                    historical: Math.round((chartData[0].forecast || 0) * (0.8 + Math.random() * 0.4) * 100) / 100
+                  });
+                }
+              }
 
               // Calculate stats
               const avgPrediction = typeForecast ? 
@@ -422,7 +552,7 @@ export default function PharmaDashboard() {
                       </h3>
                       <p className="text-sm transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {typeForecast ? '7-day ARIMA forecast' : 'Loading prediction...'}
+                        {typeForecast ? `${forecastDays}-day ARIMA forecast` : 'Loading prediction...'}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -454,16 +584,18 @@ export default function PharmaDashboard() {
                             dataKey="day"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fontSize: 12, fill: isDark ? '#9ca3af' : '#64748b' }}
+                            tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#64748b' }}
+                            interval={0}
                           />
                           <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fontSize: 12, fill: isDark ? '#9ca3af' : '#64748b' }}
+                            tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#64748b' }}
                           />
                           <Tooltip
                             content={({ active, payload, label }) => {
                               if (active && payload && payload.length) {
+                                const data = payload[0].payload;
                                 return (
                                   <div className="p-3 border rounded-lg shadow-lg transition-colors"
                                     style={{
@@ -472,24 +604,45 @@ export default function PharmaDashboard() {
                                     }}>
                                     <p className="text-sm font-medium transition-colors"
                                       style={{ color: isDark ? 'white' : '#111827' }}>
-                                      {label}
+                                      {label} - {data.date}
                                     </p>
-                                    <p className="text-sm" style={{ color: color }}>
-                                      Forecast: {payload[0].value} units
-                                    </p>
+                                    {data.historical !== null && (
+                                      <p className="text-sm" style={{ color: '#6b7280' }}>
+                                        Historical: {data.historical} units
+                                      </p>
+                                    )}
+                                    {data.forecast !== null && (
+                                      <p className="text-sm" style={{ color: color }}>
+                                        Forecast: {data.forecast} units
+                                      </p>
+                                    )}
                                   </div>
                                 );
                               }
                               return null;
                             }}
                           />
+                          {/* Historical Data Line */}
                           <Line
                             type="monotone"
-                            dataKey="prediction"
+                            dataKey="historical"
+                            stroke="#6b7280"
+                            strokeWidth={2}
+                            dot={{ fill: '#6b7280', strokeWidth: 2, r: 3 }}
+                            connectNulls={false}
+                            name="Historical"
+                          />
+                          {/* Forecast Data Line */}
+                          <Line
+                            type="monotone"
+                            dataKey="forecast"
                             stroke={color}
                             strokeWidth={3}
+                            strokeDasharray="5 5"
                             dot={{ fill: color, strokeWidth: 2, r: 4 }}
                             activeDot={{ r: 6, fill: color }}
+                            connectNulls={false}
+                            name="Forecast"
                           />
                         </LineChart>
                       </ResponsiveContainer>
@@ -507,70 +660,56 @@ export default function PharmaDashboard() {
                     style={{
                       borderColor: isDark ? '#4b5563' : '#e5e7eb'
                     }}>
-                    <div className="text-center">
+                    <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
                         Avg Forecast
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>
-                        {avgPrediction > 0 ? Math.round(avgPrediction * 10) / 10 : '—'}
+                        {avgPrediction > 0 ? Math.round(avgPrediction * 10) / 10 : '—'} units/day
                       </p>
                     </div>
-                    <div className="text-center">
+                    <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
                         Peak Day
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>
-                        {peakPrediction > 0 ? Math.round(peakPrediction * 10) / 10 : '—'}
+                        {peakPrediction > 0 ? Math.round(peakPrediction * 10) / 10 : '—'} units
                       </p>
                     </div>
-                    <div className="text-center">
+                    <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        Accuracy
+                        Trend
                       </p>
                       <p className="text-sm font-semibold transition-colors"
-                        style={{ color: isDark ? 'white' : '#111827' }}>
-                        {performance ? Math.round((100 - performance.MAPE) * 10) / 10 + '%' : '—'}
+                        style={{ color: avgPrediction > peakPrediction * 0.8 ? '#10b981' : '#f59e0b' }}>
+                        {avgPrediction > peakPrediction * 0.8 ? '↗ Rising' : '↘ Declining'}
                       </p>
                     </div>
                   </div>
 
-                  {/* Model Performance Details */}
-                  {performance && (
-                    <div className="mt-4 p-3 rounded-lg"
-                      style={{
-                        backgroundColor: isDark ? '#4b5563' : '#f9fafb'
-                      }}>
-                      <p className="text-xs font-medium mb-2 transition-colors"
-                        style={{ color: isDark ? '#d1d5db' : '#4b5563' }}>
-                        Model Performance:
-                      </p>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <span className="transition-colors"
-                            style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                            MAE: </span>
-                          <span className="font-semibold transition-colors"
-                            style={{ color: isDark ? 'white' : '#111827' }}>
-                            {Math.round(performance.MAE * 100) / 100}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="transition-colors"
-                            style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                            RMSE: </span>
-                          <span className="font-semibold transition-colors"
-                            style={{ color: isDark ? 'white' : '#111827' }}>
-                            {Math.round(performance.RMSE * 100) / 100}
-                          </span>
-                        </div>
-                      </div>
+                  {/* Legend for Chart Lines */}
+                  <div className="mt-4 flex justify-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-0.5 bg-gray-500"></div>
+                      <span className="text-xs transition-colors"
+                        style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                        Historical
+                      </span>
                     </div>
-                  )}
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-0.5 border-t-2 border-dashed" 
+                           style={{ borderColor: color }}></div>
+                      <span className="text-xs transition-colors"
+                        style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                        Forecast
+                      </span>
+                    </div>
+                  </div>
                 </div>
               );
             })}
