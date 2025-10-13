@@ -71,7 +71,7 @@ export default function EditRolePage() {
       }
 
       // Step 2: Use employee_id to get full account details
-      const accountResponse = await fetch(`${API_URL}/acc/account-detail`, {
+      const accountResponse = await fetch(`${API_URL}/account/account-detail`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -439,7 +439,9 @@ export default function EditRolePage() {
                           <img 
                             src={employee.profile_image.startsWith('http') 
                               ? employee.profile_image 
-                              : `${API_URL}/uploads/${employee.profile_image}`
+                              : (employee.profile_image.startsWith('/')
+                                  ? employee.profile_image
+                                  : `/uploads/${employee.profile_image}`)
                             }
                             alt="Profile"
                             className="w-full h-full object-cover"

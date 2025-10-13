@@ -95,8 +95,13 @@ export default function AccountPage() {
                     const result = await response.json();
                     console.log('✅ Profile image uploaded successfully:', result);
 
-                    // อัพเดท imageUrl ด้วย URL จริงจาก server
-                    setImageUrl(result.data.imageUrl);
+                                        // อัพเดท imageUrl ด้วย URL จริงจาก server
+                                        const newUrl: string = result.data.imageUrl;
+                                        setImageUrl(
+                                            newUrl.startsWith('http') ? newUrl : (
+                                                newUrl.startsWith('/') ? newUrl : `/uploads/${newUrl}`
+                                            )
+                                        );
                     console.log('🎉 Image URL updated:', result.data.imageUrl);
 
                     // แสดงข้อความสำเร็จ
@@ -146,7 +151,7 @@ export default function AccountPage() {
             }
 
             // Step 2: Use employee_id to get full account details
-            const accountResponse = await fetch(`${API_URL}/acc/account-detail`, {
+            const accountResponse = await fetch(`${API_URL}/account/account-detail`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -172,7 +177,11 @@ export default function AccountPage() {
 
             // Set profile image from database or use default
             if (user.profile_image) {
-                setImageUrl(user.profile_image);
+                                const p = String(user.profile_image);
+                                const normalized = (p.includes('://localhost') || p.includes('://127.0.0.1'))
+                                    ? new URL(p).pathname
+                                    : (p.startsWith('http') ? p : (p.startsWith('/') ? p : `/uploads/${p}`));
+                                setImageUrl(normalized);
             } else {
                 setImageUrl('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face');
             }
