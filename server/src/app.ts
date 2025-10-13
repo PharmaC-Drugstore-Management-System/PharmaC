@@ -42,7 +42,7 @@ import path from 'path';
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // ✅ ใส่ routes ตรงนี้!
-app.use("/", apiRouter);
+app.use("/api", apiRouter);
 
 // Health check
 app.get("/health", (_req, res) => {

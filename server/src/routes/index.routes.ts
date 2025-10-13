@@ -3,52 +3,52 @@ import express from "express";
 const router = express.Router();
 
 import authRoute from "./auth.routes.ts";
-router.use("/api", authRoute);
+router.use("/", authRoute);
 
 import accountRoute from "./account.routes.ts";
-router.use("/api/account", accountRoute);
+router.use("/account", accountRoute);
 
 import roleRoute from "./role.routes.ts";
-router.use("/api/role", roleRoute);
+router.use("/role", roleRoute);
 
 import inventoryRoute from "./medicine.routes.ts";
-router.use("/api/inventory", inventoryRoute);
+router.use("/inventory", inventoryRoute);
 
 import forecastRoute from "./forecast.routes.ts";
-router.use("/api/arima", forecastRoute);
+router.use("/arima", forecastRoute);
 
 import purchaseRoute from "./purchase.routes.ts";
-router.use("/api/purchase", purchaseRoute);
+router.use("/purchase", purchaseRoute);
 
 import purchaseDocumentsRoute from "./purchase-documents.route.ts";
-router.use("/api/purchase-documents", purchaseDocumentsRoute);
+router.use("/purchase-documents", purchaseDocumentsRoute);
 
 import orderRoute from "./order.routes.ts";
-router.use("/api/order", orderRoute);
+router.use("/order", orderRoute);
 
 import customerRoute from "./customer.routes.ts";
-router.use("/api/customer", customerRoute);
+router.use("/customer", customerRoute);
 
 import signatureRoute from "./signature.routes.ts";
-router.use("/api/signature", signatureRoute);
+router.use("/signature", signatureRoute);
 
 import supplierRoute from "./supplier.routes.ts";
-router.use("/api/suppliers", supplierRoute);
+router.use("/suppliers", supplierRoute);
 
 import productSupplierRoute from "./product-supplier.routes.ts";
-router.use("/api", productSupplierRoute);
+router.use("/", productSupplierRoute);
 
 import revenueRoute from "./revenue.routes.ts";
-router.use("/api/revenue", revenueRoute);
+router.use("/revenue", revenueRoute);
 
 import paymentRoute from "./payment.routes.ts";
-router.use("/api/payment", paymentRoute);
+router.use("/payment", paymentRoute);
 
 import lotRoute from "./lot.routes.ts";
-router.use("/api/lot", lotRoute);
+router.use("/lot", lotRoute);
 
 import stockTransRoute from "./stock_trans.routes.ts"
-router.use("/api/stock", stockTransRoute);
+router.use("/stock", stockTransRoute);
 
 import predictorRoute from "./predictor.route.ts";
 router.use("/predictor", predictorRoute);
