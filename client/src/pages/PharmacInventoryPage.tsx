@@ -11,7 +11,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 type MedicineItem = {
   id: number;
@@ -76,7 +76,7 @@ export default function PharmacInventoryPage() {
 
   const checkme = async () => {
     try {
-      const authme = await fetch(`${API_URL}/api/me`, {
+      const authme = await fetch(`${API_URL}/me`, {
         method: "GET",
         credentials: "include",
       });
@@ -433,7 +433,7 @@ export default function PharmacInventoryPage() {
               const imgSrc = rawImage
                 ? rawImage.startsWith("http")
                   ? rawImage
-                  : `http://localhost:5000${rawImage}`
+                  : `${API_URL}${rawImage}`
                 : null;
 
               return (

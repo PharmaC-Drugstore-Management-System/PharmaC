@@ -71,7 +71,7 @@ export default function Header() {
 
       // Step 2: Use employee_id to get full account details
       const accountResponse = await fetch(
-        `${API_URL}/acc/account-detail`,
+        `${API_URL}/account/account-detail`,
         {
           method: "POST",
           headers: {
@@ -559,9 +559,13 @@ export default function Header() {
                 {userProfile?.profile_image ? (
                   <img
                     src={
-                      userProfile.profile_image.startsWith("http")
-                        ? userProfile.profile_image
-                        : `${API_URL}/uploads/${userProfile.profile_image}`
+                      (userProfile.profile_image.includes('://localhost') || userProfile.profile_image.includes('://127.0.0.1'))
+                        ? new URL(userProfile.profile_image).pathname
+                        : (userProfile.profile_image.startsWith("http")
+                            ? userProfile.profile_image
+                            : (userProfile.profile_image.startsWith("/")
+                                ? userProfile.profile_image
+                                : `/uploads/${userProfile.profile_image}`))
                     }
                     alt="Profile"
                     className="w-full h-full object-cover rounded-full"
@@ -601,9 +605,13 @@ export default function Header() {
                       {userProfile?.profile_image ? (
                         <img
                           src={
-                            userProfile.profile_image.startsWith("http")
-                              ? userProfile.profile_image
-                              : `${API_URL}/uploads/${userProfile.profile_image}`
+                            (userProfile.profile_image.includes('://localhost') || userProfile.profile_image.includes('://127.0.0.1'))
+                              ? new URL(userProfile.profile_image).pathname
+                              : (userProfile.profile_image.startsWith("http")
+                                  ? userProfile.profile_image
+                                  : (userProfile.profile_image.startsWith("/")
+                                      ? userProfile.profile_image
+                                      : `/uploads/${userProfile.profile_image}`))
                           }
                           alt="Profile"
                           className="w-full h-full object-cover rounded-full"
