@@ -4,6 +4,8 @@ import { useNavigate} from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import SignaturePad from '../components/SignaturePad';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const SupplierDetailsForm = () => {
   const location = useLocation();
   const [username, setUsername] = useState('');
@@ -165,7 +167,7 @@ const SupplierDetailsForm = () => {
 
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
+      const authme = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include'
       })

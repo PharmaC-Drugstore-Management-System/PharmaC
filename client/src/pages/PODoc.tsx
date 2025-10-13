@@ -3,6 +3,8 @@ import thaiBahtText from 'thai-baht-text';
 import { Printer, Download } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const PurchaseOrderDocument = () => {
   const location = useLocation();
   const [userID, setUserID] = useState(null);
@@ -70,8 +72,8 @@ const PurchaseOrderDocument = () => {
   const fetchLatestSignature = async () => {
     try {
       const token = localStorage.getItem('token'); // Get JWT token
-      
-      const response = await fetch('http://localhost:5000/signature/latest', {
+
+      const response = await fetch(`${API_URL}/signature/latest`, {
         method: 'GET',
         credentials: 'include',
         headers: {  
@@ -199,7 +201,7 @@ const PurchaseOrderDocument = () => {
 
   const countDoc = async () => {
     try {
-      const response = await fetch('http://localhost:5000/purchase/count', {
+      const response = await fetch(`${API_URL}/purchase/count`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -240,7 +242,7 @@ const PurchaseOrderDocument = () => {
       formData.append('signature', blob, `signature_${Date.now()}.png`);
       
       // Save signature to database
-      const signatureResponse = await fetch('http://localhost:5000/signature/upload', {
+      const signatureResponse = await fetch(`${API_URL}/signature/upload`, {
         method: 'POST',
         credentials: 'include',
         body: formData
@@ -321,7 +323,7 @@ const PurchaseOrderDocument = () => {
       console.log('PDF Request Data:', requestData);
 
       // ส่ง request ไป backend ให้ Puppeteer generate PDF
-      const response = await fetch('http://localhost:5000/purchase/pdf', {
+      const response = await fetch(`${API_URL}/purchase/pdf`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -354,7 +356,7 @@ const PurchaseOrderDocument = () => {
 
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
+      const authme = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include'
       })
