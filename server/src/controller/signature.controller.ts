@@ -101,8 +101,8 @@ const controller = {
             console.log('User from JWT:', user);
             console.log('Signer name:', userName);
 
-            // Create signature image URL using the actual filename from multer
-            const signatureImageUrl = `http://localhost:5000/uploads/signatures/${file.filename}`;
+            // Create signature image path using the actual filename from multer (relative path)
+            const signatureImageUrl = `/uploads/signatures/${file.filename}`;
 
             console.log('Signature file saved as:', file.filename);
             console.log('Signature URL:', signatureImageUrl);
