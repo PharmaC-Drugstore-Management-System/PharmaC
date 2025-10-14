@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Minus, ShoppingCart,  Banknote, Trash2, X, User, Star, QrCode } from "lucide-react";
+import { Search, Plus, Minus, ShoppingCart, Banknote, Trash2, X, User, Star, QrCode } from "lucide-react";
 import "../styles/pos.css";
 import { useNavigate } from "react-router-dom";
 import { io } from 'socket.io-client';
@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 interface Product {
-  product_id: number;
+  product_id: number | string; // Can be string for lot-specific IDs
+  original_product_id?: number; // Store original product ID
   product_name: string;
   brand: string;
   unit: string;
@@ -16,12 +17,15 @@ interface Product {
   stock?: number;
   barcode: string;
   image?: string;
+  lots?: any[]; // Add lots information to display
+  lot_no?: string; // Lot number for display
+  lot_id?: number; // Lot ID for reference
+  expired_date?: string; // Expiration date
 }
 
 interface CartItem extends Product {
   quantity: number;
   total: number;
-  lots?: any[]; // เก็บข้อมูล lots ที่ใช้งาน เรียงตามวันหมดอายุ
 }
 
 interface Member {
@@ -43,7 +47,7 @@ export default function POSPage() {
   const [receiptData, setReceiptData] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [employee_id, setEmployeeId] = useState<number | null>(null);
-  const [orderId, setOrderId]  = useState<number | null>(null);
+  const [orderId, setOrderId] = useState<number | null>(null);
   // QR Code Payment States
   const [showQRModal, setShowQRModal] = useState(false);
   const [showQRConfirmModal, setShowQRConfirmModal] = useState(false);
@@ -53,17 +57,17 @@ export default function POSPage() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  
+
   // Payment verification states
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
   const [showRequiresActionModal, setShowRequiresActionModal] = useState(false);
-  
+
   // Auto verification states
   const [isAutoVerifying, setIsAutoVerifying] = useState(false);
   const [autoVerifyInterval, setAutoVerifyInterval] = useState<NodeJS.Timeout | null>(null);
-  
+
   // Member System States
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberPhone, setMemberPhone] = useState("");
@@ -109,11 +113,11 @@ export default function POSPage() {
           setQrPaymentStatus('success');
           setShowRequiresActionModal(false);
           setShowPaymentSuccessModal(true);
-          
+
           // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
           // รวม updateDatabaseStatus เข้าไปใน handlePaymentSuccess เพื่อไม่ให้ทำงานแยกกัน
           handlePaymentSuccess();
-          
+
           // Add points if member exists
           if (currentMember) {
             addPoints();
@@ -151,7 +155,7 @@ export default function POSPage() {
     }
   };
 
-  const verifyStatus  = async () => {
+  const verifyStatus = async () => {
     try {
 
       const response = await fetch('http://localhost:5000/payment/check', {
@@ -168,7 +172,7 @@ export default function POSPage() {
       if (response.ok) {
         const data = await response.json();
         console.log('Payment verification response:', data);
-        
+
         // Check if payment is actually successful
         if (data.success && (data.status === 'succeeded')) {
           setQrPaymentStatus('success');
@@ -207,62 +211,77 @@ export default function POSPage() {
       });
       if (response.ok) {
         const data = await response.json();
-        
-        // ดึงข้อมูล lots และคำนวณ stock จริงสำหรับแต่ละ product
-        const productsWithRealStock = await Promise.all(
+
+        // ดึงข้อมูล lots และสร้างการ์ดแยกสำหรับแต่ละ lot
+        const allProductLots = await Promise.all(
           data.data.map(async (product: Product) => {
             try {
               // ดึงข้อมูล lots ของแต่ละ product
               const lotsResponse = await fetch(`http://localhost:5000/lot/get-lots-by-product/${product.product_id}`, {
                 credentials: "include",
               });
-              
-              let availableStock = 0;
-              let sellingPrice = 50.00; // Default fallback price
-              
+
               if (lotsResponse.ok) {
                 const lotsData = await lotsResponse.json();
-                
-                if (lotsData.status && lotsData.data) {
-                  // คำนวณ available stock และหา selling price (ไม่นับ lots ที่หมดอายุ)
+
+                if (lotsData.status && lotsData.data && lotsData.data.length > 0) {
+                  // กรอง lots ที่ยังไม่หมดอายุ
                   const today = new Date();
-                  const validLots: any[] = [];
-                  
-                  availableStock = lotsData.data.reduce((sum: number, lot: any) => {
+                  const validLots = lotsData.data.filter((lot: any) => {
                     const expDate = new Date(lot.expired_date);
-                    // ถ้ายังไม่หมดอายุ
-                    if (expDate > today) {
-                      validLots.push(lot);
-                      return sum + (lot.init_amount || 0);
-                    }
-                    return sum;
-                  }, 0);
-                  
-                  // ใช้ sell_price จาก lot ล่าสุด (หรือ lot แรกที่มี sell_price)
-                  const lotWithPrice = validLots.find(lot => lot.sell_price && lot.sell_price > 0);
-                  if (lotWithPrice) {
-                    sellingPrice = lotWithPrice.sell_price;
-                  }
+                    return expDate > today && lot.init_amount > 0;
+                  });
+
+                  // เรียง lots ตามวันหมดอายุ (ใกล้หมดอายุก่อน - FEFO)
+                  validLots.sort((a: any, b: any) => {
+                    return new Date(a.expired_date).getTime() - new Date(b.expired_date).getTime();
+                  });
+
+                  // สร้างการ์ดแยกสำหรับแต่ละ lot
+                  return validLots.map((lot: any) => ({
+                    ...product,
+                    product_id: `${product.product_id}_lot_${lot.lot_id}`, // Unique ID for each lot card
+                    original_product_id: product.product_id, // Keep original product ID for cart
+                    lot_no: lot.lot_no, // Lot number to display
+                    lot_id: lot.lot_id, // Lot ID for reference
+                    price: lot.sell_price || 50.00, // ราคาขายจาก lot
+                    stock: lot.init_amount, // จำนวนสต็อกในแต่ละ lot
+                    expired_date: lot.expired_date, // วันหมดอายุ
+                    lots: [lot], // เก็บ lot เดียวสำหรับการ checkout
+                  }));
+                } else {
+                  // ถ้าไม่มี lot ให้แสดงสินค้าแบบเดิม (out of stock)
+                  return [{
+                    ...product,
+                    price: 50.00,
+                    stock: 0,
+                    lots: [],
+                  }];
                 }
+              } else {
+                // ถ้า API error ให้แสดงสินค้าแบบเดิม
+                return [{
+                  ...product,
+                  price: 50.00,
+                  stock: 0,
+                  lots: [],
+                }];
               }
-              
-              return {
-                ...product,
-                price: sellingPrice, // ใช้ selling price จาก lot
-                stock: availableStock, // ใช้ stock จริงจาก lots
-              };
             } catch (error) {
               console.error(`Error fetching lots for product ${product.product_id}:`, error);
-              return {
+              return [{
                 ...product,
-                price: 50.00, // Fallback price if error
-                stock: 0, // ถ้า error ให้เป็น 0
-              };
+                price: 50.00,
+                stock: 0,
+                lots: [],
+              }];
             }
           })
         );
-        
-        setProducts(productsWithRealStock);
+
+        // Flatten array of arrays into single array of product-lot combinations
+        const flattenedProducts = allProductLots.flat();
+        setProducts(flattenedProducts);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -277,74 +296,49 @@ export default function POSPage() {
 
   const addToCart = async (product: Product) => {
     try {
-      // ดึงข้อมูล lots ของ product นี้
-      const lotsResponse = await fetch(`http://localhost:5000/lot/get-lots-by-product/${product.product_id}`, {
-        credentials: "include",
-      });
-      
-      if (!lotsResponse.ok) {
-        console.error('Failed to fetch lots for product:', product.product_id);
-        return;
-      }
-      
-      const lotsData = await lotsResponse.json();
-      
-      if (!lotsData.status || !lotsData.data) {
-        console.error('No lots data available for product:', product.product_id);
-        return;
-      }
-      
-      // กรองและเรียง lots ตามวันหมดอายุ (ใกล้หมดอายุก่อน)
-      const today = new Date();
-      const availableLots = lotsData.data
-        .filter((lot: any) => {
-          const expDate = new Date(lot.expired_date);
-          return expDate > today && lot.init_amount > 0; // ยังไม่หมดอายุและมีของเหลือ
-        })
-        .sort((a: any, b: any) => {
-          return new Date(a.expired_date).getTime() - new Date(b.expired_date).getTime();
-        });
-      
-      if (availableLots.length === 0) {
+      // Since each product card now represents a specific lot, we can directly add it
+      // Use the lot information already embedded in the product
+      if (!product.lots || product.lots.length === 0 || (product.stock || 0) <= 0) {
         alert('สินค้านี้หมดสต็อกหรือหมดอายุแล้ว');
         return;
       }
-      
+
+      // Check if this specific lot is already in the cart
       const existingItem = cart.find(item => item.product_id === product.product_id);
-      
+
       if (existingItem) {
+        // Update quantity for existing item
         setCart(cart.map(item =>
           item.product_id === product.product_id
-            ? { 
-                ...item, 
-                quantity: item.quantity + 1, 
-                total: (item.quantity + 1) * (item.price || 0),
-                lots: availableLots // เก็บข้อมูล lots สำหรับใช้ตอน checkout
-              }
+            ? {
+              ...item,
+              quantity: item.quantity + 1,
+              total: (item.quantity + 1) * (item.price || 0),
+            }
             : item
         ));
       } else {
+        // Add new item to cart with lot information
         const newItem: CartItem = {
           ...product,
           quantity: 1,
           total: product.price || 0,
-          lots: availableLots // เก็บข้อมูล lots สำหรับใช้ตอน checkout
         };
         setCart([...cart, newItem]);
       }
-      
+
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('เกิดข้อผิดพลาดในการเพิ่มสินค้าลงตะกร้า');
     }
   };
 
-  const updateQuantity = (productId: number, newQuantity: number) => {
+  const updateQuantity = (productId: number | string, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromCart(productId);
       return;
     }
-    
+
     setCart(cart.map(item =>
       item.product_id === productId
         ? { ...item, quantity: newQuantity, total: newQuantity * (item.price || 0) }
@@ -352,7 +346,7 @@ export default function POSPage() {
     ));
   };
 
-  const removeFromCart = (productId: number) => {
+  const removeFromCart = (productId: number | string) => {
     setCart(cart.filter(item => item.product_id !== productId));
   };
 
@@ -365,10 +359,10 @@ export default function POSPage() {
       if (!response.ok) {
         throw new Error('Failed to fetch customers');
       }
-      
+
       const customers = await response.json();
       const member = customers.find((customer: any) => customer.phone_number === phone);
-      
+
       if (member) {
         // Convert database customer to Member interface
         const convertedMember: Member = {
@@ -427,7 +421,7 @@ export default function POSPage() {
       }
 
       const newCustomer = await response.json();
-      
+
       // Convert database customer to Member interface
       const convertedMember: Member = {
         id: newCustomer.customer_id.toString(), // Convert to string for UI compatibility
@@ -441,7 +435,7 @@ export default function POSPage() {
       setShowMemberModal(false);
       setNewMemberData({ name: '', phone: '', email: '', address: '' });
       setMemberModalMode('search');
-      
+
       alert(`New member added successfully: ${convertedMember.name}`);
     } catch (error) {
       console.error("Error adding member:", error);
@@ -478,7 +472,7 @@ export default function POSPage() {
 
       let remainingQuantity = cartItem.quantity;
       const reductionHistory: any[] = [];
-      
+
       console.log(`📋 Available lots for ${cartItem.product_name}:`, cartItem.lots.map(lot => ({
         lot_id: lot.lot_id,
         init_amount: lot.init_amount,
@@ -487,17 +481,17 @@ export default function POSPage() {
 
       // 🚀 BATCH PROCESSING - ลดจำนวนจาก lots แบบ batch เพื่อป้องกันการเบิ้ล
       console.log(`\n🎯 Starting BATCH processing for ${cartItem.product_name}`);
-      
+
       // สร้าง batch data สำหรับ lots ที่ต้องการลด
       const batchOperations = [];
       let tempRemainingQuantity = remainingQuantity;
-      
+
       for (const lot of cartItem.lots) {
         if (tempRemainingQuantity <= 0) break;
-        
+
         const availableInLot = lot.init_amount || 0;
         const toReduceFromLot = Math.min(tempRemainingQuantity, availableInLot);
-        
+
         if (toReduceFromLot > 0) {
           batchOperations.push({
             lot_id: lot.lot_id,
@@ -509,19 +503,19 @@ export default function POSPage() {
           tempRemainingQuantity -= toReduceFromLot;
         }
       }
-      
+
       console.log(`📦 Batch operations prepared:`, batchOperations);
-      
+
       if (batchOperations.length > 0) {
         try {
           // สร้าง unique batch ID เพื่อป้องกันการเบิ้ล
           const batchId = `batch-${Date.now()}-${cartItem.product_id}`;
           console.log(`🆔 Batch ID: ${batchId}`);
-          
+
           // ทำการอัพเดต lots และสร้าง stock transactions แบบ batch
           for (const operation of batchOperations) {
             console.log(`\n🔄 Processing lot ${operation.lot_id} in batch...`);
-            
+
             // 1. อัพเดต lot quantity
             const updateResponse = await fetch(`http://localhost:5000/lot/update-lot/${operation.lot_id}`, {
               method: 'PUT',
@@ -536,7 +530,7 @@ export default function POSPage() {
 
             if (updateResponse.ok) {
               console.log(`✅ Lot ${operation.lot_id} updated successfully. New amount: ${operation.new_amount}`);
-              
+
               // 2. สร้าง stock transaction with unique batch reference
               const stockTransactionData = {
                 trans_type: 'OUT',
@@ -546,9 +540,9 @@ export default function POSPage() {
                 note: `POS Sale - ${operation.product_name} (Batch: ${batchId})`,
                 lot_id_fk: operation.lot_id
               };
-              
+
               console.log(`📝 Creating stock transaction for batch:`, stockTransactionData);
-              
+
               const stockTransResponse = await fetch('http://localhost:5000/stock/add-stock', {
                 method: 'POST',
                 headers: {
@@ -561,7 +555,7 @@ export default function POSPage() {
               if (stockTransResponse.ok) {
                 const stockResponseData = await stockTransResponse.json();
                 console.log(`✅ Stock transaction created successfully for lot ${operation.lot_id}:`, stockResponseData);
-                
+
                 reductionHistory.push({
                   lot_id: operation.lot_id,
                   quantity: operation.reduce_amount,
@@ -581,14 +575,14 @@ export default function POSPage() {
               console.error(`❌ Response status: ${updateResponse.status}`);
             }
           }
-          
+
           console.log(`✅ Batch processing completed for ${cartItem.product_name}`);
         } catch (error) {
           console.error(`❌ Error during batch processing:`, error);
         }
-        
-       
-       
+
+
+
       } else {
         console.log(`❌ No available lots for product ${cartItem.product_name}`);
       }
@@ -600,7 +594,7 @@ export default function POSPage() {
       console.log(`📊 Stock reduction summary for ${cartItem.product_name}:`, reductionHistory);
       console.log(`✅ Completed processing ${cartItem.product_name}\n`);
     }
-    
+
     console.log('🎉 ===== STOCK REDUCTION PROCESS COMPLETED =====\n');
   };
 
@@ -613,28 +607,28 @@ export default function POSPage() {
       product_name: item.product_name,
       quantity: item.quantity
     })));
-    
+
     try {
       console.log('💳 Payment successful - processing stock reduction...');
-      
-    
+
+
       await processStockReduction();
 
       console.log('✅ Stock reduction completed in handlePaymentSuccess');
     } catch (error) {
       console.error('❌ Error during payment success handling:', error);
-    } 
-    
+    }
+
     console.log('🚨 ===== PAYMENT SUCCESS HANDLER FINISHED =====\n');
   };
 
   const processPayment = async () => {
     console.log('🎯 ===== PROCESS PAYMENT CALLED =====');
     console.log('💰 Selected payment method:', selectedPayment);
-    
+
     setIsProcessing(true);
     try {
-      
+
       if (selectedPayment === "promptpay") {
         console.log('📱 PromptPay payment - showing QR confirmation modal');
         // Show QR confirmation modal first instead of creating payment immediately
@@ -645,11 +639,11 @@ export default function POSPage() {
         console.log('💵 Cash payment processing...');
         // Handle Cash Payment (existing logic)
         await new Promise(resolve => setTimeout(resolve, 2000));
-        
+
         console.log('🔄 CASH PAYMENT: About to call processStockReduction...');
         // ลดจำนวนสินค้าจาก lots ก่อนสร้าง receipt
         console.log('✅ CASH PAYMENT: processStockReduction completed');
-        
+
         const receipt = {
           id: `POS-${Date.now()}`,
           date: new Date().toLocaleString('th-TH'),
@@ -662,14 +656,14 @@ export default function POSPage() {
           member: currentMember,
           pointsEarned: currentMember ? calculatePoints() : 0,
         };
-        
+
         setReceiptData(receipt);
         setShowReceipt(true);
         setCart([]);
         setCustomerPaid("");
         console.log('💵 Cash payment completed successfully');
       }
-      
+
     } catch (error) {
       if (error instanceof Error) {
         console.error("Payment processing error:", error.message);
@@ -680,33 +674,33 @@ export default function POSPage() {
     } finally {
       setIsProcessing(false);
     }
-    
+
     console.log('🎯 ===== PROCESS PAYMENT FINISHED =====\n');
   };
-    const navigate = useNavigate();
-    
-    
-    const checkme = async () => {
-      try {
-        const authme = await fetch('http://localhost:5000/api/me', {
-          method: 'GET',
-          credentials: 'include'
-        })
-        const data = await authme.json();
-        console.log(data)
-        setEmployeeId(data.user.employee_id)
-        if (authme.status === 401 || authme.status === 403) {
-          navigate('/login');
-          return;
-        }
-  
-        console.log('Authme data:', data);
-      } catch (error) {
-        console.log('Error', error)
-  
+  const navigate = useNavigate();
+
+
+  const checkme = async () => {
+    try {
+      const authme = await fetch('http://localhost:5000/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      const data = await authme.json();
+      console.log(data)
+      setEmployeeId(data.user.employee_id)
+      if (authme.status === 401 || authme.status === 403) {
+        navigate('/login');
+        return;
       }
+
+      console.log('Authme data:', data);
+    } catch (error) {
+      console.log('Error', error)
+
     }
-  
+  }
+
   const canProcessPayment = () => {
     const total = getTotalAmount();
     const paid = parseFloat(customerPaid) || 0;
@@ -721,7 +715,7 @@ export default function POSPage() {
     try {
       const orderData = {
         items: cart.map(item => ({
-          product_id: item.product_id,
+          product_id: item.original_product_id || item.product_id, // Use original product ID for order
           price: item.price,
           quantity: item.quantity
         })),
@@ -743,7 +737,7 @@ export default function POSPage() {
       });
 
       const result = await response.json();
-      console.log('RESULT',result.data);
+      console.log('RESULT', result.data);
 
       if (result.status) {
         // Store order ID and payment intent ID for verification
@@ -753,17 +747,17 @@ export default function POSPage() {
         setQrPaymentStatus('pending');
         setQrSentToDisplay(true);
         setShowSuccessPopup(true);
-        
+
         console.log('Stored Order ID:', result.data.order_id);
         console.log('Stored Payment Intent ID:', result.data.pi);
-        
+
         // Start auto verification after QR Code is sent successfully
         setTimeout(() => {
           console.log('🎯 Attempting to start auto verification...');
           console.log('📋 Current states:', { orderId, paymentIntentId, isAutoVerifying });
           startAutoVerification();
         }, 2000); // Wait 2 seconds before starting auto verification
-        
+
         // Auto-hide success popup after 3 seconds
         setTimeout(() => {
           setShowSuccessPopup(false);
@@ -779,7 +773,7 @@ export default function POSPage() {
         console.error("Payment processing error:", error);
         setErrorMessage("Payment processing error occurred");
       }
-      
+
       setShowErrorPopup(true);
       // Auto-hide error popup after 5 seconds
       setTimeout(() => {
@@ -789,16 +783,16 @@ export default function POSPage() {
       setIsProcessing(false);
     }
   };
-   
+
   const addPoints = async () => {
     const calculated = calculatePoints();
-    
+
     // Only add points if member exists and points are positive
     if (!currentMember?.id || calculated <= 0) {
       console.log('No member selected or no points to add');
       return;
     }
-    
+
     try {
       const response = await fetch(`http://localhost:5000/customer/add-point/${currentMember.id}`, {
         method: 'POST',
@@ -810,10 +804,10 @@ export default function POSPage() {
           point: calculated,
         })
       });
-      
+
       const data = await response.json();
       console.log('Add points response:', data);
-      
+
       if (data.status) {
         console.log(`✅ Successfully added ${calculated} points to ${currentMember.name}`);
       } else {
@@ -842,7 +836,7 @@ export default function POSPage() {
     }
 
     setIsVerifyingPayment(true);
-    
+
     try {
       console.log('Verifying payment with order_id:', orderId, 'pi:', paymentIntentId);
 
@@ -860,15 +854,15 @@ export default function POSPage() {
 
       const result = await response.json();
       console.log('Payment verification result:', result);
-      
+
       if (result.success && result.status === 'succeeded') {
         // Payment successful - show success modal
         setQrPaymentStatus('success');
-        
+
         // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
         await handlePaymentSuccess();
 
-        if(currentMember){
+        if (currentMember) {
           addPoints();
           console.log("Addpoint successfully")
         }
@@ -919,7 +913,7 @@ export default function POSPage() {
         setShowErrorPopup(true);
         setTimeout(() => setShowErrorPopup(false), 5000);
       }
-      
+
     } catch (error) {
       console.error('Payment verification error:', error);
       setErrorMessage('Error verifying payment');
@@ -936,10 +930,10 @@ export default function POSPage() {
   //   console.log('⏰ Timestamp:', new Date().toISOString());
   //   console.log('📋 Order ID:', orderId);
   //   console.log('💳 Payment Intent ID:', paymentIntentId);
-    
+
   //   // Add stack trace to see where this is called from
   //   console.trace('📍 Called from:');
-    
+
   //   if (!orderId || !paymentIntentId) {
   //     console.log('❌ Missing orderId or paymentIntentId for database update');
   //     return;
@@ -947,7 +941,7 @@ export default function POSPage() {
 
   //   try {
   //     console.log('📊 Updating database status for order:', orderId);
-      
+
   //     const response = await fetch('http://localhost:5000/payment/check', {
   //       method: 'POST',
   //       headers: {
@@ -963,28 +957,28 @@ export default function POSPage() {
 
   //     const result = await response.json();
   //     console.log('📊 Database status update result:', result);
-      
+
   //     if (result.success && result.status === 'succeeded') {
   //       console.log('✅ Database status updated successfully');
   //     }
   //   } catch (error) {
   //     console.error('❌ Error updating database status:', error);
   //   }
-    
+
   //   console.log('🔔 ===== UPDATE DATABASE STATUS FINISHED =====\n');
   // };
 
   // Start auto verification with polling
   const startAutoVerification = () => {
     console.log('🎯 startAutoVerification called');
-    console.log('📋 Validation check:', { 
-      orderId: !!orderId, 
-      paymentIntentId: !!paymentIntentId, 
+    console.log('📋 Validation check:', {
+      orderId: !!orderId,
+      paymentIntentId: !!paymentIntentId,
       isAutoVerifying,
       orderIdValue: orderId,
-      paymentIntentIdValue: paymentIntentId 
+      paymentIntentIdValue: paymentIntentId
     });
-    
+
     if (!orderId || !paymentIntentId || isAutoVerifying) {
       console.log('❌ Cannot start auto verification:', { orderId, paymentIntentId, isAutoVerifying });
       return;
@@ -996,7 +990,7 @@ export default function POSPage() {
     // const interval = setInterval(async () => {
     //   try {
     //     console.log('🔍 Auto verification check...');
-        
+
     //     const response = await fetch('http://localhost:5000/payment/check', {
     //       method: 'POST',
     //       headers: {
@@ -1011,16 +1005,16 @@ export default function POSPage() {
 
     //     const result = await response.json();
     //     console.log('🔍 Auto verification result:', result);
-        
+
     //     if (result.success && result.status === 'succeeded') {
     //       console.log('✅ Auto verification success!');
     //       clearInterval(interval);
     //       setAutoVerifyInterval(null);
     //       setIsAutoVerifying(false);
     //       setQrPaymentStatus('success');
-          
-          // Stock reduction is now handled in updateDatabaseStatus via PUT request
-          
+
+    // Stock reduction is now handled in updateDatabaseStatus via PUT request
+
     //       if (currentMember) {
     //         addPoints();
     //       }
@@ -1042,17 +1036,17 @@ export default function POSPage() {
     //   }
     // }, 3000); // Check every 3 seconds
 
-  //   setAutoVerifyInterval(interval);
+    //   setAutoVerifyInterval(interval);
 
-  //   // Stop auto verification after 5 minutes
-  //   setTimeout(() => {
-  //     if (interval) {
-  //       console.log('⏱️ Auto verification timeout after 5 minutes');
-  //       clearInterval(interval);
-  //       setAutoVerifyInterval(null);
-  //       setIsAutoVerifying(false);
-  //     }
-  //   }, 300000); // 5 minutes
+    //   // Stop auto verification after 5 minutes
+    //   setTimeout(() => {
+    //     if (interval) {
+    //       console.log('⏱️ Auto verification timeout after 5 minutes');
+    //       clearInterval(interval);
+    //       setAutoVerifyInterval(null);
+    //       setIsAutoVerifying(false);
+    //     }
+    //   }, 300000); // 5 minutes
   };
 
   // Handle new transaction - reset all states including auto verification
@@ -1075,7 +1069,7 @@ export default function POSPage() {
     setQrCodeData(null);
     setSelectedPayment('cash');
     setIsVerifyingPayment(false);
-    
+
     console.log('🔄 New transaction started, all states reset');
   };
 
@@ -1100,19 +1094,19 @@ export default function POSPage() {
 
   return (
     <div className="min-h-screen p-4"
-         style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb'}}>
+      style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#f9fafb' }}>
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6"
-            style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>{t('posSystem')}</h1>
-        
+          style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>{t('posSystem')}</h1>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Product Search & List */}
           <div className="lg:col-span-2 rounded-lg shadow-md p-6"
-               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+            style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white' }}>
             <div className="mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-5 w-5"
-                        style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af'}} />
+                  style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#9ca3af' }} />
                 <input
                   type="text"
                   placeholder={t('searchProducts')}
@@ -1132,33 +1126,54 @@ export default function POSPage() {
               {filteredProducts.map((product) => (
                 <div
                   key={product.product_id}
-                  className={`border rounded-lg p-4 transition-shadow ${
-                    (product.stock || 0) > 0 
-                      ? 'hover:shadow-md cursor-pointer' 
+                  className={`border rounded-lg p-4 transition-shadow ${(product.stock || 0) > 0
+                      ? 'hover:shadow-md cursor-pointer'
                       : 'cursor-not-allowed opacity-75'
-                  }`}
+                    }`}
                   style={{
-                    borderColor: (product.stock || 0) > 0 
+                    borderColor: (product.stock || 0) > 0
                       ? (document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb')
                       : '#9ca3af',
-                    backgroundColor: (product.stock || 0) > 0 
+                    backgroundColor: (product.stock || 0) > 0
                       ? (document.documentElement.classList.contains('dark') ? '#4b5563' : 'white')
                       : (document.documentElement.classList.contains('dark') ? '#374151' : '#f3f4f6')
                   }}
                   onClick={() => (product.stock || 0) > 0 ? addToCart(product) : null}
                 >
+                  {/* Lot Number Badge - Show at top if exists */}
+                  {product.lot_no && (
+                    <div className="mb-2 inline-flex items-center px-2 py-1 rounded text-xs font-semibold"
+                      style={{ 
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#1e40af' : '#dbeafe',
+                        color: document.documentElement.classList.contains('dark') ? '#bfdbfe' : '#1e40af'
+                      }}>
+                      <span className="mr-1">📦</span> Lot #{product.lot_no}
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-sm truncate"
-                        style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1f2937'}}>
+                      style={{ color: document.documentElement.classList.contains('dark') ? 'white' : '#1f2937' }}>
                       {product.product_name}
                     </h3>
                     <span className="text-xs"
-                          style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280'}}>
+                      style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280' }}>
                       {t('stock')}: {product.stock}
                     </span>
                   </div>
+                  
                   <p className="text-xs mb-2"
-                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{product.brand}</p>
+                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>{product.brand}</p>
+                  
+                  {/* Expiration Date if exists */}
+                  {product.expired_date && (
+                    <div className="text-xs mb-2 flex items-center"
+                      style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                      <span className="mr-1">📅</span>
+                      Exp: {new Date(product.expired_date).toLocaleDateString()}
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-between">
                     {(product.stock || 0) > 0 ? (
                       <span className="text-lg font-bold text-green-600">
@@ -1170,7 +1185,7 @@ export default function POSPage() {
                       </span>
                     )}
                     <span className="text-xs"
-                          style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280'}}>{product.unit}</span>
+                      style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280' }}>{product.unit}</span>
                   </div>
                 </div>
               ))}
@@ -1179,25 +1194,25 @@ export default function POSPage() {
 
           {/* Cart & Payment */}
           <div className="rounded-lg shadow-md p-6"
-               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+            style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white' }}>
             <h2 className="text-xl font-bold mb-4 flex items-center"
-                style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+              style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
               <ShoppingCart className="mr-2" />
               {t('cartItems')}
             </h2>
 
             {/* Member Section */}
             <div className="mb-4 p-3 rounded-lg"
-                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb'}}>
+              style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb' }}>
               {currentMember ? (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <User size={20} className="text-blue-600" />
                     <div>
                       <p className="font-medium text-sm"
-                         style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{currentMember.name}</p>
+                        style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{currentMember.name}</p>
                       <p className="text-xs"
-                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                        style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
                         <Star size={12} className="inline mr-1" />
                         {currentMember.points} {t('points')} | {currentMember.level}
                       </p>
@@ -1240,7 +1255,21 @@ export default function POSPage() {
                 cart.map((item) => (
                   <div key={item.product_id} className="border-b border-gray-200 py-3">
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-sm"  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{item.product_name}</h4>
+                      <div>
+                        <h4 className="font-medium text-sm" style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
+                          {item.product_name}
+                        </h4>
+                        {/* Show Lot Number if available */}
+                        {item.lot_no && (
+                          <span className="text-xs inline-flex items-center px-2 py-0.5 rounded mt-1"
+                            style={{ 
+                              backgroundColor: document.documentElement.classList.contains('dark') ? '#1e40af' : '#dbeafe',
+                              color: document.documentElement.classList.contains('dark') ? '#bfdbfe' : '#1e40af'
+                            }}>
+                            📦 Lot #{item.lot_no}
+                          </span>
+                        )}
+                      </div>
                       <button
                         onClick={() => removeFromCart(item.product_id)}
                         className="text-red-500 hover:text-red-700"
@@ -1256,7 +1285,7 @@ export default function POSPage() {
                         >
                           <Minus size={16} />
                         </button>
-                        <span className="font-medium" style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{item.quantity}</span>
+                        <span className="font-medium" style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
                           className="bg-gray-200 hover:bg-gray-300 rounded px-2 py-1"
@@ -1276,16 +1305,16 @@ export default function POSPage() {
             {cart.length > 0 && (
               <>
                 <div className="border-t pt-4 mb-4"
-                     style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
+                  style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
                   <div className="flex justify-between items-center text-xl font-bold mb-2">
-                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{t('total')}:</span>
+                    <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{t('total')}:</span>
                     <span className="text-green-600">฿{getTotalAmount().toFixed(2)}</span>
                   </div>
-                  
+
                   {/* Points Section */}
                   {currentMember && (
                     <div className="flex justify-between items-center text-sm mb-2"
-                         style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}}>
+                      style={{ color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb' }}>
                       <span className="flex items-center">
                         <Star size={16} className="mr-1" />
                         Points to Earn:
@@ -1298,17 +1327,17 @@ export default function POSPage() {
                 {/* Payment Method */}
                 <div className="mb-4">
                   <h3 className="font-medium mb-2"
-                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>Payment Method</h3>
+                    style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>Payment Method</h3>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => setSelectedPayment("cash")}
                       className="p-2 rounded text-sm flex flex-col items-center"
                       style={{
-                        backgroundColor: selectedPayment === "cash" 
-                          ? "#3b82f6" 
+                        backgroundColor: selectedPayment === "cash"
+                          ? "#3b82f6"
                           : document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
-                        color: selectedPayment === "cash" 
-                          ? "white" 
+                        color: selectedPayment === "cash"
+                          ? "white"
                           : document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
                       }}
                     >
@@ -1319,11 +1348,11 @@ export default function POSPage() {
                       onClick={() => setSelectedPayment("promptpay")}
                       className="p-2 rounded text-sm flex flex-col items-center"
                       style={{
-                        backgroundColor: selectedPayment === "promptpay" 
-                          ? "#3b82f6" 
+                        backgroundColor: selectedPayment === "promptpay"
+                          ? "#3b82f6"
                           : document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
-                        color: selectedPayment === "promptpay" 
-                          ? "white" 
+                        color: selectedPayment === "promptpay"
+                          ? "white"
                           : document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
                       }}
                     >
@@ -1336,7 +1365,7 @@ export default function POSPage() {
                 {selectedPayment === "cash" && (
                   <div className="mb-4">
                     <label className="block text-sm font-medium mb-2"
-                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+                      style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
                       Amount Received
                     </label>
                     <input
@@ -1367,15 +1396,14 @@ export default function POSPage() {
                 <button
                   onClick={qrSentToDisplay && selectedPayment === "promptpay" ? verifyPayment : processPayment}
                   disabled={!canProcessPayment() || isProcessing || (qrSentToDisplay && isVerifyingPayment)}
-                  className={`w-full py-3 rounded-lg font-medium ${
-                    qrSentToDisplay && selectedPayment === "promptpay"
+                  className={`w-full py-3 rounded-lg font-medium ${qrSentToDisplay && selectedPayment === "promptpay"
                       ? isVerifyingPayment
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-700 text-white"
                       : canProcessPayment() && !isProcessing
-                      ? "bg-green-600 hover:bg-green-700 text-white"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
+                        ? "bg-green-600 hover:bg-green-700 text-white"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
                 >
                   {getPaymentButtonText()}
                 </button>
@@ -1388,15 +1416,15 @@ export default function POSPage() {
       {/* Member Search Modal */}
       {showMemberModal && (
         <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center z-50">
-            <div className="rounded-lg p-8 max-w-lg w-full mx-4 border shadow-lg overflow-y-auto" 
-                 style={{ 
-                   maxHeight: '90vh',
-                   backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
-                   borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#60a5fa'
-                 }}>
+          <div className="rounded-lg p-8 max-w-lg w-full mx-4 border shadow-lg overflow-y-auto"
+            style={{
+              maxHeight: '90vh',
+              backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+              borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#60a5fa'
+            }}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold flex items-center"
-                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
                 <User className="mr-2" />
                 {memberModalMode === 'search' ? 'Search Member' : 'Add New Member'}
               </h3>
@@ -1407,7 +1435,7 @@ export default function POSPage() {
                   setNewMemberData({ name: '', phone: '', email: '', address: '' });
                 }}
                 className="hover:text-gray-700"
-                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}
+                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}
               >
                 <X size={24} />
               </button>
@@ -1415,12 +1443,12 @@ export default function POSPage() {
 
             {/* Mode Toggle */}
             <div className="flex mb-4 rounded-lg p-1"
-                 style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6'}}>
+              style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f3f4f6' }}>
               <button
                 onClick={() => setMemberModalMode('search')}
                 className="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors"
                 style={{
-                  backgroundColor: memberModalMode === 'search' 
+                  backgroundColor: memberModalMode === 'search'
                     ? (document.documentElement.classList.contains('dark') ? '#374151' : 'white')
                     : 'transparent',
                   color: memberModalMode === 'search'
@@ -1435,7 +1463,7 @@ export default function POSPage() {
                 onClick={() => setMemberModalMode('add')}
                 className="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors"
                 style={{
-                  backgroundColor: memberModalMode === 'add' 
+                  backgroundColor: memberModalMode === 'add'
                     ? (document.documentElement.classList.contains('dark') ? '#374151' : 'white')
                     : 'transparent',
                   color: memberModalMode === 'add'
@@ -1453,7 +1481,7 @@ export default function POSPage() {
               <>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2"
-                         style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+                    style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
                     Phone Number
                   </label>
                   <input
@@ -1475,11 +1503,10 @@ export default function POSPage() {
                   <button
                     onClick={() => searchMember(memberPhone)}
                     disabled={!memberPhone || memberSearching}
-                    className={`flex-1 py-2 rounded-lg font-medium ${
-                      memberPhone && !memberSearching
+                    className={`flex-1 py-2 rounded-lg font-medium ${memberPhone && !memberSearching
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     {memberSearching ? "Searching..." : "Search"}
                   </button>
@@ -1500,9 +1527,9 @@ export default function POSPage() {
 
                 {/* Quick Member Selection */}
                 <div className="pt-4 border-t"
-                     style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
+                  style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
                   <p className="text-sm mb-3"
-                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>Quick Access Customers:</p>
+                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Quick Access Customers:</p>
                   <div className="space-y-2">
                     {quickMembers.length > 0 ? quickMembers.map((customer, index) => (
                       <button
@@ -1521,15 +1548,15 @@ export default function POSPage() {
                           setShowMemberModal(false);
                         }}
                         className="w-full text-left p-2 hover:bg-gray-100 rounded text-sm"
-                        style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb'}}
+                        style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb' }}
                       >
                         <div className="font-medium"
-                             style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{customer.name}</div>
-                        <div style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{customer.phone_number}</div>
+                          style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{customer.name}</div>
+                        <div style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>{customer.phone_number}</div>
                       </button>
                     )) : (
                       <p className="text-sm text-center py-2"
-                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>No customers found</p>
+                        style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>No customers found</p>
                     )}
                   </div>
                 </div>
@@ -1540,13 +1567,13 @@ export default function POSPage() {
                 <div className="space-y-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium mb-2"
-                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+                      style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
                       Full Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={newMemberData.name}
-                      onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})}
+                      onChange={(e) => setNewMemberData({ ...newMemberData, name: e.target.value })}
                       placeholder="Enter full name"
                       className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       style={{
@@ -1559,13 +1586,13 @@ export default function POSPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2"
-                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+                      style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
                       Phone Number <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
                       value={newMemberData.phone}
-                      onChange={(e) => setNewMemberData({...newMemberData, phone: e.target.value})}
+                      onChange={(e) => setNewMemberData({ ...newMemberData, phone: e.target.value })}
                       placeholder="08X-XXX-XXXX"
                       className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       style={{
@@ -1579,13 +1606,13 @@ export default function POSPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2"
-                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+                      style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
                       Email
                     </label>
                     <input
                       type="email"
                       value={newMemberData.email}
-                      onChange={(e) => setNewMemberData({...newMemberData, email: e.target.value})}
+                      onChange={(e) => setNewMemberData({ ...newMemberData, email: e.target.value })}
                       placeholder="example@email.com"
                       className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       style={{
@@ -1598,12 +1625,12 @@ export default function POSPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2"
-                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>
+                      style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
                       Address
                     </label>
                     <textarea
                       value={newMemberData.address}
-                      onChange={(e) => setNewMemberData({...newMemberData, address: e.target.value})}
+                      onChange={(e) => setNewMemberData({ ...newMemberData, address: e.target.value })}
                       placeholder="Enter address"
                       className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       style={{
@@ -1620,11 +1647,10 @@ export default function POSPage() {
                   <button
                     onClick={addNewMember}
                     disabled={!newMemberData.name || !newMemberData.phone || memberSearching}
-                    className={`flex-1 py-2 rounded-lg font-medium ${
-                      newMemberData.name && newMemberData.phone && !memberSearching
+                    className={`flex-1 py-2 rounded-lg font-medium ${newMemberData.name && newMemberData.phone && !memberSearching
                         ? "bg-green-600 hover:bg-green-700 text-white"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     {memberSearching ? "Adding Member..." : "Add Member"}
                   </button>
@@ -1645,9 +1671,9 @@ export default function POSPage() {
                 </div>
 
                 <div className="mt-4 p-3 rounded-lg"
-                     style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe'}}>
+                  style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe' }}>
                   <p className="text-sm"
-                     style={{color: document.documentElement.classList.contains('dark') ? '#93c5fd' : '#1d4ed8'}}>
+                    style={{ color: document.documentElement.classList.contains('dark') ? '#93c5fd' : '#1d4ed8' }}>
                     💡 <strong>Note:</strong> New members will start at Bronze level with 0 points
                   </p>
                 </div>
@@ -1661,81 +1687,81 @@ export default function POSPage() {
       {showReceipt && receiptData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="rounded-lg p-6 max-w-md w-full mx-4"
-               style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'}}>
+            style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white' }}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold"
-                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>ใบเสร็จรับเงิน</h3>
+                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>ใบเสร็จรับเงิน</h3>
               <button
                 onClick={() => setShowReceipt(false)}
                 className="hover:text-gray-700"
-                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}
+                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}
               >
                 <X size={24} />
               </button>
             </div>
-            
+
             <div className="text-center mb-4">
               <h4 className="font-bold"
-                  style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>ร้านขายยา PharmaC</h4>
+                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>ร้านขายยา PharmaC</h4>
               <p className="text-sm"
-                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>เลขที่: {receiptData.id}</p>
+                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>เลขที่: {receiptData.id}</p>
               <p className="text-sm"
-                 style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{receiptData.date}</p>
+                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>{receiptData.date}</p>
             </div>
 
             {/* Member Info in Receipt */}
             {receiptData.member && (
               <div className="border-t border-b py-3 mb-4"
-                   style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
+                style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
                 <div className="flex items-center justify-center space-x-2">
-                  <User size={16} style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}} />
+                  <User size={16} style={{ color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb' }} />
                   <span className="font-medium"
-                        style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>สมาชิก: {receiptData.member.name}</span>
+                    style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>สมาชิก: {receiptData.member.name}</span>
                 </div>
                 <p className="text-center text-sm"
-                   style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                  style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
                   {receiptData.member.phone} | {receiptData.member.level}
                 </p>
               </div>
             )}
 
             <div className="border-t border-b py-4 mb-4"
-                 style={{borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'}}>
+              style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
               {receiptData.items.map((item: CartItem) => (
                 <div key={item.product_id} className="flex justify-between mb-2">
                   <div>
                     <p className="font-medium text-sm"
-                       style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>{item.product_name}</p>
+                      style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{item.product_name}</p>
                     <p className="text-xs"
-                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                      style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
                       {item.quantity} x ฿{item.price?.toFixed(2)}
                     </p>
                   </div>
                   <span className="font-medium"
-                        style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{item.total.toFixed(2)}</span>
+                    style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>฿{item.total.toFixed(2)}</span>
                 </div>
               ))}
             </div>
 
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
-                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รวม:</span>
+                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>รวม:</span>
                 <span className="font-bold"
-                      style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{receiptData.total.toFixed(2)}</span>
+                  style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>฿{receiptData.total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รับเงิน:</span>
-                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{receiptData.amountPaid.toFixed(2)}</span>
+                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>รับเงิน:</span>
+                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>฿{receiptData.amountPaid.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>เงินทอน:</span>
-                <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{receiptData.change.toFixed(2)}</span>
+                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>เงินทอน:</span>
+                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>฿{receiptData.change.toFixed(2)}</span>
               </div>
-              
+
               {/* Points Earned */}
               {receiptData.member && receiptData.pointsEarned > 0 && (
                 <div className="flex justify-between font-medium"
-                     style={{color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'}}>
+                  style={{ color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb' }}>
                   <span className="flex items-center">
                     <Star size={16} className="mr-1" />
                     แต้มที่ได้รับ:
@@ -1787,18 +1813,18 @@ export default function POSPage() {
                 <X size={24} />
               </button>
             </div>
-            
+
             <div className="text-center mb-6">
               <h4 className="font-bold mb-2">สแกน QR Code เพื่อชำระเงิน</h4>
               <p className="text-sm text-gray-600 mb-4">
                 จำนวนเงิน: ฿{getTotalAmount().toFixed(2)}
               </p>
-              
+
               {/* QR Code Display */}
               <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4">
                 {qrCodeData.qr_code_url ? (
-                  <img 
-                    src={qrCodeData.qr_code_url} 
+                  <img
+                    src={qrCodeData.qr_code_url}
                     alt="QR Code for Payment"
                     className="w-48 h-48 mx-auto"
                   />
@@ -1831,20 +1857,20 @@ export default function POSPage() {
 
               {/* Order Details */}
               <div className="text-left p-3 rounded-lg mb-4"
-                   style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb'}}>
+                style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb' }}>
                 <p className="text-sm font-medium mb-2"
-                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รายการสินค้า:</p>
+                  style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>รายการสินค้า:</p>
                 {cart.map((item, index) => (
                   <div key={index} className="flex justify-between text-sm mb-1">
-                    <span style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : 'black'}}>{item.product_name} x{item.quantity}</span>
-                    <span style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : 'black'}}>฿{item.total.toFixed(2)}</span>
+                    <span style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : 'black' }}>{item.product_name} x{item.quantity}</span>
+                    <span style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : 'black' }}>฿{item.total.toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="border-t pt-2 mt-2"
-                     style={{borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb'}}>
+                  style={{ borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb' }}>
                   <div className="flex justify-between font-bold">
-                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>รวมทั้งหมด:</span>
-                    <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : 'black'}}>฿{getTotalAmount().toFixed(2)}</span>
+                    <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>รวมทั้งหมด:</span>
+                    <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>฿{getTotalAmount().toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -1925,10 +1951,10 @@ export default function POSPage() {
                 </div>
               </div>
             )}
-            
+
             <div className="mb-6">
               <h4 className="font-bold mb-4">รายการสินค้า</h4>
-              
+
               {/* Order Details */}
               <div className="space-y-2 mb-4">
                 {cart.map((item, index) => (
@@ -1982,16 +2008,15 @@ export default function POSPage() {
               >
                 ยกเลิก
               </button>
-              
+
               {!qrSentToDisplay ? (
                 <button
                   onClick={confirmQRPayment}
                   disabled={isProcessing}
-                  className={`flex-2 py-3 rounded-lg font-medium ${
-                    isProcessing
+                  className={`flex-2 py-3 rounded-lg font-medium ${isProcessing
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "bg-blue-600 hover:bg-blue-700 text-white"
-                  }`}
+                    }`}
                   style={{ flex: 2 }}
                 >
                   {isProcessing ? "กำลังส่ง QR Code..." : "ส่ง QR Code ไปหน้าจอลูกค้า"}
@@ -2045,7 +2070,7 @@ export default function POSPage() {
               </div>
               <h3 className="text-2xl font-bold text-green-600 mb-2">Payment Successful!</h3>
               <p className="text-gray-600 mb-4">การชำระเงินเสร็จสมบูรณ์แล้ว</p>
-              
+
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600">Order ID:</span>
@@ -2092,7 +2117,7 @@ export default function POSPage() {
               </div>
               <h3 className="text-2xl font-bold text-yellow-600 mb-2">Action Required!</h3>
               <p className="text-gray-600 mb-4">การชำระเงินต้องการการดำเนินการเพิ่มเติม</p>
-              
+
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600">Order ID:</span>
@@ -2107,7 +2132,7 @@ export default function POSPage() {
                   <span className="font-semibold text-yellow-600">Requires Action</span>
                 </div>
               </div>
-              
+
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-yellow-700">
                   ลูกค้าจำเป็นต้องดำเนินการเพิ่มเติมในการชำระเงิน กรุณาติดต่อลูกค้าหรือลองตรวจสอบการชำระเงินอีกครั้ง
