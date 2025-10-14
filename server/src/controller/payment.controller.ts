@@ -64,7 +64,9 @@ const controller = {
         const response = await paymentService.check(pi);
         console.log(response)
         if(response === 'succeeded'){
+          console.log("YES SUCCEEDED")
           await paymentService.updateStatus(order_id)
+
         }
         
         // Only emit WebSocket event if not skipped

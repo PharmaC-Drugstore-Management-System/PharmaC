@@ -11,6 +11,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  authLogin: (email: string, password: string) => Promise<{ success: boolean; skipOtp?: boolean; userData?: any }>; // Updated return type
+  verifyOtp: (email: string, otp: string) => Promise<boolean>; // New function for OTP verification
   logout: () => void;
   checkAuth: () => Promise<void>;
 }
@@ -30,6 +32,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/me', {
+      const response = await fetch(`${API_URL}/api/me`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -83,9 +86,92 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Step 1: Authenticate credentials and send OTP (doesn't log user in for non-customers)
+  const authLogin = async (email: string, password: string): Promise<{ success: boolean; skipOtp?: boolean; userData?: any }> => {
+    try {
+      const response = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        const responseData = await response.json();
+        
+        // If it's a customer, they skip OTP and are logged in directly
+        if (responseData.skipOtp) {
+          const userData = responseData.data;
+          const roleId = userData?.role_id || userData.roleId || userData.role || userData.user_role;
+          const mappedRole = mapRoleIdToRoleName(roleId);
+          
+          const user: User = {
+            id: userData?.employee_id || userData.id || userData.user_id || userData.userId,
+            email: userData?.email,
+            role: mappedRole,
+            name: userData?.firstname || userData.name || userData.username || userData.full_name,
+          };
+          
+          setUser(user); // Log in the customer directly
+          return { success: true, skipOtp: true, userData: user };
+        }
+        
+        // For non-customers, OTP was sent
+        return { success: true, skipOtp: false };
+      }
+      return { success: false };
+    } catch (error) {
+      console.error('Authentication failed:', error);
+      return { success: false };
+    }
+  };
+
+  // Step 2: Verify OTP and complete login
+  const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_URL}/api/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, otp }),
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('OTP verification response:', userData);
+        
+        // Get role from various possible field names
+        const roleId = userData.data?.role_id || userData.user?.role_id || userData.role_id || userData.roleId || userData.role || userData.user_role;
+        console.log('OTP found roleId:', roleId);
+        const mappedRole = mapRoleIdToRoleName(roleId);
+        console.log('OTP mapped role:', mappedRole);
+        
+        // Create properly formatted user object
+        const user: User = {
+          id: userData.data?.employee_id || userData.user?.id || userData.id || userData.user_id || userData.userId,
+          email: userData.data?.email || userData.user?.email || userData.email,
+          role: mappedRole,
+          name: userData.data?.firstname || userData.user?.firstname || userData.firstname || userData.user?.name || userData.name || userData.username || userData.full_name,
+        };
+        console.log('OTP processed user:', user);
+        setUser(user); // This will trigger redirect to dashboard
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('OTP verification failed:', error);
+      return false;
+    }
+  };
+
+  // Old login function for backwards compatibility (if needed elsewhere)
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://localhost:3000/api/login', {
+      const response = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +210,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('http://localhost:3000/api/logout', {
+      await fetch(`${API_URL}/api/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -143,6 +229,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     loading,
     login,
+    authLogin,
+    verifyOtp,
     logout,
     checkAuth,
   };

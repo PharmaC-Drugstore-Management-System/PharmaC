@@ -14,9 +14,9 @@ const controller = {
         unit,
       } = req.body;
       console.log("Incoming request body:", req.body);
-      
+
       const iscontrolledBool = iscontrolled === "true" || iscontrolled === true;
-      
+
       const file = req.file;
       const image = file ? `/uploads/${file.filename}` : null;
 
@@ -30,12 +30,10 @@ const controller = {
         unit,
         image
       );
-      console.log("Uploaded file:", response)
+      console.log("Uploaded file:", response);
       return res
         .status(200)
         .json({ message: "Added medicine into inventroy", data: response });
-
-        
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -53,6 +51,20 @@ const controller = {
       return res
         .status(200)
         .json({ message: "Get all Product", data: response });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return res
+        .status(500)
+        .json({ message: "Internal server error", error: errorMessage });
+    }
+  },
+  getId: async (req: any, res: any) => {
+    try {
+      const id = req.params.id;
+      console.log(id)
+      const response = await inventory_service.getById_service(id);
+      return res.status(200).json({status:true, data:response})
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

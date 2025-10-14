@@ -1,19 +1,19 @@
-import { WebSocketServer } from "ws";
-import { Server } from "socket.io";
-import { Server as HttpServer } from "http";
+  import { WebSocketServer } from "ws";
+  import { Server } from "socket.io";
+  import { Server as HttpServer } from "http";
 
-let io: Server;
+  let io: Server;
 
-export const initWebSocket = (server: HttpServer) => {
-  io = new Server(server, {
-    cors: {
-      origin: ["http://localhost:5173", "http://localhost:3000"],
-      methods: ["GET", "POST"],
-      credentials: true
-    },
-    transports: ["websocket", "polling"], // Allow both transports
-    allowEIO3: true,
-  });
+  export const initWebSocket = (server: HttpServer) => {
+    io = new Server(server, {
+      cors: {
+        origin: ["http://localhost:5173", "http://localhost:3000"],
+        methods: ["GET", "POST"],
+        credentials: true
+      },
+      transports: ["websocket", "polling"], // Allow both transports
+      allowEIO3: true,
+    });
 
   io.on("connection", (socket) => {
     console.log("🔌 Client connected:", socket.id);

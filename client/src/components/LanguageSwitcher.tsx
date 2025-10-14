@@ -25,10 +25,12 @@ export default function LanguageSwitcher({ showText = true, className = '' }: La
         title={`Current language: ${currentLangData?.name} - Click to change`}
       >
         <div className="relative">
-          <Globe size={16} className="transition-transform group-hover:rotate-12" />
+          <div className='flex flex-row items-center justify-center w-16 h-6 space-x-2'>
+          <Globe size={24} color="white" className="transition-transform group-hover:rotate-12 bg-black rounded-full" />
           {/* Language indicator badge */}
-          <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold transition-all duration-200 group-hover:scale-110">
+          <div className="text-md font-bold">
             {currentLanguage.toUpperCase()}
+          </div>
           </div>
         </div>
         {showText && (

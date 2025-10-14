@@ -48,7 +48,7 @@ export default function ThemeSwitcher({ showText = false, className = '' }: Them
     <div className={`relative ${className}`}>
       <button
         onClick={handleThemeToggle}
-        className="flex items-center space-x-2 p-2 rounded-lg transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 group"
+        className="flex items-center space-x-2 p-2 rounded-lg transition-all duration-300"
         title={`Current: ${isDark ? 'Dark' : 'Light'} mode - Click to switch`}
       >
         {/* Sliding Toggle Container - ใช้ Tailwind classes */}

@@ -21,18 +21,18 @@ export default function ContactUsPage() {
     },
     {
       id: 2,
-      name: 'Ratchada Prompong',
+      name: 'Ratchanon Promsombut',
       position: t('fullStackDeveloper'),
       role: t('juniorDeveloper'),
       image: '/images/developers/ink_dev.png', 
-      email: 'dev2@pharmac.com',
+      email: 'ratchanon.promsombut@gmail.com',
       phone: '082-xxx-xxxx',
       github: '#',
       description: t('specializedNode')
     },
     {
       id: 3,
-      name: 'Issadame Damero',
+      name: 'Issadaorn Kulsantao',
       position: t('fullStackDeveloper'),
       role: t('juniorDeveloper'),
       image: '/images/developers/neo_dev.png', 

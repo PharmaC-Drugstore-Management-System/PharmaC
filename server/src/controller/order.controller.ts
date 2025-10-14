@@ -1,6 +1,7 @@
 import orderService from "../services/order.services";
 import paymentService from "../services/payment.service";
 import { emitOrderToCustomerDisplay } from "../../ws";
+import e from "express";
 const controller = {
   createOrder: async (req: any, res: any) => {
     try {
@@ -14,6 +15,7 @@ const controller = {
         payment_method_types,
       } = req.body;
       console.log(req.body);
+      console.log('Employee ID:', employee_id);
       if (!items || !employee_id) {
         return res.status(400).json({ error: "items id is required" });
       }

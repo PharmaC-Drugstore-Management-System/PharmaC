@@ -20,17 +20,43 @@ router.use("/arima", forecastRoute);
 import purchaseRoute from "./purchase.routes.ts";
 router.use("/purchase", purchaseRoute);
 
-import orderRoute from "./order.routes.ts"
-router.use("/order",orderRoute)
+import orderRoute from "./order.routes.ts";
+router.use("/order", orderRoute);
 
-import customerRoute  from "./customer.routes.ts"
+import customerRoute from "./customer.routes.ts";
 router.use("/customer", customerRoute);
 
-import signatureRoute from "./signature.routes.ts"
+import signatureRoute from "./signature.routes.ts";
 router.use("/signature", signatureRoute);
-import revenueRoute from "./revenue.routes.ts"
-router.use("/revenue",revenueRoute)
 
-import paymentRoute from "./payment.routes.ts"
-router.use("/payment", paymentRoute)
+import supplierRoute from "./supplier.routes.ts";
+router.use("/api/suppliers", supplierRoute);
+
+import productSupplierRoute from "./product-supplier.routes.ts";
+router.use("/api", productSupplierRoute);
+
+import revenueRoute from "./revenue.routes.ts";
+router.use("/revenue", revenueRoute);
+
+import paymentRoute from "./payment.routes.ts";
+router.use("/payment", paymentRoute);
+
+import lotRoute from "./lot.routes.ts";
+router.use("/lot", lotRoute);
+
+import stockTransRoute from "./stock_trans.routes.ts"
+router.use("/stock", stockTransRoute);
+
+import predictorRoute from "./predictor.route.ts";
+router.use("/predictor", predictorRoute);
+
+import salesDataRoute from "./salesData.route.ts";
+router.use("/sales", salesDataRoute);
+
+import productTypeRoute from "./producttype.route.ts";
+router.use("/product", productTypeRoute);
+
+import dashboardRoute from "./dashboard.routes.ts"; 
+router.use("/dashboard", dashboardRoute);
+
 export default router;

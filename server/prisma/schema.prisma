@@ -124,19 +124,17 @@ model is_pharmacist {
 }
 
 model lot {
-  amount                     Int?
-  added_date                 DateTime?  @db.Date
-  expired_date               DateTime?  @db.Date
-  cost                       Float?     @db.Real
-  lot_id                     Int        @id @default(autoincrement())
-  lot_no                     String?    @db.VarChar(20)
-  product_id                 Int?
-  stock_id                   Int?
-  cart                       cart[]
-  product                    product?   @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_product_fk")
-  stock_lot_stock_idTostock  stock?     @relation("lot_stock_idTostock", fields: [stock_id], references: [stock_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_stock_fk")
-  quantity                   quantity[]
-  stock_stock_lot_id_fkTolot stock[]    @relation("stock_lot_id_fkTolot")
+  init_amount       Int?
+  added_date        DateTime?           @db.Date
+  expired_date      DateTime?           @db.Date
+  cost              Float?              @db.Real
+  lot_id            Int                 @id @default(autoincrement())
+  lot_no            String?             @db.VarChar(20)
+  product_id        Int?
+  sell_price        Int?
+  cart              cart[]
+  product           product?            @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_product_fk")
+  stock_transaction stock_transaction[]
 }
 
 model metrics {
@@ -167,7 +165,17 @@ model order {
   customer          customer?       @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "order_customer_fk")
   employee          employee?       @relation(fields: [employee_id], references: [employee_id], onDelete: NoAction, onUpdate: NoAction, map: "order_employee_fk")
   revenue_source    revenue_source? @relation(fields: [revenue_source_id], references: [revenue_source_id], onDelete: NoAction, onUpdate: NoAction, map: "order_revenue_source_fk")
+  order_items       order_item[]
   revenue           revenue[]
+}
+
+model order_item {
+  order_item_id Int     @id @default(autoincrement())
+  order_id      Int
+  product_id    Int
+  quantity      Int
+  order         order   @relation(fields: [order_id], references: [order_id])
+  product       product @relation(fields: [product_id], references: [product_id])
 }
 
 model permission {
@@ -199,8 +207,9 @@ model product {
   cost               cost[]
   forecasted_product forecasted_product[]
   lot                lot[]
+  order_items        order_item[]
+  product_suppliers  product_supplier[]
   revenue            revenue[]
-  stock              stock[]
   trend              trend[]
 }
 
@@ -221,17 +230,6 @@ model purchase_document {
   po_signature         po_signature? @relation(fields: [signature_fk], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_po_signature_fk")
   store                store?        @relation(fields: [store_id], references: [store_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_store_fk")
   supplier             supplier?     @relation(fields: [suplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction, map: "purchase_document_supplier_fk")
-}
-
-model quantity {
-  sales_amount                         Int?
-  total_amount                         Int?
-  lot_id                               Int?
-  quantity_id                          Int     @id @default(autoincrement())
-  stock_id                             Int?
-  lot                                  lot?    @relation(fields: [lot_id], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "quantity_lot_fk")
-  stock_quantity_stock_idTostock       stock?  @relation("quantity_stock_idTostock", fields: [stock_id], references: [stock_id], onDelete: NoAction, onUpdate: NoAction, map: "quantity_stock_fk")
-  stock_stock_quantity_id_fkToquantity stock[] @relation("stock_quantity_id_fkToquantity")
 }
 
 model revenue {
@@ -268,19 +266,6 @@ model role {
   is_pharmacist is_pharmacist[]
 }
 
-model stock {
-  product_id_fk                           Int?
-  quantity_id_fk                          Int?
-  lot_id_fk                               Int?
-  barcode                                 String?    @db.VarChar
-  stock_id                                Int        @id @default(autoincrement())
-  lot_lot_stock_idTostock                 lot[]      @relation("lot_stock_idTostock")
-  quantity_quantity_stock_idTostock       quantity[] @relation("quantity_stock_idTostock")
-  lot_stock_lot_id_fkTolot                lot?       @relation("stock_lot_id_fkTolot", fields: [lot_id_fk], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_lot_fk")
-  product                                 product?   @relation(fields: [product_id_fk], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_product_fk")
-  quantity_stock_quantity_id_fkToquantity quantity?  @relation("stock_quantity_id_fkToquantity", fields: [quantity_id_fk], references: [quantity_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_quantity_fk")
-}
-
 model store {
   name              String?             @db.VarChar
   contact           String?             @db.VarChar
@@ -299,7 +284,22 @@ model supplier {
   address           String?             @db.VarChar
   description       String?             @db.VarChar
   supplier_id       Int                 @id @default(autoincrement())
+  product_suppliers product_supplier[]
   purchase_document purchase_document[]
+}
+
+model product_supplier {
+  product_id  Int
+  supplier_id Int
+  cost        Float?    @db.Real
+  is_active   Boolean?  @default(true)
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+  product     product   @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  supplier    supplier  @relation(fields: [supplier_id], references: [supplier_id], onDelete: Cascade)
+
+  @@id([product_id, supplier_id])
+  @@map("product_supplier")
 }
 
 model time_period {
@@ -330,4 +330,15 @@ model po_signature {
   purchase_document purchase_document[]
 
   @@map("po_signature")
+}
+
+model stock_transaction {
+  lot_id_fk      Int?
+  stock_trans_id Int       @id(map: "stock_pkey") @default(autoincrement())
+  trans_type     String?   @db.VarChar(255)
+  qty            Int?
+  trans_date     DateTime? @db.Timestamp(6)
+  ref_no         String?   @db.VarChar(120)
+  note           String?   @db.VarChar(255)
+  lot            lot?      @relation(fields: [lot_id_fk], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_lot_fk")
 }
