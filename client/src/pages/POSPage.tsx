@@ -88,8 +88,14 @@ export default function POSPage() {
     checkme();
     loadQuickCustomers();
 
-    // Initialize socket connection
-    const socket = io(API_URL);
+    // Initialize socket connection using env
+    const SOCKET_BASE = import.meta.env.VITE_SOCKET_BASE || API_URL;
+    const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || '/ws/';
+    const socket = io(SOCKET_BASE, {
+      withCredentials: true,
+      path: SOCKET_PATH,
+      transports: ['websocket', 'polling'],
+    });
 
     // Listen for payment status updates
     socket.on('payment-status-update', (data: any) => {
@@ -158,8 +164,9 @@ export default function POSPage() {
 
   const verifyStatus = async () => {
     try {
-
-      const response = await fetch('http://localhost:5000/payment/check', {
+      console.log(qrCodeData?.pi)
+      console.log(qrCodeData?.order_id)
+  const response = await fetch(`${API_URL}/payment/check`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,7 +214,7 @@ export default function POSPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:5000/inventory/get-medicine", {
+  const response = await fetch(`${API_URL}/inventory/get-medicine`, {
         credentials: "include",
       });
       if (response.ok) {
@@ -218,7 +225,7 @@ export default function POSPage() {
           data.data.map(async (product: Product) => {
             try {
               // ดึงข้อมูล lots ของแต่ละ product
-              const lotsResponse = await fetch(`http://localhost:5000/lot/get-lots-by-product/${product.product_id}`, {
+              const lotsResponse = await fetch(`${API_URL}/lot/get-lots-by-product/${product.product_id}`, {
                 credentials: "include",
               });
 
@@ -300,6 +307,35 @@ export default function POSPage() {
       // Since each product card now represents a specific lot, we can directly add it
       // Use the lot information already embedded in the product
       if (!product.lots || product.lots.length === 0 || (product.stock || 0) <= 0) {
+      // ดึงข้อมูล lots ของ product นี้
+  const lotsResponse = await fetch(`${API_URL}/lot/get-lots-by-product/${product.product_id}`, {
+        credentials: "include",
+      });
+      
+      if (!lotsResponse.ok) {
+        console.error('Failed to fetch lots for product:', product.product_id);
+        return;
+      }
+      
+      const lotsData = await lotsResponse.json();
+      
+      if (!lotsData.status || !lotsData.data) {
+        console.error('No lots data available for product:', product.product_id);
+        return;
+      }
+      
+      // กรองและเรียง lots ตามวันหมดอายุ (ใกล้หมดอายุก่อน)
+      const today = new Date();
+      const availableLots = lotsData.data
+        .filter((lot: any) => {
+          const expDate = new Date(lot.expired_date);
+          return expDate > today && lot.init_amount > 0; // ยังไม่หมดอายุและมีของเหลือ
+        })
+        .sort((a: any, b: any) => {
+          return new Date(a.expired_date).getTime() - new Date(b.expired_date).getTime();
+        });
+      
+      if (availableLots.length === 0) {
         alert('สินค้านี้หมดสต็อกหรือหมดอายุแล้ว');
         return;
       }
@@ -328,11 +364,7 @@ export default function POSPage() {
         setCart([...cart, newItem]);
       }
 
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      alert('เกิดข้อผิดพลาดในการเพิ่มสินค้าลงตะกร้า');
-    }
-  };
+    } 
 
   const updateQuantity = (productId: number | string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -356,7 +388,7 @@ export default function POSPage() {
     setMemberSearching(true);
     try {
       // Call real API to get all customers and search by phone
-      const response = await fetch("http://localhost:5000/customer/get-customers");
+  const response = await fetch(`${API_URL}/customer/get-customers`);
       if (!response.ok) {
         throw new Error('Failed to fetch customers');
       }
@@ -409,7 +441,7 @@ export default function POSPage() {
         point: 0 // Start with 0 points
       };
 
-      const response = await fetch("http://localhost:5000/customer/add-customer", {
+  const response = await fetch(`${API_URL}/customer/add-customer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -526,7 +558,7 @@ export default function POSPage() {
             console.log(`\n🔄 Processing lot ${operation.lot_id} in batch...`);
 
             // 1. อัพเดต lot quantity
-            const updateResponse = await fetch(`http://localhost:5000/lot/update-lot/${operation.lot_id}`, {
+            const updateResponse = await fetch(`${API_URL}/lot/update-lot/${operation.lot_id}`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
@@ -551,8 +583,8 @@ export default function POSPage() {
               };
 
               console.log(`📝 Creating stock transaction for batch:`, stockTransactionData);
-
-              const stockTransResponse = await fetch('http://localhost:5000/stock/add-stock', {
+              
+              const stockTransResponse = await fetch(`${API_URL}/stock/add-stock`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -750,7 +782,7 @@ export default function POSPage() {
 
       console.log('Sending order data to create QR for customer display:', orderData);
 
-      const response = await fetch('http://localhost:5000/order/createOrder', {
+  const response = await fetch(`${API_URL}/order/createOrder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -819,7 +851,7 @@ export default function POSPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/customer/add-point/${currentMember.id}`, {
+  const response = await fetch(`${API_URL}/customer/add-point/${currentMember.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -865,7 +897,7 @@ export default function POSPage() {
     try {
       console.log('Verifying payment with order_id:', orderId, 'pi:', paymentIntentId);
 
-      const response = await fetch('http://localhost:5000/payment/check', {
+  const response = await fetch(`${API_URL}/payment/check`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

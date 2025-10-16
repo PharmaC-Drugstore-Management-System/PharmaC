@@ -100,8 +100,8 @@ const controller = {
         return res.status(400).json({ message: "Employee ID not found in token" });
       }
 
-      // สร้าง URL สำหรับรูปภาพ
-      const imageUrl = `http://localhost:5000/uploads/${file.filename}`;
+  // สร้าง path สำหรับรูปภาพ (ใช้ relative path เพื่อให้ทำงานได้ทั้ง dev/prod ผ่าน reverse proxy)
+  const imageUrl = `/uploads/${file.filename}`;
       console.log('🖼️ Image URL:', imageUrl);
       console.log('👤 Employee ID:', employeeId);
 

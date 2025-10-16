@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip
 } from 'recharts';
 
-
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function PharmaDashboard() {
   // Sample data for the charts
@@ -35,13 +35,13 @@ export default function PharmaDashboard() {
 
   const COLORS = ['#79e2f2', '#7ab8f2', '#4d82bf', '#38618c', '#213559'];
 
-  const formatYAxisTick = (value: any) => {
-    return value;
-  };
+  // const formatYAxisTick = (value: any) => {
+  //   return value;
+  // };
   const navigate = useNavigate();
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
+      const authme = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include'
       })
@@ -174,7 +174,7 @@ export default function PharmaDashboard() {
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(Number(percent) * 100).toFixed(0)}%`}
                 >
-                  {trendData.map((entry, index) => (
+                  {trendData.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

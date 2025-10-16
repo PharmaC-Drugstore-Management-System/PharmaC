@@ -1,19 +1,25 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  db:
-    build: .
-    container_name: letterland-postgres
-    ports: "5432:5432"
-  networks: letterland-net
-  volumes: pgdata:/var/lib/postgresql/data
-  environment:
-  POSTGRES_USER: admin
-  POSTGRES_PASSWORD: securepassword
-  POSTGRES_DB: letterland_db
-
-networks:
-  letterland-net:
+  server:
+    build: ./server
+    container_name: pharmac-server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    environment:
+      - DATABASE_URL=postgresql://pharmac:1234@pharmac.sit.kmutt.ac.th:5432/pharmac_db?connection_limit=20
+      - JWT_SECRET=8842bba7814614f5393cbb87bb703e9a0cea60541de34fc583c6602f0d8436b9729f6c5f78c1e299e7f5f3cfcdeccdfa
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    networks:
+      - pharmac-network
 
 volumes:
   pgdata:
+
+networks:
+  pharmac-network:
+    driver: bridge

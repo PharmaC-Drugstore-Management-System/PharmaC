@@ -4,7 +4,7 @@ import { Edit, Package, User, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 export default function OrderRecord() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -58,7 +58,7 @@ export default function OrderRecord() {
   const orderLoadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/order/list', {
+      const response = await fetch(`${API_URL}/order/list`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -98,7 +98,7 @@ export default function OrderRecord() {
   
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
+      const authme = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include'
       })

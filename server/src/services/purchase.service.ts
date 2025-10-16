@@ -26,7 +26,18 @@ const purchaseService = {
       }
 
       const browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--no-first-run",
+          "--no-zygote",
+          "--single-process",
+          "--disable-extensions"
+        ],
+        headless: true
       });
       const page = await browser.newPage();
       
@@ -64,11 +75,33 @@ const purchaseService = {
         // Wait for the page to render with the new data
         await page.waitForSelector('.printable-content', { timeout: 10000 });
         
-        // Wait longer for React to render with the new data including signature
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        // Wait for signature image to load if present
+        try {
+          console.log('⏳ Waiting for signature image to load...');
+          await page.waitForFunction(() => {
+            const signatureImg = document.querySelector('img[alt="Purchaser Signature"]');
+            if (!signatureImg) {
+              console.log('No signature image found');
+              return true; // No signature, continue
+            }
+            const img = signatureImg as HTMLImageElement;
+            const loaded = img.complete && img.naturalHeight > 0;
+            if (loaded) {
+              console.log('✅ Signature image loaded:', img.src, img.naturalWidth + 'x' + img.naturalHeight);
+            }
+            return loaded;
+          }, { timeout: 8000 });
+          console.log('✅ Signature image loaded successfully');
+        } catch (err) {
+          console.warn('⚠️ Signature image load timeout, continuing anyway:', err);
+        }
+        
+        // Wait a bit more for React to render with the new data
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
       // Generate PDF
+      console.log('📄 Generating PDF...');
       const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
       console.log("Generate PDF")
       await browser.close();

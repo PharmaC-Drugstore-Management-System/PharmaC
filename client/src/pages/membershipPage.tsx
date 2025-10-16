@@ -27,6 +27,9 @@ interface Member {
   membershipType: "Bronze" | "Silver" | "Gold" | "Platinum";
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+
 export default function MemberManagementPage() {
   const { t } = useTranslation();
   const [members, setMembers] = useState<Member[]>([]);
@@ -80,7 +83,7 @@ export default function MemberManagementPage() {
       try {
         // Send new member data to API
         const response = await fetch(
-          "http://localhost:5000/customer/add-customer",
+          `${API_URL}/customer/add-customer`,
           {
             method: "POST",
             headers: {
@@ -180,7 +183,7 @@ export default function MemberManagementPage() {
       try {
         // Send update request to API
         const response = await fetch(
-          `http://localhost:5000/customer/update-customer/${editingMember.id}`,
+          `${API_URL}/customer/update-customer/${editingMember.id}`,
           {
             method: "PUT",
             headers: {
@@ -256,7 +259,7 @@ export default function MemberManagementPage() {
   const navigate = useNavigate();
   const checkme = async () => {
     try {
-      const authme = await fetch("http://localhost:5000/api/me", {
+      const authme = await fetch(`${API_URL}/me`, {
         method: "GET",
         credentials: "include",
       });
@@ -275,7 +278,7 @@ export default function MemberManagementPage() {
   const customerData = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/customer/get-customers",
+        `${API_URL}/customer/get-customers`,
         {
           method: "GET",
           credentials: "include",

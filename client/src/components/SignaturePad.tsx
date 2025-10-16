@@ -20,7 +20,7 @@ const SignaturePad: React.FC<SignaturePadProps> = ({
     disabled = false
 }) => {
     const sigPad = useRef<SignatureCanvas>(null);
-    const [isEmpty, setIsEmpty] = useState(true);
+    const [_isEmpty, setIsEmpty] = useState(true);
     const [deviceInfo, setDeviceInfo] = useState<any>(null);
     const [hasSignature, setHasSignature] = useState(false);
 

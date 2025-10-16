@@ -31,6 +31,8 @@ interface Order {
 
 const CustomerPaymentPage: React.FC = () => {
   const API_URL = import.meta.env.VITE_API_URL;
+  // For Socket.IO, use base server URL (not /api)
+  const SOCKET_URL = API_URL.startsWith('http') ? API_URL.replace('/api', '') : window.location.origin;
   const { logout } = useAuth();
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
@@ -50,7 +52,8 @@ const CustomerPaymentPage: React.FC = () => {
       setConnectionStatus('connecting');
 
       // Connect to Socket.IO server
-      const socket = io(`${API_URL}`, {
+      const socket = io(SOCKET_URL, {
+        path: '/ws/',  // Use /ws/ instead of default /socket.io/
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 10,

@@ -13,8 +13,16 @@ const controller = {
             const result = await predictorService.generate(forecastDays, drugFilter, model)
             return res.status(200).json({status:true, data:result})
 
-        } catch (error) {
-            return res.status(500).json({status:false, message:'Failed in predictor controller generate'})
+        } catch (error: any) {
+            console.error('❌ Predictor generate error:', error);
+            console.error('   Error message:', error.message);
+            console.error('   Error stack:', error.stack);
+            return res.status(500).json({
+                status: false, 
+                message: 'Failed in predictor controller generate',
+                error: error.message || 'Unknown error',
+                details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            })
         }
     },
 

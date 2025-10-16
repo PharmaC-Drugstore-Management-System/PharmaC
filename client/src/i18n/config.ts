@@ -139,12 +139,41 @@ const resources = {
       allPurchaseOrderDocuments: "All purchase order documents in the system",
       loadingDocuments: "Loading documents...",
       foundDocuments: "Found {{count}} documents",
+      showingDocuments: "Showing {{count}} of {{total}} documents",
       clickToPreview: "Click to preview",
       signedBy: "Signed by {{name}}",
+      awaitingSignature: "Awaiting signature",
       noDocumentsFound: "No documents found",
       newDocumentsWillAppear: "New documents will appear here when created",
+      noMatchingDocuments: "No matching documents found",
+      tryDifferentFilters: "Try different search terms or filters",
+      clearFilters: "Clear Filters",
       pdfPreview: "PDF Preview",
       openInNewTab: "Open in new tab",
+      
+      // Search and Filter
+      search: "Search",
+      searchByDocNumber: "Search by document number",
+      filename: "filename",
+      signerName: "signer name",
+      sortBy: "Sort by",
+      dateNewestFirst: "Date (Newest First)",
+      dateOldestFirst: "Date (Oldest First)", 
+      poNumber: "PO Number",
+      signatureStatus: "Signature Status",
+      allDocuments: "All Documents",
+      signedOnly: "Signed Only",
+      unsignedOnly: "Unsigned Only",
+      
+      // Bulk Actions
+      selected: "selected",
+      download: "Download",
+      share: "Share",
+      bulkDelete: "Delete",
+      clearSelection: "Clear Selection",
+      selectAll: "Select All",
+      deselectAll: "Deselect All",
+      documents: "documents",
 
       // Order Record Page
       orderRecords: "Order Records",
@@ -377,8 +406,11 @@ const resources = {
       newEmployeeEmail: "New employee email...",
       selectDefaultRole: "Select default role:",
       addEmployee: "Add Employee",
+
+
     },
   },
+
   th: {
     translation: {
       // Header
@@ -515,12 +547,41 @@ const resources = {
       allPurchaseOrderDocuments: "เอกสารใบสั่งซื้อทั้งหมดในระบบ",
       loadingDocuments: "กำลังโหลดเอกสาร...",
       foundDocuments: "พบ {{count}} เอกสาร",
+      showingDocuments: "แสดง {{count}} จาก {{total}} เอกสาร",
       clickToPreview: "คลิกเพื่อดูตัวอย่าง",
       signedBy: "ลงลายเซ็นโดย {{name}}",
+      awaitingSignature: "รอลายเซ็น",
       noDocumentsFound: "ไม่พบเอกสาร",
       newDocumentsWillAppear: "เอกสารใหม่จะปรากฏที่นี่เมื่อสร้างแล้ว",
+      noMatchingDocuments: "ไม่พบเอกสารที่ตรงกัน",
+      tryDifferentFilters: "ลองใช้คำค้นหาหรือตัวกรองอื่น",
+      clearFilters: "ล้างตัวกรอง",
       pdfPreview: "ดูตัวอย่าง PDF",
       openInNewTab: "เปิดในแท็บใหม่",
+      
+      // Search and Filter
+      search: "ค้นหา",
+      searchByDocNumber: "ค้นหาด้วยเลขที่เอกสาร",
+      filename: "ชื่อไฟล์",
+      signerName: "ชื่อผู้เซ็น",
+      sortBy: "เรียงตาม",
+      dateNewestFirst: "วันที่ (ล่าสุดก่อน)",
+      dateOldestFirst: "วันที่ (เก่าสุดก่อน)",
+      poNumber: "เลขที่ PO",
+      signatureStatus: "สถานะลายเซ็น",
+      allDocuments: "เอกสารทั้งหมด",
+      signedOnly: "เซ็นแล้วเท่านั้น",
+      unsignedOnly: "ยังไม่เซ็นเท่านั้น",
+      
+      // Bulk Actions
+      selected: "เลือกแล้ว",
+      download: "ดาวน์โหลด",
+      share: "แชร์",
+      bulkDelete: "ลบ",
+      clearSelection: "ยกเลิกการเลือก",
+      selectAll: "เลือกทั้งหมด",
+      deselectAll: "ยกเลิกการเลือกทั้งหมด",
+      documents: "เอกสาร",
 
       // Order Record Page
       orderRecords: "บันทึกคำสั่งซื้อ",
