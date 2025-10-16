@@ -57,6 +57,7 @@ export default function POSPage() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [stockReduced, setStockReduced] = useState(false); // Flag to prevent duplicate stock reduction
 
   // Payment verification states
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
@@ -463,6 +464,14 @@ export default function POSPage() {
   // ฟังก์ชันสำหรับการลดจำนวนสินค้าจาก lots ตามลำดับวันหมดอายุ
   const processStockReduction = async () => {
     console.log('🎉 ===== STARTING STOCK REDUCTION PROCESS =====');
+    console.log('🔒 Current stockReduced flag:', stockReduced);
+    
+    // CRITICAL: Prevent duplicate stock reduction at the function level
+    if (stockReduced) {
+      console.log('⚠️⚠️⚠️ DUPLICATE CALL PREVENTED - Stock already reduced for this order!');
+      return;
+    }
+
     for (const cartItem of cart) {
       console.log("IN FOR LOOP", cartItem);
       if (!cartItem.lots || cartItem.lots.length === 0) {
@@ -607,16 +616,30 @@ export default function POSPage() {
       product_name: item.product_name,
       quantity: item.quantity
     })));
+    console.log('🔒 Stock reduced flag:', stockReduced);
+
+    // Prevent duplicate stock reduction
+    if (stockReduced) {
+      console.log('⚠️ Stock already reduced for this order. Skipping...');
+      return;
+    }
+
+    // Set flag BEFORE processing to prevent race conditions
+    setStockReduced(true);
+    console.log('🔒 Flag set to TRUE before processing');
 
     try {
       console.log('💳 Payment successful - processing stock reduction...');
 
-
       await processStockReduction();
+      console.log('✅ Stock reduction completed and flag confirmed as true');
 
       console.log('✅ Stock reduction completed in handlePaymentSuccess');
     } catch (error) {
       console.error('❌ Error during payment success handling:', error);
+      // Reset flag if error occurs so it can be retried
+      setStockReduced(false);
+      console.log('🔄 Flag reset to FALSE due to error');
     }
 
     console.log('🚨 ===== PAYMENT SUCCESS HANDLER FINISHED =====\n');
@@ -747,9 +770,11 @@ export default function POSPage() {
         setQrPaymentStatus('pending');
         setQrSentToDisplay(true);
         setShowSuccessPopup(true);
+        setStockReduced(false); // Reset flag for new payment
 
         console.log('Stored Order ID:', result.data.order_id);
         console.log('Stored Payment Intent ID:', result.data.pi);
+        console.log('🔄 Stock reduced flag reset for new QR payment');
 
         // Start auto verification after QR Code is sent successfully
         setTimeout(() => {
@@ -1069,8 +1094,9 @@ export default function POSPage() {
     setQrCodeData(null);
     setSelectedPayment('cash');
     setIsVerifyingPayment(false);
+    setStockReduced(false); // Reset stock reduction flag for new transaction
 
-    console.log('🔄 New transaction started, all states reset');
+    console.log('🔄 New transaction started, all states reset including stockReduced flag');
   };
 
   // Get dynamic button text based on verification state
