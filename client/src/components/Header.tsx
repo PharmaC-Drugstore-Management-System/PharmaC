@@ -28,6 +28,9 @@ interface Notification {
 
 export default function Header() {
   const API_URL = import.meta.env.VITE_API_URL;
+  // For static files (uploads), use base server URL without /api
+  // If API_URL is relative (like /api), SERVER_URL will be empty string which is fine for production
+  const SERVER_URL = API_URL.startsWith('http') ? API_URL.replace('/api', '') : '';
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -558,15 +561,27 @@ export default function Header() {
                    style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}>
                 {userProfile?.profile_image ? (
                   <img
-                    src={
-                      (userProfile.profile_image.includes('://localhost') || userProfile.profile_image.includes('://127.0.0.1'))
-                        ? new URL(userProfile.profile_image).pathname
-                        : (userProfile.profile_image.startsWith("http")
-                            ? userProfile.profile_image
-                            : (userProfile.profile_image.startsWith("/")
-                                ? userProfile.profile_image
-                                : `/uploads/${userProfile.profile_image}`))
-                    }
+                    src={(() => {
+                      const p = userProfile.profile_image;
+                      // Check if it's a localhost URL and extract the path
+                      if (p.includes('://localhost') || p.includes('://127.0.0.1')) {
+                        try {
+                          const url = new URL(p);
+                          return `${SERVER_URL}${url.pathname}`;
+                        } catch {
+                          return p.startsWith('/') ? `${SERVER_URL}${p}` : `${SERVER_URL}/uploads/${p}`;
+                        }
+                      } else if (p.startsWith("http://") || p.startsWith("https://")) {
+                        // External full URL - use as is
+                        return p;
+                      } else if (p.startsWith("/uploads/")) {
+                        return `${SERVER_URL}${p}`;
+                      } else if (p.startsWith("/")) {
+                        return `${SERVER_URL}${p}`;
+                      } else {
+                        return `${SERVER_URL}/uploads/${p}`;
+                      }
+                    })()}
                     alt="Profile"
                     className="w-full h-full object-cover rounded-full"
                     onError={(e) => {
@@ -604,15 +619,27 @@ export default function Header() {
                          style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}>
                       {userProfile?.profile_image ? (
                         <img
-                          src={
-                            (userProfile.profile_image.includes('://localhost') || userProfile.profile_image.includes('://127.0.0.1'))
-                              ? new URL(userProfile.profile_image).pathname
-                              : (userProfile.profile_image.startsWith("http")
-                                  ? userProfile.profile_image
-                                  : (userProfile.profile_image.startsWith("/")
-                                      ? userProfile.profile_image
-                                      : `/uploads/${userProfile.profile_image}`))
-                          }
+                          src={(() => {
+                            const p = userProfile.profile_image;
+                            // Check if it's a localhost URL and extract the path
+                            if (p.includes('://localhost') || p.includes('://127.0.0.1')) {
+                              try {
+                                const url = new URL(p);
+                                return `${SERVER_URL}${url.pathname}`;
+                              } catch {
+                                return p.startsWith('/') ? `${SERVER_URL}${p}` : `${SERVER_URL}/uploads/${p}`;
+                              }
+                            } else if (p.startsWith("http://") || p.startsWith("https://")) {
+                              // External full URL - use as is
+                              return p;
+                            } else if (p.startsWith("/uploads/")) {
+                              return `${SERVER_URL}${p}`;
+                            } else if (p.startsWith("/")) {
+                              return `${SERVER_URL}${p}`;
+                            } else {
+                              return `${SERVER_URL}/uploads/${p}`;
+                            }
+                          })()}
                           alt="Profile"
                           className="w-full h-full object-cover rounded-full"
                           onError={(e) => {

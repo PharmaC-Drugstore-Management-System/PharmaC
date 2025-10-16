@@ -15,12 +15,12 @@ import os
 logger = logging.getLogger(__name__)
 
 class PharmaDataLoader:
-    def __init__(self, backend_url: str = "http://localhost:5000"):
+    def __init__(self, backend_url: str = "http://localhost:5000/api"):
         """
         Initialize the database loader.
         
         Args:
-            backend_url: Base URL of your Node.js backend API
+            backend_url: Base URL of your Node.js backend API (should include /api)
         """
         self.backend_url = backend_url.rstrip('/')
         
@@ -215,7 +215,7 @@ class PharmaDataLoader:
             }
 
 # Simple test function
-def test_connection(backend_url="http://localhost:5000"):
+def test_connection(backend_url="http://localhost:5000/api"):
     """Test the database loader"""
     loader = PharmaDataLoader(backend_url)
     

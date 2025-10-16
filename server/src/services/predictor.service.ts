@@ -5,7 +5,18 @@ import { spawn } from 'child_process';
 const python_path = path.join(__dirname, '../../pharma-sales-forecasting-main/pharma-sales-forecasting-main/src');
 const output_path = path.join(python_path, 'output');
 const venv_path = path.join(__dirname, '../../arima/venv_arima');
-const python_executable = path.join(venv_path, 'Scripts', 'python.exe');
+
+// Detect OS: Windows uses Scripts/python.exe, Linux uses bin/python
+const isWindows = process.platform === 'win32';
+const python_executable = isWindows 
+    ? path.join(venv_path, 'Scripts', 'python.exe')
+    : process.env.PYTHON_PATH || 'python3'; // Use system python in Docker
+
+console.log('🐍 Python configuration:');
+console.log('   Platform:', process.platform);
+console.log('   Python path:', python_path);
+console.log('   Python executable:', python_executable);
+console.log('   Venv path:', venv_path);
 
 const predictorService = {
 

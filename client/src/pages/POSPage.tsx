@@ -95,7 +95,7 @@ export default function POSPage() {
 
     // Initialize socket connection using env
     const SOCKET_BASE = import.meta.env.VITE_SOCKET_BASE || API_URL;
-    const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || '/socket.io';
+    const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || '/ws/';
     const socket = io(SOCKET_BASE, {
       withCredentials: true,
       path: SOCKET_PATH,

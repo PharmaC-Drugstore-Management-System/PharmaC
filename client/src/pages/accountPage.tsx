@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL;
+// For static files (uploads), use base server URL without /api
+// If API_URL is relative (like /api), SERVER_URL will be empty string which is fine for production
+const SERVER_URL = API_URL.startsWith('http') ? API_URL.replace('/api', '') : '';
 
 // interface AccountDetailResponse {
 //     data: {
@@ -82,7 +85,7 @@ export default function AccountPage() {
                 const formData = new FormData();
                 formData.append('profileImage', file);
 
-                const response = await fetch(`${API_URL}/acc/upload-profile-image`, {
+                const response = await fetch(`${API_URL}/account/upload-profile-image`, {
                     method: 'POST',
                     credentials: 'include',
                     body: formData
@@ -98,9 +101,11 @@ export default function AccountPage() {
                                         // อัพเดท imageUrl ด้วย URL จริงจาก server
                                         const newUrl: string = result.data.imageUrl;
                                         setImageUrl(
-                                            newUrl.startsWith('http') ? newUrl : (
-                                                newUrl.startsWith('/') ? newUrl : `/uploads/${newUrl}`
-                                            )
+                                            newUrl.startsWith('http') 
+                                                ? newUrl 
+                                                : (newUrl.startsWith('/') 
+                                                    ? `${SERVER_URL}${newUrl}` 
+                                                    : `${SERVER_URL}/uploads/${newUrl}`)
                                         );
                     console.log('🎉 Image URL updated:', result.data.imageUrl);
 
@@ -178,9 +183,33 @@ export default function AccountPage() {
             // Set profile image from database or use default
             if (user.profile_image) {
                                 const p = String(user.profile_image);
-                                const normalized = (p.includes('://localhost') || p.includes('://127.0.0.1'))
-                                    ? new URL(p).pathname
-                                    : (p.startsWith('http') ? p : (p.startsWith('/') ? p : `/uploads/${p}`));
+                                // Handle different formats of profile_image
+                                let normalized: string;
+                                
+                                // Check if it's a localhost URL and extract the path
+                                if (p.includes('://localhost') || p.includes('://127.0.0.1')) {
+                                    // Extract path from localhost URL (e.g., http://localhost:5000/uploads/... -> /uploads/...)
+                                    try {
+                                        const url = new URL(p);
+                                        normalized = `${SERVER_URL}${url.pathname}`;
+                                    } catch {
+                                        // If URL parsing fails, treat as relative path
+                                        normalized = p.startsWith('/') ? `${SERVER_URL}${p}` : `${SERVER_URL}/uploads/${p}`;
+                                    }
+                                } else if (p.startsWith('http://') || p.startsWith('https://')) {
+                                    // External full URL - use as is
+                                    normalized = p;
+                                } else if (p.startsWith('/uploads/')) {
+                                    // Relative path starting with /uploads/ - prepend SERVER_URL
+                                    normalized = `${SERVER_URL}${p}`;
+                                } else if (p.startsWith('/')) {
+                                    // Other relative path - prepend SERVER_URL
+                                    normalized = `${SERVER_URL}${p}`;
+                                } else {
+                                    // Just filename - add /uploads/ prefix and SERVER_URL
+                                    normalized = `${SERVER_URL}/uploads/${p}`;
+                                }
+                                
                                 setImageUrl(normalized);
             } else {
                 setImageUrl('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face');
@@ -238,7 +267,7 @@ export default function AccountPage() {
             };
             console.log(body);
 
-            const edit = await fetch(`${API_URL}/acc/edit-account`, {
+            const edit = await fetch(`${API_URL}/account/edit-account`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -3,6 +3,7 @@ import { Plus, Minus, PlusCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
+const SERVER_URL = API_URL.replace('/api', ''); // For static files (uploads)
 
 type Supplier = {
   supplier_id: number;
@@ -55,13 +56,13 @@ const PurchaseOrder = () => {
         return imageUrl;
       }
       if (imageUrl.startsWith("uploads/")) {
-        return `${API_URL}${imageUrl}`;
+        return `${SERVER_URL}/${imageUrl}`;
       }
       // If it's just an emoji or text, return null to show as text
       if (imageUrl.length <= 4) {
         return null;
       }
-      return `${API_URL}${imageUrl}`;
+      return `${SERVER_URL}${imageUrl}`;
     };
   }, []);
   

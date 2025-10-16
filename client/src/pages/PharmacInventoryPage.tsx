@@ -12,6 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const SERVER_URL = API_URL.replace('/api', ''); // For static files (uploads)
 
 type MedicineItem = {
   id: number;
@@ -433,7 +434,7 @@ export default function PharmacInventoryPage() {
               const imgSrc = rawImage
                 ? rawImage.startsWith("http")
                   ? rawImage
-                  : `${API_URL}${rawImage}`
+                  : `${SERVER_URL}${rawImage}`
                 : null;
 
               return (

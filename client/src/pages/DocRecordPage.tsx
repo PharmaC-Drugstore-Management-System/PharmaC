@@ -24,6 +24,8 @@ interface Document {
 
 export default function DocumentRecord() {
   const API_URL = import.meta.env.VITE_API_URL;
+  // SERVER_URL for static files (uploads) - remove /api suffix
+  const SERVER_URL = API_URL.startsWith('http') ? API_URL.replace('/api', '') : '';
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -46,6 +48,30 @@ export default function DocumentRecord() {
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const [selectedPDF, setSelectedPDF] = useState<number | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+  // Helper function to convert signature image URLs
+  const getSignatureImageUrl = (signatureUrl: string | null): string => {
+    if (!signatureUrl) return '';
+    
+    // If it's a localhost URL, extract the path
+    if (signatureUrl.includes('://localhost') || signatureUrl.includes('://127.0.0.1')) {
+      try {
+        const url = new URL(signatureUrl);
+        return SERVER_URL + url.pathname;
+      } catch (e) {
+        console.warn('Failed to parse signature URL:', signatureUrl, e);
+        return signatureUrl;
+      }
+    }
+    
+    // If it's already a relative path starting with /uploads, prepend SERVER_URL if needed
+    if (signatureUrl.startsWith('/uploads')) {
+      return SERVER_URL + signatureUrl;
+    }
+    
+    // Otherwise return as-is
+    return signatureUrl;
+  };
 
   const checkme = async () => {
     try {
@@ -162,15 +188,15 @@ export default function DocumentRecord() {
   };
 
   // Bulk Actions Functions
-  // const toggleDocumentSelection = (docId: number) => {
-  //   const newSelected = new Set(selectedDocuments);
-  //   if (newSelected.has(docId)) {
-  //     newSelected.delete(docId);
-  //   } else {
-  //     newSelected.add(docId);
-  //   }
-  //   setSelectedDocuments(newSelected);
-  // };
+  const toggleDocumentSelection = (docId: number) => {
+    const newSelected = new Set(selectedDocuments);
+    if (newSelected.has(docId)) {
+      newSelected.delete(docId);
+    } else {
+      newSelected.add(docId);
+    }
+    setSelectedDocuments(newSelected);
+  };
 
   const selectAllDocuments = () => {
     if (selectedDocuments.size === filteredDocuments.length) {
@@ -740,7 +766,7 @@ export default function DocumentRecord() {
               {filteredDocuments.map((doc) => (
                 <div
                   key={doc.purchase_document_id}
-                  className={`p-4 rounded-xl shadow hover:shadow-lg transition-all duration-300 group max-w-sm ${
+                  className={`p-4 rounded-xl shadow hover:shadow-lg transition-all duration-300 group max-w-sm relative ${
                     selectedDocuments.has(doc.purchase_document_id)
                       ? "ring-2 ring-emerald-500"
                       : ""
@@ -752,7 +778,25 @@ export default function DocumentRecord() {
                         : "white",
                   }}
                 >
-                  {/* PDF Icon Display */}
+                  {/* Checkbox for individual selection */}
+                  <div className="absolute top-2 left-2 z-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedDocuments.has(doc.purchase_document_id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        toggleDocumentSelection(doc.purchase_document_id);
+                      }}
+                      className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded cursor-pointer"
+                      style={{
+                        accentColor: document.documentElement.classList.contains("dark") 
+                          ? "#10b981" 
+                          : "#059669"
+                      }}
+                    />
+                  </div>
+
+                  {/* PDF Icon or Signature Image Display */}
                   <div
                     className="relative h-32 rounded-xl mb-3 overflow-hidden flex items-center justify-center cursor-pointer"
                     style={{
@@ -763,55 +807,72 @@ export default function DocumentRecord() {
                     }}
                     onClick={() => openPDFPreview(doc.purchase_document_id)}
                   >
-                    {/* PDF Icon */}
-                    <div className="text-center">
-                      <div className="bg-red-500 text-white p-3 rounded-lg mb-2 inline-block">
-                        <svg
-                          className="w-8 h-8"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                    {/* Show Signature Image if available, otherwise show PDF Icon */}
+                    {doc.po_signature && doc.po_signature.signature_image ? (
+                      <>
+                        {/* Signature Image */}
+                        <img
+                          src={getSignatureImageUrl(doc.po_signature.signature_image)}
+                          alt="Purchaser Signature"
+                          className="w-full h-full object-contain p-2"
+                        />
+                        {/* Signed Badge */}
+                        <div
+                          className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1"
+                          title={t("signedBy", {
+                            name: doc.po_signature.signer_name,
+                          })}
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <p
-                        className="text-xs font-medium"
-                        style={{
-                          color: document.documentElement.classList.contains(
-                            "dark"
-                          )
-                            ? "#9ca3af"
-                            : "#6b7280",
-                        }}
-                      >
-                        PDF
-                      </p>
-                    </div>
-
-                    {/* Signature Indicator */}
-                    {doc.po_signature && (
-                      <div
-                        className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1"
-                        title={t("signedBy", {
-                          name: doc.po_signature.signer_name,
-                        })}
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                        {/* Label */}
+                        <div
+                          className="absolute bottom-2 left-2 right-2 bg-black/70 text-white text-xs text-center py-1 rounded"
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
+                          Purchaser Signature
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* PDF Icon for unsigned documents */}
+                        <div className="text-center">
+                          <div className="bg-red-500 text-white p-3 rounded-lg mb-2 inline-block">
+                            <svg
+                              className="w-8 h-8"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                          <p
+                            className="text-xs font-medium"
+                            style={{
+                              color: document.documentElement.classList.contains(
+                                "dark"
+                              )
+                                ? "#9ca3af"
+                                : "#6b7280",
+                            }}
+                          >
+                            PDF
+                          </p>
+                        </div>
+                      </>
                     )}
 
                     {/* Hover Overlay */}
