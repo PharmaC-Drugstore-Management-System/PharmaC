@@ -77,8 +77,8 @@ const signatureService = {
         // Save base64 as image file
         fs.writeFileSync(filePath, base64Data, 'base64');
         
-        // Create URL for the saved image
-        imageUrl = `http://localhost:5000/uploads/signatures/${fileName}`;
+  // Create path for the saved image (relative, served by Express at /uploads)
+  imageUrl = `/uploads/signatures/${fileName}`;
       }
 
       const currentTime = new Date();

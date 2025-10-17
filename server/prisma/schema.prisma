@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -131,7 +132,7 @@ model lot {
   lot_id            Int                 @id @default(autoincrement())
   lot_no            String?             @db.VarChar(20)
   product_id        Int?
-  sell_price        Int?
+  sell_price        Float?              @db.Real
   cart              cart[]
   product           product?            @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_product_fk")
   stock_transaction stock_transaction[]
@@ -342,3 +343,5 @@ model stock_transaction {
   note           String?   @db.VarChar(255)
   lot            lot?      @relation(fields: [lot_id_fk], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_lot_fk")
 }
+
+

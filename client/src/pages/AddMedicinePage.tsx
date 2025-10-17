@@ -21,10 +21,14 @@ export default function AddMedicinePage() {
   const [scannedData, setScannedData] = useState("Not Found");
 
   const [productTypes] = useState([
-    "Tablet",
-    "Capsule",
-    "Syrup",
-    "Injection",
+    "M01AB",
+    "M01AE",
+    "N02BA",
+    "N02BE/B",
+    "N05B",
+    "N05C",
+    "R03",
+    "R06",
   ] as string[]);
   
   const [units] = useState(["Pack", "Capsule", "Bottle", "Box"] as string[]);
@@ -73,7 +77,7 @@ export default function AddMedicinePage() {
     }
   }, [scannedData, hasScanned]);
 
-  const handleScan = (err: unknown, result?: Result) => {
+  const handleScan = (_err: unknown, result?: Result) => {
     if (result && !hasScanned) {
       const code = result.getText();
       setScannedData(code);

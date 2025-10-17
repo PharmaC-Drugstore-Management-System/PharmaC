@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -35,7 +35,7 @@ type ForecastModel = {
 };
 
 export default function RevenueDetail() {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [forecastChartData, setForecastChartData] = useState<ChartDataPoint[]>([]);
@@ -129,7 +129,7 @@ export default function RevenueDetail() {
   // Check authentication
   const checkme = async () => {
     try {
-      const authme = await fetch(`${API_URL}/api/me`, { method: 'GET', credentials: 'include' });
+  const authme = await fetch(`${API_URL}/me`, { method: 'GET', credentials: 'include' });
       const data = await authme.json();
       if (authme.status === 401 || authme.status === 403) {
         navigate('/login');

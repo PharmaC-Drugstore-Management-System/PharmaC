@@ -3,6 +3,8 @@ import thaiBahtText from 'thai-baht-text';
 import { Printer, Download } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const PurchaseOrderDocument = () => {
   const location = useLocation();
   const [userID, setUserID] = useState(null);
@@ -15,9 +17,11 @@ const PurchaseOrderDocument = () => {
     id: number;
     name: string;
     brand: string;
-    amount: number;
+    amount?: number;      // From some sources
+    quantity?: number;    // From POEdit
     unit: string;
-    price: number;
+    price?: number;       // Price per unit
+    unitPrice?: number;   // Alternative name
     image: string;
   };
 
@@ -66,12 +70,61 @@ const PurchaseOrderDocument = () => {
   const [dbSignatureData, setDbSignatureData] = useState<SignatureFromDB | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null); // Add typed state for user info
   
+  // Helper function to convert signature image URLs
+  const getSignatureImageUrl = (signatureUrl: string | null): string => {
+    if (!signatureUrl) {
+      console.log('⚠️ No signature URL provided');
+      return '';
+    }
+    
+    console.log('🔍 Processing signature URL:', signatureUrl);
+    
+    // If it's already a data URL (base64), return as-is
+    if (signatureUrl.startsWith('data:')) {
+      console.log('✅ Data URL (base64) detected');
+      return signatureUrl;
+    }
+    
+    // SERVER_URL for static files (remove /api suffix)
+    const SERVER_URL = API_URL.startsWith('http') ? API_URL.replace('/api', '') : '';
+    
+    // If it's a localhost URL, extract the path
+    if (signatureUrl.includes('://localhost') || signatureUrl.includes('://127.0.0.1')) {
+      try {
+        const url = new URL(signatureUrl);
+        const convertedUrl = SERVER_URL + url.pathname;
+        console.log('🔄 Converted localhost URL to:', convertedUrl);
+        return convertedUrl;
+      } catch (e) {
+        console.warn('❌ Failed to parse signature URL:', signatureUrl, e);
+        return signatureUrl;
+      }
+    }
+    
+    // If it's already a relative path starting with /uploads
+    if (signatureUrl.startsWith('/uploads')) {
+      const convertedUrl = SERVER_URL + signatureUrl;
+      console.log('🔄 Converted relative path to:', convertedUrl);
+      return convertedUrl;
+    }
+    
+    // If it's already a full URL
+    if (signatureUrl.startsWith('http://') || signatureUrl.startsWith('https://')) {
+      console.log('✅ Full URL detected');
+      return signatureUrl;
+    }
+    
+    // Otherwise return as-is
+    console.warn('⚠️ Unknown URL format:', signatureUrl);
+    return signatureUrl;
+  };
+  
   // Function to fetch latest signature from database for current user
   const fetchLatestSignature = async () => {
     try {
       const token = localStorage.getItem('token'); // Get JWT token
-      
-      const response = await fetch('http://localhost:5000/signature/latest', {
+
+      const response = await fetch(`${API_URL}/signature/latest`, {
         method: 'GET',
         credentials: 'include',
         headers: {  
@@ -102,6 +155,12 @@ const PurchaseOrderDocument = () => {
   // Use database signature if available, otherwise use local signature data
   const localSignatures = signatures || fallbackData?.signatures || { purchaser: null };
   
+  console.log('🔍 PODoc Data Sources:');
+  console.log('  - selectedItems:', selectedItems);
+  console.log('  - fallbackData?.items:', fallbackData?.items);
+  console.log('  - Final items:', items);
+  console.log('  - Sample item:', items[0]);
+  console.log('  - Item keys:', items[0] ? Object.keys(items[0]) : 'no items');
   console.log('DB Signature from state:', dbSignatureData);
   console.log('Local Signatures:', localSignatures);
   console.log('User Info:', userInfo);
@@ -119,8 +178,11 @@ const PurchaseOrderDocument = () => {
   }
   
   // Prioritize POForm signature over database signature for display
+  const rawSignatureUrl = localSignatures.purchaser || dbSignatureData?.signature_image;
+  const processedSignatureUrl = getSignatureImageUrl(rawSignatureUrl);
+  
   const signatureData = {
-    purchaser: localSignatures.purchaser || dbSignatureData?.signature_image, // Use POForm signature first
+    purchaser: processedSignatureUrl, // Use processed URL
     signerName: signerName, // Always use logged-in user name
     signedAt: localSignatures.purchaser ? 
       new Date() : // Use current time for new signatures
@@ -130,6 +192,8 @@ const PurchaseOrderDocument = () => {
       )
   };
   
+  console.log('📝 Raw signature URL:', rawSignatureUrl);
+  console.log('✅ Processed signature URL:', processedSignatureUrl);
   console.log('Final signature data:', signatureData);
   
   // Debug date formatting
@@ -148,17 +212,33 @@ const PurchaseOrderDocument = () => {
   }
 
   // Transform selected items to order data format
-  const transformedItems: TransformedOrderItem[] = items.map((item: OrderItem, index: number) => ({
-    id: index + 1,
-    description: item.name || "Unknown Product",
-    quantity: item.amount || 0,
-    unitPrice: item.price || 0,
-    discount: 0.0,
-    amount: (item.amount || 0) * (item.price || 0),
-  }));
+  const transformedItems: TransformedOrderItem[] = items.map((item: OrderItem, index: number) => {
+    const qty = item.quantity || item.amount || 0;
+    const price = item.price || item.unitPrice || 0;
+    const itemTotal = qty * price;
+    
+    console.log(`📦 Item ${index + 1}:`, {
+      name: item.name,
+      quantity: qty,
+      unitPrice: price,
+      amount: itemTotal,
+      rawItem: item
+    });
+    
+    return {
+      id: index + 1,
+      description: item.name || "Unknown Product",
+      quantity: qty,
+      unitPrice: price,
+      discount: 0.0,
+      amount: itemTotal,
+    };
+  });
+  
   const [documentCount, setDocumentCount] = useState(0);
   // Calculate totals
   const subtotal = transformedItems.reduce((sum, item) => sum + item.amount, 0);
+  console.log('💰 Subtotal:', subtotal);
   const specialDiscount = 0.0;
   const afterDiscount = subtotal - specialDiscount;
   const vat = 0.0;
@@ -199,7 +279,7 @@ const PurchaseOrderDocument = () => {
 
   const countDoc = async () => {
     try {
-      const response = await fetch('http://localhost:5000/purchase/count', {
+      const response = await fetch(`${API_URL}/purchase/count`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -240,7 +320,7 @@ const PurchaseOrderDocument = () => {
       formData.append('signature', blob, `signature_${Date.now()}.png`);
       
       // Save signature to database
-      const signatureResponse = await fetch('http://localhost:5000/signature/upload', {
+      const signatureResponse = await fetch(`${API_URL}/signature/upload`, {
         method: 'POST',
         credentials: 'include',
         body: formData
@@ -261,6 +341,13 @@ const PurchaseOrderDocument = () => {
   };
 
   const handleConfirm = async () => {
+    // Check if userID is available
+    if (!userID) {
+      console.error('User ID not available. Please wait or refresh the page.');
+      alert('User information not loaded. Please refresh the page and try again.');
+      return;
+    }
+
     setIsProcessing(true);
     try {
       let savedSignature = null;
@@ -321,7 +408,7 @@ const PurchaseOrderDocument = () => {
       console.log('PDF Request Data:', requestData);
 
       // ส่ง request ไป backend ให้ Puppeteer generate PDF
-      const response = await fetch('http://localhost:5000/purchase/pdf', {
+      const response = await fetch(`${API_URL}/purchase/pdf`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -354,17 +441,22 @@ const PurchaseOrderDocument = () => {
 
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
+      const authme = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include'
       })
       const data = await authme.json();
-      setUserID(data.user.id);
-      setUserInfo(data.user); // Store user info for signature name
+      
       if (authme.status === 401 || authme.status === 403) {
         navigate('/login');
         return;
       }
+
+      // Use employee_id instead of id for consistency
+      const userId = data.user.employee_id || data.user.id;
+      console.log('User ID from /me:', userId, 'Full user data:', data.user);
+      setUserID(userId);
+      setUserInfo(data.user); // Store user info for signature name
 
       console.log('Authme data:', data);
     } catch (error) {

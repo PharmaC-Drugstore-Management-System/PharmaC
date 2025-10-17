@@ -4,16 +4,30 @@
 
   let io: Server;
 
-  export const initWebSocket = (server: HttpServer) => {
-    io = new Server(server, {
-      cors: {
-        origin: ["http://localhost:5173", "http://localhost:3000"],
-        methods: ["GET", "POST"],
-        credentials: true
-      },
-      transports: ["websocket", "polling"], // Allow both transports
-      allowEIO3: true,
-    });
+export const initWebSocket = (server: HttpServer) => {
+  // Build Socket.IO CORS origins from env
+  const defaultOrigins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://pharmac.sit.kmutt.ac.th",
+  ];
+  const envOrigins = (process.env.SOCKET_IO_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const origins = [...new Set([...defaultOrigins, ...envOrigins])];
+
+  io = new Server(server, {
+    cors: {
+      origin: origins,
+      methods: ["GET", "POST"],
+      credentials: true,
+    },
+    // If behind Nginx at /socket.io, default path is fine; can customize via env
+    path: process.env.SOCKET_IO_PATH || "/ws",
+    transports: ["websocket", "polling"],
+    allowEIO3: true,
+  });
 
   io.on("connection", (socket) => {
     console.log("🔌 Client connected:", socket.id);

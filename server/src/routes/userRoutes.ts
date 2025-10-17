@@ -3,7 +3,7 @@ import express from 'express'
 const router = express.Router();
 
 import registerUser from './auth.routes.ts'
-router.use('/api',registerUser)
+router.use('/',registerUser)
 
 import accountRoute  from './account.routes.ts'
 router.use('/acc',accountRoute)

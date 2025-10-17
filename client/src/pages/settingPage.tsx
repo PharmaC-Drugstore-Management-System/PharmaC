@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import _React, { useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,7 @@ export default function SettingsPage() {
   ];
   const checkme = async () => {
     try {
-      const authme = await fetch(`${API_URL}/api/me`, {
+      const authme = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include'
       })

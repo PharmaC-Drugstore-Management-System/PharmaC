@@ -1,4 +1,4 @@
-import { ChevronLeft, Mail, Phone, MapPin, Github, Linkedin, Code } from 'lucide-react';
+import { ChevronLeft, Mail, Phone, MapPin, Github, Code } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 

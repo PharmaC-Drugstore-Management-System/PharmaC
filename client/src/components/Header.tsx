@@ -28,6 +28,9 @@ interface Notification {
 
 export default function Header() {
   const API_URL = import.meta.env.VITE_API_URL;
+  // For static files (uploads), use base server URL without /api
+  // If API_URL is relative (like /api), SERVER_URL will be empty string which is fine for production
+  const SERVER_URL = API_URL.startsWith('http') ? API_URL.replace('/api', '') : '';
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -36,7 +39,7 @@ export default function Header() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotificationDropdown, setShowNotificationDropdown] =
     useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [_socket, setSocket] = useState<Socket | null>(null);
 
   // Check if dark mode is enabled
   const isDark = document.documentElement.classList.contains('dark');
@@ -46,7 +49,7 @@ export default function Header() {
       console.log("Loading profile data from API...");
 
       // Step 1: Get employee_id from JWT token
-      const authResponse = await fetch(`${API_URL}/api/me`, {
+      const authResponse = await fetch(`${API_URL}/me`, {
         method: "GET",
         credentials: "include",
       });
@@ -71,7 +74,7 @@ export default function Header() {
 
       // Step 2: Use employee_id to get full account details
       const accountResponse = await fetch(
-        `${API_URL}/acc/account-detail`,
+        `${API_URL}/account/account-detail`,
         {
           method: "POST",
           headers: {
@@ -151,6 +154,8 @@ export default function Header() {
                 "→",
                 order.date
               );
+              
+              console.log(statusText)
 
               // ตรวจสอบว่า notification นี้เป็น unread อยู่แล้วหรือไม่
               const existingUnread = currentUnreadNotifications.find(
@@ -215,7 +220,7 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       // Call logout API
-      await fetch(`${API_URL}/api/logout`, {
+      await fetch(`${API_URL}/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -246,8 +251,12 @@ export default function Header() {
     loadInitialNotifications();
 
     // Initialize Socket.IO connection for real-time notifications
-    const socketConnection = io(`${API_URL}`, {
-      transports: ["websocket"],
+    const SOCKET_BASE = import.meta.env.VITE_SOCKET_BASE || API_URL;
+    const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || '/ws';
+    const socketConnection = io(SOCKET_BASE, {
+      path: SOCKET_PATH,
+      transports: ["websocket", "polling"],
+      withCredentials: true,
     });
 
     socketConnection.on("connect", () => {
@@ -552,11 +561,27 @@ export default function Header() {
                    style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}>
                 {userProfile?.profile_image ? (
                   <img
-                    src={
-                      userProfile.profile_image.startsWith("http")
-                        ? userProfile.profile_image
-                        : `http://localhost:5000/uploads/${userProfile.profile_image}`
-                    }
+                    src={(() => {
+                      const p = userProfile.profile_image;
+                      // Check if it's a localhost URL and extract the path
+                      if (p.includes('://localhost') || p.includes('://127.0.0.1')) {
+                        try {
+                          const url = new URL(p);
+                          return `${SERVER_URL}${url.pathname}`;
+                        } catch {
+                          return p.startsWith('/') ? `${SERVER_URL}${p}` : `${SERVER_URL}/uploads/${p}`;
+                        }
+                      } else if (p.startsWith("http://") || p.startsWith("https://")) {
+                        // External full URL - use as is
+                        return p;
+                      } else if (p.startsWith("/uploads/")) {
+                        return `${SERVER_URL}${p}`;
+                      } else if (p.startsWith("/")) {
+                        return `${SERVER_URL}${p}`;
+                      } else {
+                        return `${SERVER_URL}/uploads/${p}`;
+                      }
+                    })()}
                     alt="Profile"
                     className="w-full h-full object-cover rounded-full"
                     onError={(e) => {
@@ -594,11 +619,27 @@ export default function Header() {
                          style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}>
                       {userProfile?.profile_image ? (
                         <img
-                          src={
-                            userProfile.profile_image.startsWith("http")
-                              ? userProfile.profile_image
-                              : `http://localhost:5000/uploads/${userProfile.profile_image}`
-                          }
+                          src={(() => {
+                            const p = userProfile.profile_image;
+                            // Check if it's a localhost URL and extract the path
+                            if (p.includes('://localhost') || p.includes('://127.0.0.1')) {
+                              try {
+                                const url = new URL(p);
+                                return `${SERVER_URL}${url.pathname}`;
+                              } catch {
+                                return p.startsWith('/') ? `${SERVER_URL}${p}` : `${SERVER_URL}/uploads/${p}`;
+                              }
+                            } else if (p.startsWith("http://") || p.startsWith("https://")) {
+                              // External full URL - use as is
+                              return p;
+                            } else if (p.startsWith("/uploads/")) {
+                              return `${SERVER_URL}${p}`;
+                            } else if (p.startsWith("/")) {
+                              return `${SERVER_URL}${p}`;
+                            } else {
+                              return `${SERVER_URL}/uploads/${p}`;
+                            }
+                          })()}
                           alt="Profile"
                           className="w-full h-full object-cover rounded-full"
                           onError={(e) => {

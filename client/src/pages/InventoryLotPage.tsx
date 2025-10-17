@@ -321,6 +321,18 @@ export default function LotPage() {
             return;
         }
 
+        if (!newLot.sellPrice || parseFloat(newLot.sellPrice) <= 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please enter a valid selling price',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+            return;
+        }
+
         // API integration to actually add the lot
         try {
             setIsAddingLot(true); // Set loading state
@@ -331,10 +343,15 @@ export default function LotPage() {
                 added_date: newLot.stockedDate,
                 expired_date: newLot.expirationDate,
                 cost: parseFloat(newLot.cost),
+                sell_price: parseFloat(newLot.sellPrice), // Add selling price to API payload
                 product_id: parseInt(id) // Current medicine ID from URL params
             };
 
-            console.log('Adding new lot:', lotData);
+            console.log('=== Adding new lot ===');
+            console.log('newLot.sellPrice:', newLot.sellPrice);
+            console.log('Parsed sell_price:', parseFloat(newLot.sellPrice));
+            console.log('Full lotData:', lotData);
+            console.log('====================');
 
             const response = await fetch(`${API_URL}/lot/add-lot`, {
                 method: 'POST',
@@ -956,7 +973,7 @@ export default function LotPage() {
                                 </label>
                                 <input
                                     type="number"
-                                    value={newLot.cost}
+                                    value={newLot.sellPrice}
                                     onChange={(e) => handleLotInputChange('sellPrice', e.target.value)}
                                     placeholder="Selling Price per unit"
                                     min="0"

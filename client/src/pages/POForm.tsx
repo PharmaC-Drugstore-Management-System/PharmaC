@@ -4,6 +4,8 @@ import { useNavigate} from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import SignaturePad from '../components/SignaturePad';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const SupplierDetailsForm = () => {
   const location = useLocation();
   const [username, setUsername] = useState('');
@@ -12,11 +14,36 @@ const SupplierDetailsForm = () => {
   // Check if dark mode is enabled
   const isDark = document.documentElement.classList.contains('dark');
 
-  // โหลดข้อมูล supplier ที่ส่งมาจาก POEdit
+  // โหลดข้อมูล supplier ที่ส่งมาจาก POEdit และ restore ข้อมูลจาก sessionStorage
   useEffect(() => {
     const selectedSupplier = location.state?.selectedSupplier;
     const today = new Date().toISOString().split('T')[0]; // format: YYYY-MM-DD
     
+    // Try to restore saved form data first
+    try {
+      const savedData = sessionStorage.getItem('poform_data');
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        console.log("Restoring saved form data:", parsed);
+        
+        // Restore supplier details
+        if (parsed.supplierDetails) {
+          setSupplierDetails(parsed.supplierDetails);
+        }
+        
+        // Restore signatures
+        if (parsed.signatures) {
+          setSignatures(parsed.signatures);
+        }
+        
+        // Don't clear the data yet, in case user navigates back and forth
+        return;
+      }
+    } catch (e) {
+      console.warn('Failed to restore form data:', e);
+    }
+    
+    // If no saved data, load from selectedSupplier
     setSupplierDetails(prev => ({
       ...prev,
       issueDate: today, // ตั้งวันที่ปัจจุบันอัตโนมัติ
@@ -130,6 +157,38 @@ const SupplierDetailsForm = () => {
     });
   };
 
+  const handleResetForm = () => {
+    // Reset all form fields to initial state
+    const today = new Date().toISOString().split('T')[0];
+    
+    setSupplierDetails({
+      contactName: '',
+      supplier: '',
+      taxId: '',
+      address: '',
+      issueDate: today,
+      preparedBy: username,
+      businessLogo: null,
+      comments: ''
+    });
+    
+    setSignatures({
+      purchaser: null
+    });
+    
+    setTouched({});
+    
+    // Clear sessionStorage
+    try {
+      sessionStorage.removeItem('poform_data');
+      sessionStorage.removeItem('podoc_payload');
+    } catch (e) {
+      console.warn('Failed to clear sessionStorage:', e);
+    }
+    
+    console.log('✨ Form reset to initial state');
+  };
+
   const handleSaveAndContinue = () => {
     // validate before continuing
     if (!isFormValid) {
@@ -137,19 +196,41 @@ const SupplierDetailsForm = () => {
       markTouchedAll();
       return;
     }
+    
+    const items = location.state?.selectedOrderItems || [];
+    
+    // Debug: Log items to check price field
+    console.log('📦 Items from POEdit:', items);
+    console.log('💰 First item price:', items[0]?.price, 'quantity:', items[0]?.quantity);
+    
     const payload = { 
-      items: location.state?.selectedOrderItems || [], 
+      items: items, 
       supplierDetails, 
       signatures,
       total: 0 
     };
-    payload.total = payload.items.reduce((s:any,it:any)=> s + ((it.price||it.unitPrice||0) * (it.amount||it.quantity||0)), 0);
+    
+    // Calculate total - use quantity instead of amount (from POEdit)
+    payload.total = payload.items.reduce((s:any,it:any)=> {
+      const price = it.price || it.unitPrice || 0;
+      const qty = it.quantity || it.amount || 0;
+      const itemTotal = price * qty;
+      console.log(`Item: ${it.name}, Price: ${price}, Qty: ${qty}, Total: ${itemTotal}`);
+      return s + itemTotal;
+    }, 0);
+    
+    console.log('💵 Calculated Total:', payload.total);
 
-    // persist locally so PODoc can show immediately
+    // Save form data to sessionStorage for restoring when coming back
     try {
+      sessionStorage.setItem('poform_data', JSON.stringify({
+        supplierDetails,
+        signatures,
+        selectedOrderItems: items
+      }));
       sessionStorage.setItem('podoc_payload', JSON.stringify(payload));
     } catch (e) {
-      console.warn('Failed to save podoc payload to sessionStorage', e);
+      console.warn('Failed to save form data to sessionStorage', e);
     }
 
   // navigate directly to PODoc (remove server PDF save)
@@ -157,7 +238,8 @@ const SupplierDetailsForm = () => {
     state: { 
       selectedItems: payload.items, 
       supplierDetails: payload.supplierDetails,
-      signatures: payload.signatures
+      signatures: payload.signatures,
+      total: payload.total
     } 
   });
 
@@ -165,7 +247,7 @@ const SupplierDetailsForm = () => {
 
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
+      const authme = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include'
       })
@@ -498,8 +580,29 @@ const SupplierDetailsForm = () => {
             </div>
           </div>
 
-          {/* Save Button */}
-          <div className="mt-12 flex justify-center">
+          {/* Reset & Save Buttons */}
+          <div className="mt-12 flex justify-center gap-4">
+            {/* Reset Button */}
+            <button
+              onClick={handleResetForm}
+              type="button"
+              className="px-12 py-4 rounded-lg font-medium transition-colors text-lg text-white"
+              style={{
+                backgroundColor: isDark ? '#6b7280' : '#9ca3af'
+              }}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.backgroundColor = isDark ? '#4b5563' : '#6b7280';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.backgroundColor = isDark ? '#6b7280' : '#9ca3af';
+              }}
+            >
+              Reset Form
+            </button>
+            
+            {/* Save & Continue Button */}
             <button
               onClick={handleSaveAndContinue}
               disabled={!isFormValid}

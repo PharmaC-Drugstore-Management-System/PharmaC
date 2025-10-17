@@ -2,7 +2,8 @@ import { useEffect, useState, useMemo } from "react";
 import { Plus, Minus, PlusCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:5000/";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+const SERVER_URL = API_URL.replace('/api', ''); // For static files (uploads)
 
 type Supplier = {
   supplier_id: number;
@@ -55,13 +56,13 @@ const PurchaseOrder = () => {
         return imageUrl;
       }
       if (imageUrl.startsWith("uploads/")) {
-        return `${API_URL}${imageUrl}`;
+        return `${SERVER_URL}/${imageUrl}`;
       }
       // If it's just an emoji or text, return null to show as text
       if (imageUrl.length <= 4) {
         return null;
       }
-      return `${API_URL}${imageUrl}`;
+      return `${SERVER_URL}${imageUrl}`;
     };
   }, []);
   
@@ -125,7 +126,7 @@ const PurchaseOrder = () => {
   const loadData = async () => {
     try {
       // Load products with suppliers
-      const res = await fetch("http://localhost:5000/api/products-with-suppliers", {
+  const res = await fetch(`${API_URL}/products-with-suppliers`, {
         method: "GET",
         credentials: "include",
       });
@@ -146,7 +147,7 @@ const PurchaseOrder = () => {
         setOrderItems(formattedItems);
       } else {
         // Fallback to old endpoint if new one fails
-        const fallbackRes = await fetch("http://localhost:5000/inventory/get-medicine", {
+  const fallbackRes = await fetch(`${API_URL}/inventory/get-medicine`, {
           method: "GET",
           credentials: "include",
         });
@@ -171,7 +172,7 @@ const PurchaseOrder = () => {
 
   const loadSuppliers = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/suppliers", {
+  const res = await fetch(`${API_URL}/suppliers`, {
         method: "GET",
         credentials: "include",
       });
@@ -323,7 +324,7 @@ const PurchaseOrder = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("http://localhost:5000/api/suppliers", {
+  const response = await fetch(`${API_URL}/suppliers`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -413,7 +414,7 @@ const PurchaseOrder = () => {
     setIsSubmitting(true);
     try {
       // Create new product in inventory using the specified JSON format
-      const response = await fetch("http://localhost:5000/inventory/add-medicine", {
+  const response = await fetch(`${API_URL}/inventory/add-micine`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -440,7 +441,7 @@ const PurchaseOrder = () => {
         // If supplier is selected, create product-supplier relationship
         if (selectedSupplierForNewMedicine && newMedicineCost && productId) {
           try {
-            const supplierResponse = await fetch("http://localhost:5000/api/product-supplier", {
+            const supplierResponse = await fetch(`${API_URL}/product-supplier`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -509,7 +510,7 @@ const PurchaseOrder = () => {
   };
     const checkme = async () => {
       try {
-        const authme = await fetch('http://localhost:5000/api/me', {
+  const authme = await fetch(`${API_URL}/me`, {
           method: 'GET',
           credentials: 'include'
         })

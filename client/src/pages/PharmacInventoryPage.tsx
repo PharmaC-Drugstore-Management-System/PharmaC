@@ -11,7 +11,8 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const SERVER_URL = API_URL.replace('/api', ''); // For static files (uploads)
 
 type MedicineItem = {
   id: number;
@@ -77,7 +78,7 @@ export default function PharmacInventoryPage() {
 
   const checkme = async () => {
     try {
-      const authme = await fetch(`${API_URL}/api/me`, {
+      const authme = await fetch(`${API_URL}/me`, {
         method: "GET",
         credentials: "include",
       });
@@ -135,10 +136,10 @@ export default function PharmacInventoryPage() {
     return diffDays >= 0 && diffDays <= 180;
   };
 
-  const getExpirationClass = (dateStr: string): string => {
-    if (!dateStr || dateStr === "-") return "";
-    return isExpiringSoon(dateStr) ? "text-orange-600" : "";
-  };
+  // const getExpirationClass = (dateStr: string): string => {
+  //   if (!dateStr || dateStr === "-") return "";
+  //   return isExpiringSoon(dateStr) ? "text-orange-600" : "";
+  // };
 
   const lowStockItems = items.filter((item) => item.amount <= 10);
   const expireSoonItems = items.filter((item) =>
@@ -434,7 +435,7 @@ export default function PharmacInventoryPage() {
               const imgSrc = rawImage
                 ? rawImage.startsWith("http")
                   ? rawImage
-                  : `http://localhost:5000${rawImage}`
+                  : `${SERVER_URL}${rawImage}`
                 : null;
 
               return (

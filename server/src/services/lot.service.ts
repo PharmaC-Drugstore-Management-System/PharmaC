@@ -2,18 +2,27 @@ import prisma from "../utils/prisma.utils";
 const lot_service = {
   createLot: async (data: any) => {
     try {
-      console.log('Received lot data:', data); // Debug log
+      console.log('=== Creating lot in service ===');
+      console.log('Received lot data:', data);
+      console.log('sell_price value:', data.sell_price);
+      console.log('sell_price type:', typeof data.sell_price);
       
       const newLot = await prisma.lot.create({
         data: {
           init_amount: data.init_amount,
           added_date: new Date(data.added_date),
           expired_date: new Date(data.expired_date),
-          cost: data.cost,
+          cost: parseFloat(data.cost),
+          sell_price: parseFloat(data.sell_price), // Ensure it's a proper float
           lot_no: data.lot_no,
           product_id: data.product_id,
         },
       });
+      
+      console.log('Created lot:', newLot);
+      console.log('Created lot sell_price:', newLot.sell_price);
+      console.log('==============================');
+      
       return newLot;
     } catch (error) {
       console.error('Error creating lot:', error); // Debug log

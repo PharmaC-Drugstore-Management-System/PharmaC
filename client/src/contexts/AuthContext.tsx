@@ -32,7 +32,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL ;
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/me`, {
+      const response = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -89,7 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Step 1: Authenticate credentials and send OTP (doesn't log user in for non-customers)
   const authLogin = async (email: string, password: string): Promise<{ success: boolean; skipOtp?: boolean; userData?: any }> => {
     try {
-      const response = await fetch(`${API_URL}/api/login`, {
+      const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,7 +131,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Step 2: Verify OTP and complete login
   const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_URL}/api/verify`, {
+      const response = await fetch(`${API_URL}/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Old login function for backwards compatibility (if needed elsewhere)
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_URL}/api/login`, {
+      const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch(`${API_URL}/api/logout`, {
+      await fetch(`${API_URL}/logout`, {
         method: 'POST',
         credentials: 'include',
       });
