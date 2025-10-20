@@ -74,8 +74,8 @@ const controller = {
           // Emit WebSocket event for real-time updates
           const statusData = {
             paymentIntentId: pi,
-            orderId: order_id,
-            status: response,
+            order_id: order_id, // Changed from orderId to order_id to match frontend
+            status: response === 'succeeded' ? 'completed' : response, // Map 'succeeded' to 'completed'
             timestamp: new Date().toISOString()
           };
           

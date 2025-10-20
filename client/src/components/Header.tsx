@@ -40,6 +40,7 @@ export default function Header() {
   const [showNotificationDropdown, setShowNotificationDropdown] =
     useState(false);
   const [_socket, setSocket] = useState<Socket | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   // Check if dark mode is enabled
   const isDark = document.documentElement.classList.contains('dark');
@@ -251,8 +252,16 @@ export default function Header() {
     loadInitialNotifications();
 
     // Initialize Socket.IO connection for real-time notifications
-    const SOCKET_BASE = import.meta.env.VITE_SOCKET_BASE || API_URL;
+    // WebSocket needs base URL, not /api endpoint
+    // If VITE_SOCKET_BASE is /api, ignore it and use empty string for production
+    const envSocketBase = import.meta.env.VITE_SOCKET_BASE;
+    const SOCKET_BASE = (envSocketBase === '/api' || !envSocketBase) 
+      ? '' 
+      : envSocketBase;
     const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || '/ws';
+    
+    console.log('🔌 Header Socket connecting to:', { SOCKET_BASE, SOCKET_PATH, envSocketBase });
+    
     const socketConnection = io(SOCKET_BASE, {
       path: SOCKET_PATH,
       transports: ["websocket", "polling"],
@@ -260,7 +269,18 @@ export default function Header() {
     });
 
     socketConnection.on("connect", () => {
-      console.log("Socket.IO connected for notifications");
+      console.log("✅ Socket.IO connected for notifications, ID:", socketConnection.id);
+      setSocketConnected(true);
+    });
+
+    socketConnection.on("connect_error", (error: any) => {
+      console.error("❌ Socket.IO connection error:", error.message);
+      setSocketConnected(false);
+    });
+
+    socketConnection.on("disconnect", (reason: string) => {
+      console.log("❌ Socket.IO disconnected:", reason);
+      setSocketConnected(false);
     });
 
     // ฟัง admin-notification event แทน newOrder
@@ -523,6 +543,7 @@ export default function Header() {
                   isOpen={showNotificationDropdown}
                   onClose={() => setShowNotificationDropdown(false)}
                   onNotificationClick={handleNotificationClick}
+                  socketConnected={socketConnected}
                 />
               </div>
             )}

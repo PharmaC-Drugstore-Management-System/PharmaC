@@ -433,7 +433,7 @@ export default function PharmacInventoryPage() {
               const rawImage = item.image ?? "";
               const imgSrc = rawImage
                 ? rawImage.startsWith("http")
-                  ? rawImage
+                  ? rawImage  
                   : `${SERVER_URL}${rawImage}`
                 : null;
 

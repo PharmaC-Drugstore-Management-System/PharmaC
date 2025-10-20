@@ -54,8 +54,8 @@ Examples:
     parser.add_argument(
         '--backend_url',
         type=str,
-        default='http://localhost:5000',
-        help='Backend API URL (default: http://localhost:5000)'
+        default='http://pharmac-server:5000/api',
+        help='Backend API URL (default: http://pharmac-server:5000/api for Docker network)'
     )
     
     parser.add_argument(

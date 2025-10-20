@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Plus, Minus, ShoppingCart,  Banknote, Trash2, X, User, Star, QrCode } from "lucide-react";
 import "../styles/pos.css";
 import { useNavigate } from "react-router-dom";
@@ -64,8 +64,9 @@ export default function POSPage() {
   const [isAutoVerifying, setIsAutoVerifying] = useState(false);
   const [autoVerifyInterval, setAutoVerifyInterval] = useState<NodeJS.Timeout | null>(null);
   
-  // Add flag to prevent multiple stock reduction executions
-  const [isProcessingStockReduction, setIsProcessingStockReduction] = useState(false);
+  // 🔒 CRITICAL: Synchronous lock using useRef to prevent duplicate stock reduction
+  // State updates are async - ref.current is checked/set synchronously!
+  const isProcessingStockReductionRef = useRef(false);
   
   // Member System States
   const [showMemberModal, setShowMemberModal] = useState(false);
@@ -94,8 +95,15 @@ export default function POSPage() {
     loadQuickCustomers();
 
     // Initialize socket connection using env
-    const SOCKET_BASE = import.meta.env.VITE_SOCKET_BASE || API_URL;
+    // If VITE_SOCKET_BASE is /api, ignore it and use empty string for production
+    const envSocketBase = import.meta.env.VITE_SOCKET_BASE;
+    const SOCKET_BASE = (envSocketBase === '/api' || !envSocketBase) 
+      ? '' 
+      : envSocketBase;
     const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || '/ws/';
+    
+    console.log('🔌 POS Socket connecting to:', { SOCKET_BASE, SOCKET_PATH, envSocketBase });
+    
     const socket = io(SOCKET_BASE, {
       withCredentials: true,
       path: SOCKET_PATH,
@@ -126,9 +134,9 @@ export default function POSPage() {
           setShowRequiresActionModal(false);
           setShowPaymentSuccessModal(true);
           
-          // ลดจำนวนสินค้าจาก lots เมื่อการชำระเงินสำเร็จ
-          // รวม updateDatabaseStatus เข้าไปใน handlePaymentSuccess เพื่อไม่ให้ทำงานแยกกัน
-          handlePaymentSuccess();
+          // ❌ REMOVED: handlePaymentSuccess() call here - causes duplicate!
+          // Auto-verification will handle stock reduction already
+          console.log('💡 Stock reduction will be handled by auto-verification or manual verify');
           
           // Add points if member exists
           if (currentMember) {
@@ -616,26 +624,37 @@ export default function POSPage() {
   const handlePaymentSuccess = async () => {
     console.log('🚨 ===== PAYMENT SUCCESS HANDLER CALLED =====');
     console.log('⏰ Timestamp:', new Date().toISOString());
-    console.log('� Is already processing stock reduction:', isProcessingStockReduction);
-    console.log('�🛒 Current cart:', cart.map(item => ({
+    console.log('🔒 Is already processing (REF):', isProcessingStockReductionRef.current);
+    console.log('🛒 Current cart:', cart.map(item => ({
       product_id: item.product_id,
       product_name: item.product_name,
       quantity: item.quantity
     })));
     
+    // ✅ CRITICAL: Check ref synchronously - blocks immediately!
+    if (isProcessingStockReductionRef.current) {
+      console.log('⚠️ ⛔ Stock reduction ALREADY IN PROGRESS - BLOCKING duplicate call!');
+      console.log('🚨 ===== PAYMENT SUCCESS HANDLER FINISHED (BLOCKED) =====\n');
+      return;
+    }
     
-    // setIsProcessingStockReduction(true);
+    // ✅ Set lock immediately (synchronous)
+    isProcessingStockReductionRef.current = true;
+    console.log('🔓 Lock acquired - proceeding with stock reduction');
     
     try {
       console.log('💳 Payment successful - processing stock reduction...');
       
-    
       await processStockReduction();
 
       console.log('✅ Stock reduction completed in handlePaymentSuccess');
     } catch (error) {
       console.error('❌ Error during payment success handling:', error);
-    } 
+    } finally {
+      // ✅ Always release lock
+      isProcessingStockReductionRef.current = false;
+      console.log('🔓 Lock released');
+    }
     
     console.log('🚨 ===== PAYMENT SUCCESS HANDLER FINISHED =====\n');
   };
@@ -759,21 +778,25 @@ export default function POSPage() {
 
       if (result.status) {
         // Store order ID and payment intent ID for verification
-        setOrderId(result.data.order_id);
-        setPaymentIntentId(result.data.pi); // Store payment intent ID
+        const newOrderId = result.data.order_id;
+        const newPaymentIntentId = result.data.pi;
+        
+        setOrderId(newOrderId);
+        setPaymentIntentId(newPaymentIntentId);
         setQrCodeData(result.data);
         setQrPaymentStatus('pending');
         setQrSentToDisplay(true);
         setShowSuccessPopup(true);
         
-        console.log('Stored Order ID:', result.data.order_id);
-        console.log('Stored Payment Intent ID:', result.data.pi);
+        console.log('Stored Order ID:', newOrderId);
+        console.log('Stored Payment Intent ID:', newPaymentIntentId);
         
         // Start auto verification after QR Code is sent successfully
+        // Use local variables to avoid stale closure
         setTimeout(() => {
           console.log('🎯 Attempting to start auto verification...');
-          console.log('📋 Current states:', { orderId, paymentIntentId, isAutoVerifying });
-          startAutoVerification();
+          console.log('📋 Using IDs:', { orderId: newOrderId, paymentIntentId: newPaymentIntentId });
+          startAutoVerification(newOrderId, newPaymentIntentId);
         }, 2000); // Wait 2 seconds before starting auto verification
         
         // Auto-hide success popup after 3 seconds
@@ -942,129 +965,92 @@ export default function POSPage() {
     }
   };
 
-  // Update database status without WebSocket emission (for WebSocket events)
-  // const updateDatabaseStatus = async () => {
-  //   console.log('🔔 ===== UPDATE DATABASE STATUS CALLED =====');
-  //   console.log('⏰ Timestamp:', new Date().toISOString());
-  //   console.log('📋 Order ID:', orderId);
-  //   console.log('💳 Payment Intent ID:', paymentIntentId);
+  const startAutoVerification = (orderIdParam?: number | null, paymentIntentIdParam?: string | null) => {
+    const verifyOrderId = orderIdParam ?? orderId;
+    const verifyPaymentIntentId = paymentIntentIdParam ?? paymentIntentId;
     
-  //   // Add stack trace to see where this is called from
-  //   console.trace('📍 Called from:');
-    
-  //   if (!orderId || !paymentIntentId) {
-  //     console.log('❌ Missing orderId or paymentIntentId for database update');
-  //     return;
-  //   }
-
-  //   try {
-  //     console.log('📊 Updating database status for order:', orderId);
-      
-  //     const response = await fetch('http://localhost:5000/payment/check', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       credentials: 'include',
-  //       body: JSON.stringify({
-  //         order_id: orderId,
-  //         pi: paymentIntentId,
-  //         skipWebSocket: true  // Skip WebSocket emission to prevent loop
-  //       })
-  //     });
-
-  //     const result = await response.json();
-  //     console.log('📊 Database status update result:', result);
-      
-  //     if (result.success && result.status === 'succeeded') {
-  //       console.log('✅ Database status updated successfully');
-  //     }
-  //   } catch (error) {
-  //     console.error('❌ Error updating database status:', error);
-  //   }
-    
-  //   console.log('🔔 ===== UPDATE DATABASE STATUS FINISHED =====\n');
-  // };
-
-  // Start auto verification with polling
-  const startAutoVerification = () => {
     console.log('🎯 startAutoVerification called');
     console.log('📋 Validation check:', { 
-      orderId: !!orderId, 
-      paymentIntentId: !!paymentIntentId, 
+      orderId: !!verifyOrderId, 
+      paymentIntentId: !!verifyPaymentIntentId, 
       isAutoVerifying,
-      orderIdValue: orderId,
-      paymentIntentIdValue: paymentIntentId 
+      orderIdValue: verifyOrderId,
+      paymentIntentIdValue: verifyPaymentIntentId 
     });
     
-    if (!orderId || !paymentIntentId || isAutoVerifying) {
-      console.log('❌ Cannot start auto verification:', { orderId, paymentIntentId, isAutoVerifying });
+    if (!verifyOrderId || !verifyPaymentIntentId || isAutoVerifying) {
+      console.log('❌ Cannot start auto verification:', { orderId: verifyOrderId, paymentIntentId: verifyPaymentIntentId, isAutoVerifying });
       return;
     }
 
-    console.log('🚀 Starting auto verification for order:', orderId);
+    console.log('🚀 Starting auto verification for order:', verifyOrderId);
     setIsAutoVerifying(true);
 
-    // const interval = setInterval(async () => {
-    //   try {
-    //     console.log('🔍 Auto verification check...');
+    const interval = setInterval(async () => {
+      try {
+        console.log('🔍 Auto verification check...');
         
-    //     const response = await fetch('http://localhost:5000/payment/check', {
-    //       method: 'POST',
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       },
-    //       credentials: 'include',
-    //       body: JSON.stringify({
-    //         order_id: orderId,
-    //         pi: paymentIntentId
-    //       })
-    //     });
+        const response = await fetch(`${API_URL}/payment/check`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            order_id: verifyOrderId,
+            pi: verifyPaymentIntentId
+          })
+        });
 
-    //     const result = await response.json();
-    //     console.log('🔍 Auto verification result:', result);
+        const result = await response.json();
+        console.log('🔍 Auto verification result:', result);
         
-    //     if (result.success && result.status === 'succeeded') {
-    //       console.log('✅ Auto verification success!');
-    //       clearInterval(interval);
-    //       setAutoVerifyInterval(null);
-    //       setIsAutoVerifying(false);
-    //       setQrPaymentStatus('success');
+        if (result.success && result.status === 'succeeded') {
+          console.log('✅ Auto verification success!');
           
-          // Stock reduction is now handled in updateDatabaseStatus via PUT request
+          // ✅ CRITICAL: Clear interval IMMEDIATELY before doing anything else
+          clearInterval(interval);
+          setAutoVerifyInterval(null);
+          setIsAutoVerifying(false);
+          console.log('🛑 Auto verification interval cleared BEFORE stock reduction');
           
-    //       if (currentMember) {
-    //         addPoints();
-    //       }
-    //       setShowRequiresActionModal(false);
-    //       setShowPaymentSuccessModal(true);
-    //     } else if (result.status === 'failed' || result.status === 'canceled') {
-    //       console.log('❌ Auto verification failed');
-    //       clearInterval(interval);
-    //       setAutoVerifyInterval(null);
-    //       setIsAutoVerifying(false);
-    //       setQrPaymentStatus('failed');
-    //       setErrorMessage(`Payment ${result.status} - Please try again`);
-    //       setShowErrorPopup(true);
-    //       setTimeout(() => setShowErrorPopup(false), 5000);
-    //     }
-    //     // Continue polling for pending status
-    //   } catch (error) {
-    //     console.error('Auto verification error:', error);
-    //   }
-    // }, 3000); // Check every 3 seconds
+          setQrPaymentStatus('success');
+          
+          // Stock reduction is now handled in handlePaymentSuccess
+          await handlePaymentSuccess();
+          
+          if (currentMember) {
+            addPoints();
+          }
+          setShowRequiresActionModal(false);
+          setShowPaymentSuccessModal(true);
+        } else if (result.status === 'failed' || result.status === 'canceled') {
+          console.log('❌ Auto verification failed');
+          clearInterval(interval);
+          setAutoVerifyInterval(null);
+          setIsAutoVerifying(false);
+          setQrPaymentStatus('failed');
+          setErrorMessage(`Payment ${result.status} - Please try again`);
+          setShowErrorPopup(true);
+          setTimeout(() => setShowErrorPopup(false), 5000);
+        }
+        // Continue polling for pending status
+      } catch (error) {
+        console.error('Auto verification error:', error);
+      }
+    }, 3000); // Check every 3 seconds
 
-  //   setAutoVerifyInterval(interval);
+    setAutoVerifyInterval(interval);
 
-  //   // Stop auto verification after 5 minutes
-  //   setTimeout(() => {
-  //     if (interval) {
-  //       console.log('⏱️ Auto verification timeout after 5 minutes');
-  //       clearInterval(interval);
-  //       setAutoVerifyInterval(null);
-  //       setIsAutoVerifying(false);
-  //     }
-  //   }, 300000); // 5 minutes
+    // Stop auto verification after 5 minutes
+    setTimeout(() => {
+      if (interval) {
+        console.log('⏱️ Auto verification timeout after 5 minutes');
+        clearInterval(interval);
+        setAutoVerifyInterval(null);
+        setIsAutoVerifying(false);
+      }
+    }, 300000); // 5 minutes
   };
 
   // Handle new transaction - reset all states including auto verification
@@ -1087,7 +1073,7 @@ export default function POSPage() {
     setQrCodeData(null);
     setSelectedPayment('cash');
     setIsVerifyingPayment(false);
-    setIsProcessingStockReduction(false); // Reset stock reduction flag
+    isProcessingStockReductionRef.current = false; // Reset stock reduction flag (REF)
     
     console.log('🔄 New transaction started, all states reset');
   };
