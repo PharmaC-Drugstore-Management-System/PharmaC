@@ -149,13 +149,13 @@ export default function AddMedicinePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-4 transition-colors duration-300"
+    <div className="min-h-screen flex flex-col p-3 sm:p-4 md:p-6 transition-colors duration-300 pb-20 md:pb-4"
       style={{ backgroundColor: isDark ? '#111827' : '#ffffff' }}>
-      <h1 className="text-3xl font-bold mb-8 transition-colors duration-300"
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 transition-colors duration-300"
         style={{ color: isDark ? 'white' : '#1f2937' }}>{t('addMedication')}</h1>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        <label className="rounded-lg p-6 flex flex-col items-center justify-center min-h-64 w-full md:w-1/3 border cursor-pointer transition-colors duration-300"
+      <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
+        <label className="rounded-lg p-4 sm:p-6 flex flex-col items-center justify-center min-h-48 sm:min-h-64 w-full md:w-1/3 border cursor-pointer transition-colors duration-300"
           style={{
             backgroundColor: isDark ? '#374151' : '#f0fdfa',
             borderColor: isDark ? '#4b5563' : '#5eead4'
@@ -165,21 +165,21 @@ export default function AddMedicinePage() {
               <img
                 src={previewUrl}
                 alt="preview"
-                className="max-h-40 object-contain rounded-md"
+                className="max-h-32 sm:max-h-40 object-contain rounded-md"
               />
               <div className="flex items-center gap-2 transition-colors duration-300"
                 style={{ color: isDark ? '#60a5fa' : '#0f766e' }}>
-                <span className="text-sm">{image?.name}</span>
+                <span className="text-xs sm:text-sm truncate max-w-[150px] sm:max-w-none">{image?.name}</span>
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleRemoveImage();
                   }}
-                  className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                  className="text-red-600 hover:text-red-800 transition-colors duration-200 flex-shrink-0"
                   aria-label="Remove image"
                 >
-                  <X />
+                  <X size={18} />
                 </button>
               </div>
             </div>
@@ -187,9 +187,9 @@ export default function AddMedicinePage() {
             <div className="flex flex-col items-center">
               <div className="mb-4 transition-colors duration-300"
                 style={{ color: isDark ? '#60a5fa' : '#0d9488' }}>
-                <Upload size={48} />
+                <Upload size={40} className="sm:w-12 sm:h-12" />
               </div>
-              <p className="transition-colors duration-300"
+              <p className="transition-colors duration-300 text-sm sm:text-base text-center"
                 style={{ color: isDark ? '#60a5fa' : '#0d9488' }}>{t('clickToUploadImage')}</p>
             </div>
           )}
@@ -202,12 +202,12 @@ export default function AddMedicinePage() {
         </label>
 
         <div className="w-full md:w-2/3">
-          <div className="rounded-lg p-6 shadow-sm border transition-colors duration-300"
+          <div className="rounded-lg p-4 sm:p-6 shadow-sm border transition-colors duration-300"
             style={{
               backgroundColor: isDark ? '#374151' : 'white',
               borderColor: isDark ? '#4b5563' : '#e5e7eb'
             }}>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <input
                 type="text"
                 placeholder={t('productNamePlaceholder')}
@@ -215,7 +215,7 @@ export default function AddMedicinePage() {
                 onChange={(e) =>
                   setFormData({ ...formData, productName: e.target.value })
                 }
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
                 style={{
                   backgroundColor: isDark ? '#4b5563' : 'white',
                   borderColor: isDark ? '#6b7280' : '#d1d5db',
@@ -237,7 +237,7 @@ export default function AddMedicinePage() {
                 onChange={(e) =>
                   setFormData({ ...formData, brand: e.target.value })
                 }
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
                 style={{
                   backgroundColor: isDark ? '#4b5563' : 'white',
                   borderColor: isDark ? '#6b7280' : '#d1d5db',
@@ -258,7 +258,7 @@ export default function AddMedicinePage() {
                 onChange={(e) =>
                   setFormData({ ...formData, productType: e.target.value })
                 }
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
                 style={{
                   backgroundColor: isDark ? '#4b5563' : 'white',
                   borderColor: isDark ? '#6b7280' : '#d1d5db',
@@ -287,7 +287,7 @@ export default function AddMedicinePage() {
                   placeholder={t('enterOtherProductType')}
                   value={customProductType}
                   onChange={(e) => setCustomProductType(e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 mt-2"
+                  className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 mt-2"
                   style={{
                     backgroundColor: isDark ? '#4b5563' : 'white',
                     borderColor: isDark ? '#6b7280' : '#d1d5db',
@@ -309,7 +309,7 @@ export default function AddMedicinePage() {
                 onChange={(e) =>
                   setFormData({ ...formData, unit: e.target.value })
                 }
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
                 style={{
                   backgroundColor: isDark ? '#4b5563' : 'white',
                   borderColor: isDark ? '#6b7280' : '#d1d5db',
@@ -338,7 +338,7 @@ export default function AddMedicinePage() {
                   placeholder={t('enterCustomUnit')}
                   value={customUnit}
                   onChange={(e) => setCustomUnit(e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 mt-2"
+                  className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 mt-2"
                   style={{
                     backgroundColor: isDark ? '#4b5563' : 'white',
                     borderColor: isDark ? '#6b7280' : '#d1d5db',
@@ -356,12 +356,12 @@ export default function AddMedicinePage() {
               )}
 
               <div>
-                <label className="block mb-2 font-medium transition-colors duration-300"
+                <label className="block mb-2 text-sm sm:text-base font-medium transition-colors duration-300"
                   style={{ color: isDark ? '#d1d5db' : '#374151' }}>
                   {t('isControlledMedicine')}
                 </label>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 transition-colors duration-300"
+                <div className="flex gap-4 sm:gap-6">
+                  <label className="flex items-center gap-2 text-sm sm:text-base transition-colors duration-300"
                     style={{ color: isDark ? '#d1d5db' : '#374151' }}>
                     <input
                       type="radio"
@@ -375,7 +375,7 @@ export default function AddMedicinePage() {
                     />{" "}
                     {t('no')}
                   </label>
-                  <label className="flex items-center gap-2 transition-colors duration-300"
+                  <label className="flex items-center gap-2 text-sm sm:text-base transition-colors duration-300"
                     style={{ color: isDark ? '#d1d5db' : '#374151' }}>
                     <input
                       type="radio"
@@ -399,7 +399,7 @@ export default function AddMedicinePage() {
                 onChange={(e) =>
                   setFormData({ ...formData, friendlyId: e.target.value })
                 }
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
                 style={{
                   backgroundColor: isDark ? '#4b5563' : 'white',
                   borderColor: isDark ? '#6b7280' : '#d1d5db',
@@ -421,7 +421,7 @@ export default function AddMedicinePage() {
                 onChange={(e) =>
                   setFormData({ ...formData, barcode: e.target.value })
                 }
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
                 style={{
                   backgroundColor: isDark ? '#4b5563' : 'white',
                   borderColor: isDark ? '#6b7280' : '#d1d5db',
@@ -438,7 +438,7 @@ export default function AddMedicinePage() {
               />
 
               <button
-                className="w-full p-3 text-white rounded-lg transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full p-2.5 sm:p-3 text-sm sm:text-base font-medium text-white rounded-lg transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
                 type="submit"
                 disabled={!isFormValid()}
                 style={{
@@ -466,7 +466,7 @@ export default function AddMedicinePage() {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         <button
           onClick={() => {
             setShowScanner(!showScanner);
@@ -488,10 +488,10 @@ export default function AddMedicinePage() {
           }}
         >
           <div className="flex flex-col items-center">
-            <span className="text-sm font-medium mb-1 transition-colors duration-300"
+            <span className="text-xs sm:text-sm font-medium mb-1 transition-colors duration-300"
               style={{ color: isDark ? '#d1d5db' : '#374151' }}>{t('addByBarcode')}</span>
             <div style={{ color: isDark ? '#60a5fa' : '#374151' }}>
-              <Barcode size={40} />
+              <Barcode size={32} className="sm:w-10 sm:h-10" />
             </div>
           </div>
         </button>
@@ -499,9 +499,9 @@ export default function AddMedicinePage() {
 
       {showScanner && (
         <div className="flex flex-col items-center">
-          <h2 className="text-lg font-bold mt-4 transition-colors duration-300"
+          <h2 className="text-base sm:text-lg font-bold mt-4 transition-colors duration-300"
             style={{ color: isDark ? '#d1d5db' : '#1f2937' }}>{t('scanBarcode')}</h2>
-          <div className="relative mt-6 flex flex-col items-center w-fit p-4 rounded-xl shadow-md border transition-colors duration-300"
+          <div className="relative mt-4 sm:mt-6 flex flex-col items-center w-full max-w-md p-3 sm:p-4 rounded-xl shadow-md border transition-colors duration-300"
             style={{
               backgroundColor: isDark ? '#374151' : '#f9fafb',
               borderColor: isDark ? '#4b5563' : '#e5e7eb'
@@ -517,16 +517,22 @@ export default function AddMedicinePage() {
                   className="ml-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 transition-colors duration-200"
                   aria-label="Close Scanner"
                 >
-                  <X size={24} />
+                  <X size={20} className="sm:w-6 sm:h-6" />
                 </button>
               </div>
             )}
 
             {!hasScanned && (
-              <BarcodeScanner width={400} height={400} onUpdate={handleScan} />
+              <div className="w-full max-w-sm mx-auto">
+                <BarcodeScanner 
+                  width={Math.min(window.innerWidth - 80, 400)} 
+                  height={Math.min(window.innerWidth - 80, 400)} 
+                  onUpdate={handleScan} 
+                />
+              </div>
             )}
 
-            <p className="mt-2 text-sm transition-colors duration-300"
+            <p className="mt-2 text-xs sm:text-sm transition-colors duration-300 text-center"
               style={{ color: isDark ? '#d1d5db' : '#374151' }}>
               {t('scannedData')}{" "}
               <span
@@ -545,7 +551,7 @@ export default function AddMedicinePage() {
                   setHasScanned(false);
                   setScannedData("Not Found");
                 }}
-                className="mt-3 px-4 py-2 text-white rounded-lg transition-all duration-200"
+                className="mt-3 px-4 py-2 text-sm sm:text-base text-white rounded-lg transition-all duration-200"
                 style={{
                   backgroundColor: isDark ? '#2563eb' : '#1d4ed8'
                 }}

@@ -784,8 +784,7 @@ export default function LotPage() {
                                         <div className="col-span-2">Expiration Date</div>
                                     </div>
 
-                                    <div className="divide-y"
-                                        style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
+                                    <div>
                                         {lotsLoading ? (
                                             <div className="px-6 py-8 text-center">
                                                 <div className="inline-flex items-center text-sm"
@@ -805,8 +804,11 @@ export default function LotPage() {
                                             lots.map((r) => {
                                                 const exp = expStatus(r.expirationDate);
                                                 return (
-                                                    <div key={r.lotNo} className="grid grid-cols-12 gap-4 px-6 py-4"
-                                                        style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937' }}>
+                                                    <div key={r.lotNo} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-300"
+                                                        style={{ 
+                                                          color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937',
+                                                          borderBottomColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db'
+                                                        }}>
                                                         <div className="col-span-2">{r.lotNo}</div>
                                                         <div className="col-span-2">{fmt(r.stockedDate)}</div>
                                                         <div className="col-span-2">{r.totalStock}</div>

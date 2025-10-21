@@ -339,6 +339,7 @@ export default function POSPage() {
         alert('สินค้านี้หมดสต็อกหรือหมดอายุแล้ว');
         return;
       }
+      }
 
       // Check if this specific lot is already in the cart
       const existingItem = cart.find(item => item.product_id === product.product_id);
@@ -363,8 +364,11 @@ export default function POSPage() {
         };
         setCart([...cart, newItem]);
       }
-
-    } 
+    } catch (error) {
+      console.error('Error adding product to cart:', error);
+      alert('Failed to add product to cart');
+    }
+  };
 
   const updateQuantity = (productId: number | string, newQuantity: number) => {
     if (newQuantity <= 0) {

@@ -239,10 +239,8 @@ export default function OrderRecord() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y"
-                   style={{
-                     backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
-                     borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+            <tbody style={{
+                     backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'
                    }}>
               {loading ? (
                 <tr>
@@ -260,9 +258,10 @@ export default function OrderRecord() {
                 </tr>
               ) : (
                 currentOrders.map((order) => (
-                  <tr key={order.order_id} className="transition-colors"
+                  <tr key={order.order_id} className="transition-colors border-b border-gray-300"
                       style={{
-                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white'
+                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                        borderBottomColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb';
