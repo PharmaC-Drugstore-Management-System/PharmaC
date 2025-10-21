@@ -407,10 +407,7 @@ export default function PharmacInventoryPage() {
         </div>
 
         {/* Enhanced Table Body */}
-        <div className="divide-y"
-             style={{
-               borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e2e8f0'
-             }}>
+        <div>
           {items.length === 0 ? (
             <div className="p-12 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
@@ -442,14 +439,15 @@ export default function PharmacInventoryPage() {
                   {/* Desktop Layout */}
                   <div
                     onClick={() => !editMode && openItem(item.id)}
-                    className={`hidden lg:grid lg:grid-cols-7 gap-4 px-6 py-5 transition-all duration-300 ${
+                    className={`hidden lg:grid lg:grid-cols-7 gap-4 px-6 py-5 transition-all duration-300 border-b border-gray-300 ${
                       isDimmed ? "opacity-50" : "opacity-100"
                     } ${!editMode ? "cursor-pointer hover:bg-opacity-75" : "cursor-default"}
                     ${isSelected ? "ring-2 ring-green-500 bg-green-50" : ""}`}
                     style={{
                       backgroundColor: isSelected 
                         ? (document.documentElement.classList.contains('dark') ? '#065f46' : '#f0fdf4')
-                        : (document.documentElement.classList.contains('dark') ? '#374151' : 'white')
+                        : (document.documentElement.classList.contains('dark') ? '#374151' : 'white'),
+                      borderBottomColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db'
                     }}
                     onMouseEnter={(e) => {
                       if (!isSelected) {
@@ -621,14 +619,15 @@ export default function PharmacInventoryPage() {
                   {/* Mobile Layout */}
                   <div 
                     onClick={() => !editMode && openItem(item.id)}
-                    className={`lg:hidden p-6 transition-all duration-300 ${
+                    className={`lg:hidden p-6 transition-all duration-300 border-b border-gray-300 ${
                       isDimmed ? "opacity-50" : "opacity-100"
                     } ${!editMode ? "cursor-pointer" : "cursor-default"}
                     ${isSelected ? "ring-2 ring-green-500 bg-green-50" : ""}`}
                     style={{
                       backgroundColor: isSelected 
                         ? (document.documentElement.classList.contains('dark') ? '#065f46' : '#f0fdf4')
-                        : (document.documentElement.classList.contains('dark') ? '#374151' : 'white')
+                        : (document.documentElement.classList.contains('dark') ? '#374151' : 'white'),
+                      borderBottomColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db'
                     }}
                   >
                     <div className="flex items-start space-x-4">

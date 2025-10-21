@@ -17,7 +17,6 @@ import POEdit from "./pages/POEdit.tsx"
 import RegisterPage from "./pages/registerPage.tsx";
 import LoginPage from "./pages/loginPage.tsx";
 import MainMenu from './pages/index.tsx';
-import StatisticPage from "./pages/StatisticPage.tsx";
 import ExpiryMonitor from "./pages/expiryMonitorPage.tsx";
 import DocumentRecord from "./pages/DocRecordPage.tsx";
 import OrderRecord from "./pages/orderRecordPage.tsx";
@@ -152,11 +151,6 @@ function AppContent() {
             <Route path="/poform" element={
               <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
                 <POForm />
-              </ProtectedRoute>
-            } />
-            <Route path="/statistic" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
-                <StatisticPage />
               </ProtectedRoute>
             } />
             <Route path="/expiry-monitor" element={

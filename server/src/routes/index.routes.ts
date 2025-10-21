@@ -62,4 +62,7 @@ router.use("/product", productTypeRoute);
 import dashboardRoute from "./dashboard.routes.ts"; 
 router.use("/dashboard", dashboardRoute);
 
+import historicalDetailRoute from "./historical-detail.routes.ts";
+router.use("/historical", historicalDetailRoute);
+
 export default router;

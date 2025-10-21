@@ -41,7 +41,8 @@ const inventory_service = {
               init_amount: true,
               added_date: true,
               expired_date: true,
-              cost: true
+              cost: true,
+              sell_price:true,
             }
           }
         }

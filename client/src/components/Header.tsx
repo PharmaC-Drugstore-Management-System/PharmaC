@@ -484,13 +484,13 @@ export default function Header() {
   return (
     <div className="sticky top-0 z-10 w-full transition-colors duration-300"
          style={{backgroundColor: isDark ? '#111827' : '#f9fafb'}}>
-      <div className="flex items-center p-4">
-        <h1 className="font-bold text-2xl transition-colors duration-300"
+      <div className="flex items-center p-3 sm:p-4">
+        <h1 className="font-bold text-xl sm:text-2xl transition-colors duration-300"
             style={{color: isDark ? 'white' : '#1f2937'}}>PharmaC</h1>
-        <div className="ml-auto flex items-center space-x-4">
+        <div className="ml-auto flex items-center space-x-2 sm:space-x-4">
           <button
             onClick={() => navigate("/poedit")}
-            className="px-3 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl flex items-center"
+            className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl flex items-center text-xs sm:text-sm md:text-base whitespace-nowrap"
             style={{
               backgroundColor: isDark ? '#0d9488' : '#059669',
               color: 'white'
@@ -504,8 +504,8 @@ export default function Header() {
               target.style.backgroundColor = isDark ? '#0d9488' : '#059669';
             }}
           >
-            <Plus className="w-5 h-5 mr-2" />
-            {t('buyMedicine')}
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+            <span>{t('buyMedicine')}</span>
           </button>
 
           <div className="relative">
@@ -513,7 +513,7 @@ export default function Header() {
               onClick={() =>
                 setShowNotificationDropdown(!showNotificationDropdown)
               }
-              className="relative p-2 rounded-full shadow-md flex items-center transition-colors duration-200"
+              className="relative p-1.5 sm:p-2 rounded-full shadow-md flex items-center transition-colors duration-200"
               style={{
                 backgroundColor: isDark ? '#374151' : '#e5e7eb',
                 color: isDark ? '#d1d5db' : '#4b5563'
@@ -527,9 +527,9 @@ export default function Header() {
                 target.style.backgroundColor = isDark ? '#374151' : '#e5e7eb';
               }}
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
               {notifications.filter((n) => !n.isRead).length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center text-[10px] sm:text-xs">
                   {notifications.filter((n) => !n.isRead).length}
                 </span>
               )}
@@ -537,7 +537,7 @@ export default function Header() {
 
             {/* Notification Dropdown */}
             {showNotificationDropdown && (
-              <div className="absolute right-0 top-12">
+              <div className="absolute right-0 top-12 sm:top-14">
                 <NotificationDropdown
                   notifications={notifications}
                   isOpen={showNotificationDropdown}
@@ -550,16 +550,20 @@ export default function Header() {
           </div>
 
           {/* Language Switcher */}
-          <LanguageSwitcher showText={false} className="mr-2" />
+          <div className="hidden sm:block">
+            <LanguageSwitcher showText={false} className="mr-2" />
+          </div>
 
           {/* Theme Switcher */}
-          <ThemeSwitcher showText={false} className="mr-4" />
+          <div className="hidden sm:block">
+            <ThemeSwitcher showText={false} className="mr-4" />
+          </div>
 
           {/* Profile Dropdown */}
           <div className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center space-x-2 p-2 rounded-lg transition-colors duration-200"
+              className="flex items-center space-x-1 sm:space-x-2 p-1 sm:p-2 rounded-lg transition-colors duration-200"
               style={{
                 backgroundColor: showDropdown 
                   ? (isDark ? '#374151' : '#f3f4f6')
@@ -578,7 +582,7 @@ export default function Header() {
                 }
               }}
             >
-              <div className="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden"
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center overflow-hidden"
                    style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}>
                 {userProfile?.profile_image ? (
                   <img
@@ -610,33 +614,33 @@ export default function Header() {
                       const target = e.target as HTMLImageElement;
                       target.style.display = "none";
                       target.parentElement!.innerHTML =
-                        `<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style="color: ${isDark ? '#d1d5db' : '#4b5563'}"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+                        `<svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24" style="color: ${isDark ? '#d1d5db' : '#4b5563'}"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
                     }}
                   />
                 ) : (
-                  <User className="w-5 h-5" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
+                  <User className="w-4 h-4 sm:w-5 sm:h-5" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
                 )}
               </div>
-              <span className="font-medium hidden sm:block transition-colors duration-300"
+              <span className="font-medium hidden md:block transition-colors duration-300 text-sm"
                     style={{color: isDark ? '#d1d5db' : '#1f2937'}}>
                 {displayFirstName}
               </span>
-              <ChevronDown className="w-4 h-4 hidden sm:block transition-colors duration-300"
+              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 hidden md:block transition-colors duration-300"
                            style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
             </button>
 
             {/* Dropdown Menu */}
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-64 rounded-lg shadow-lg border py-2 z-20 transition-colors duration-300"
+              <div className="absolute right-0 mt-2 w-56 sm:w-64 rounded-lg shadow-lg border py-2 z-20 transition-colors duration-300"
                    style={{
                      backgroundColor: isDark ? '#374151' : 'white',
                      borderColor: isDark ? '#4b5563' : '#e5e7eb'
                    }}>
                 {/* User Info Section */}
-                <div className="px-4 py-3 border-b transition-colors duration-300"
+                <div className="px-3 sm:px-4 py-2 sm:py-3 border-b transition-colors duration-300"
                      style={{borderColor: isDark ? '#4b5563' : '#f3f4f6'}}>
-                  <div className="flex items-center space-x-3">
-                    <div className="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden"
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                          style={{backgroundColor: isDark ? '#4b5563' : '#d1d5db'}}>
                       {userProfile?.profile_image ? (
                         <img
@@ -668,21 +672,21 @@ export default function Header() {
                             const target = e.target as HTMLImageElement;
                             target.style.display = "none";
                             target.parentElement!.innerHTML =
-                              `<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style="color: ${isDark ? '#d1d5db' : '#4b5563'}"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+                              `<svg className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24" style="color: ${isDark ? '#d1d5db' : '#4b5563'}"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
                           }}
                         />
                       ) : (
-                        <User className="w-6 h-6" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
+                        <User className="w-5 h-5 sm:w-6 sm:h-6" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
                       )}
                     </div>
-                    <div>
-                      <p className="font-semibold transition-colors duration-300"
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-sm sm:text-base transition-colors duration-300 truncate"
                          style={{color: isDark ? 'white' : '#111827'}}>{fullName}</p>
-                      <p className="text-sm transition-colors duration-300"
+                      <p className="text-xs sm:text-sm transition-colors duration-300 truncate"
                          style={{color: isDark ? '#9ca3af' : '#6b7280'}}>
                         {userProfile?.email || t('noEmail')}
                       </p>
-                      <p className="text-xs transition-colors duration-300"
+                      <p className="text-[10px] sm:text-xs transition-colors duration-300"
                          style={{color: isDark ? '#9ca3af' : '#9ca3af'}}>ID: #{employeeId}</p>
                     </div>
                   </div>
@@ -690,12 +694,29 @@ export default function Header() {
 
                 {/* Menu Items */}
                 <div className="py-1">
+                  {/* Mobile-only Language and Theme Switchers */}
+                  <div className="sm:hidden px-3 py-2 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm" style={{color: isDark ? '#d1d5db' : '#374151'}}>
+                        {t('language')}
+                      </span>
+                      <LanguageSwitcher showText={false} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm" style={{color: isDark ? '#d1d5db' : '#374151'}}>
+                        {t('theme')}
+                      </span>
+                      <ThemeSwitcher showText={false} />
+                    </div>
+                    <div className="border-t my-2" style={{borderColor: isDark ? '#4b5563' : '#f3f4f6'}}></div>
+                  </div>
+
                   <button
                     onClick={() => {
                       navigate("/accountSetting");
                       setShowDropdown(false);
                     }}
-                    className="w-full px-4 py-2 text-left flex items-center space-x-3 transition-colors duration-200"
+                    className="w-full px-3 sm:px-4 py-2 text-left flex items-center space-x-3 transition-colors duration-200 text-sm sm:text-base"
                     style={{color: isDark ? '#d1d5db' : '#374151'}}
                     onMouseEnter={(e) => {
                       const target = e.target as HTMLButtonElement;
@@ -718,7 +739,7 @@ export default function Header() {
                         handleLogout();
                         setShowDropdown(false);
                       }}
-                      className="w-full px-4 py-2 text-left text-red-600 flex items-center space-x-3 transition-colors duration-200"
+                      className="w-full px-3 sm:px-4 py-2 text-left text-red-600 flex items-center space-x-3 transition-colors duration-200 text-sm sm:text-base"
                       onMouseEnter={(e) => {
                         const target = e.target as HTMLButtonElement;
                         target.style.backgroundColor = isDark ? '#7f1d1d' : '#fef2f2';
