@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Calendar, TrendingUp, Package } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
 
 const API_URL = import.meta.env.VITE_API_URL as string;
 
@@ -14,18 +15,18 @@ const api = (path: string) => {
 
 type DateRange = '7days' | '14days' | '1month' | '3months' | '6months';
 
-// matches new backend "products" rows
+// backend rows
 type ProductRow = {
   product_id: number;
   product_name: string | null;
   brand: string | null;
   total_quantity: number;   // total units sold
-  unit_price: number;       // selling price per unit (from lot)
+  unit_price: number;       // selling price per unit
   total_revenue: number;    // total_quantity * unit_price
-  sale_count: number;       // number of distinct orders with this product
+  sale_count: number;       // number of distinct orders containing this product
 };
 
-// matches new backend "summary"
+// backend summary
 type BackendSummary = {
   order_count: number;
   total_products: number;
@@ -33,16 +34,16 @@ type BackendSummary = {
   total_revenue: number;    // sum of all total_revenue
 };
 
-// ---- group labels (static map you asked for) ----------------------
+// ---- group labels ------------------------------------------------
 const GROUP_LABELS: Record<string, string> = {
-  'M01AB': 'Anti-inflammatory and antirheumatic products, non-steroids, Acetic acid derivatives and related substances',
-  'M01AE': 'Anti-inflammatory and antirheumatic products, non-steroids, Propionic acid derivatives',
-  'N02BA': 'Other analgesics and antipyretics, Salicylic acid and derivatives',
+  M01AB: 'Anti-inflammatory and antirheumatic products, non-steroids, Acetic acid derivatives and related substances',
+  M01AE: 'Anti-inflammatory and antirheumatic products, non-steroids, Propionic acid derivatives',
+  N02BA: 'Other analgesics and antipyretics, Salicylic acid and derivatives',
   'N02BE/B': 'Other analgesics and antipyretics, Pyrazolones and Anilides',
-  'N05B': 'Psycholeptics drugs, Anxiolytic drugs',
-  'N05C': 'Psycholeptics drugs, Hypnotics and sedatives drugs',
-  'R03': 'Drugs for obstructive airway diseases',
-  'R06': 'Antihistamines for systemic use',
+  N05B: 'Psycholeptics drugs, Anxiolytic drugs',
+  N05C: 'Psycholeptics drugs, Hypnotics and sedatives drugs',
+  R03: 'Drugs for obstructive airway diseases',
+  R06: 'Antihistamines for systemic use',
 };
 const getGroupLabel = (code: string) =>
   GROUP_LABELS[code] ? `${code} - ${GROUP_LABELS[code]}` : code;
@@ -53,31 +54,60 @@ const iso = (d: Date) => d.toISOString().split('T')[0];
 function calculateDateRange(range: DateRange, anchorEnd = new Date()) {
   const end = new Date(anchorEnd);
   const start = new Date(anchorEnd);
+
   switch (range) {
-    case '7days':   start.setDate(end.getDate() - 6); break;
-    case '14days':  start.setDate(end.getDate() - 13); break;
-    case '1month':  start.setMonth(end.getMonth() - 1); break;
-    case '3months': start.setMonth(end.getMonth() - 3); break;
-    case '6months': start.setMonth(end.getMonth() - 6); break;
+    case '7days':
+      start.setDate(end.getDate() - 6);
+      break;
+    case '14days':
+      start.setDate(end.getDate() - 13);
+      break;
+    case '1month':
+      start.setMonth(end.getMonth() - 1);
+      break;
+    case '3months':
+      start.setMonth(end.getMonth() - 3);
+      break;
+    case '6months':
+      start.setMonth(end.getMonth() - 6);
+      break;
   }
+
   return { start: iso(start), end: iso(end) };
 }
 
 function computeEndFromStart(startStr: string, range: DateRange) {
   const start = new Date(startStr);
   const end = new Date(start);
+
   switch (range) {
-    case '7days':   end.setDate(start.getDate() + 6); break;
-    case '14days':  end.setDate(start.getDate() + 13); break;
-    case '1month':  end.setMonth(start.getMonth() + 1); end.setDate(end.getDate() - 1); break;
-    case '3months': end.setMonth(start.getMonth() + 3); end.setDate(end.getDate() - 1); break;
-    case '6months': end.setMonth(start.getMonth() + 6); end.setDate(end.getDate() - 1); break;
+    case '7days':
+      end.setDate(start.getDate() + 6);
+      break;
+    case '14days':
+      end.setDate(start.getDate() + 13);
+      break;
+    case '1month':
+      end.setMonth(start.getMonth() + 1);
+      end.setDate(end.getDate() - 1);
+      break;
+    case '3months':
+      end.setMonth(start.getMonth() + 3);
+      end.setDate(end.getDate() - 1);
+      break;
+    case '6months':
+      end.setMonth(start.getMonth() + 6);
+      end.setDate(end.getDate() - 1);
+      break;
   }
+
   const today = new Date(iso(new Date()));
   return end > today ? iso(today) : iso(end);
 }
 
 export default function ProductSalesHistory() {
+  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const productType = searchParams.get('type') || 'Unknown';
@@ -99,7 +129,10 @@ export default function ProductSalesHistory() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(api('me'), { method: 'GET', credentials: 'include' });
+        const res = await fetch(api('me'), {
+          method: 'GET',
+          credentials: 'include',
+        });
         if (res.status === 401 || res.status === 403) navigate('/login');
       } catch (e) {
         console.error('Auth check error:', e);
@@ -124,7 +157,6 @@ export default function ProductSalesHistory() {
   const loadSalesData = async (start: string, end: string) => {
     setLoading(true);
     try {
-      // Backend now: { status, orders, products, summary }
       const url =
         api(`group-sales-history/${encodeURIComponent(productType)}`) +
         `?startDate=${start}&endDate=${end}`;
@@ -137,26 +169,25 @@ export default function ProductSalesHistory() {
 
       const json = await res.json();
 
-      // sanitizers
       const n = (v: any) => {
         const num = Number(v);
         return Number.isFinite(num) ? num : 0;
       };
 
-      // products from backend (already aggregated)
       const products: ProductRow[] = Array.isArray(json.products)
-        ? json.products.map((p: any): ProductRow => ({
-            product_id: n(p.product_id),
-            product_name: p.product_name ?? null,
-            brand: p.brand ?? null,
-            total_quantity: n(p.total_quantity),
-            unit_price: n(p.unit_price),
-            total_revenue: n(p.total_revenue),
-            sale_count: n(p.sale_count),
-          }))
+        ? json.products.map(
+            (p: any): ProductRow => ({
+              product_id: n(p.product_id),
+              product_name: p.product_name ?? null,
+              brand: p.brand ?? null,
+              total_quantity: n(p.total_quantity),
+              unit_price: n(p.unit_price),
+              total_revenue: n(p.total_revenue),
+              sale_count: n(p.sale_count),
+            })
+          )
         : [];
 
-      // summary from backend
       const sum: BackendSummary | null = json.summary
         ? {
             order_count: n(json.summary.order_count),
@@ -166,12 +197,17 @@ export default function ProductSalesHistory() {
           }
         : null;
 
-      // fallbacks if summary missing
       const fallbackSummary: BackendSummary = {
         order_count: 0,
         total_products: products.length,
-        total_quantity: products.reduce((acc, r) => acc + n(r.total_quantity), 0),
-        total_revenue: products.reduce((acc, r) => acc + n(r.total_revenue), 0),
+        total_quantity: products.reduce(
+          (acc, r) => acc + n(r.total_quantity),
+          0
+        ),
+        total_revenue: products.reduce(
+          (acc, r) => acc + n(r.total_revenue),
+          0
+        ),
       };
 
       setRows(products);
@@ -180,8 +216,8 @@ export default function ProductSalesHistory() {
       console.error('Error loading sales data:', error);
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'Failed to load sales data',
+        title: t('error'),
+        text: t('failedToLoadSalesData'),
         timer: 2000,
         showConfirmButton: false,
       });
@@ -197,7 +233,6 @@ export default function ProductSalesHistory() {
     }
   };
 
-  // fetch whenever date window changes or productType changes
   useEffect(() => {
     if (startDate && endDate) {
       loadSalesData(startDate, endDate);
@@ -231,16 +266,15 @@ export default function ProductSalesHistory() {
     });
 
   const dateRangeOptions = [
-    { value: '7days', label: '7 Days' },
-    { value: '14days', label: '14 Days' },
-    { value: '1month', label: '1 Month' },
-    { value: '3months', label: '3 Months' },
-    { value: '6months', label: '6 Months' },
+    { value: '7days', label: t('last7Days') },
+    { value: '14days', label: t('last14Days') },
+    { value: '1month', label: t('last1Month') },
+    { value: '3months', label: t('last3Months') },
+    { value: '6months', label: t('last6Months') },
   ];
 
   const safeDiv = (a: number, b: number) => (b > 0 ? a / b : 0);
 
-  // total revenue of this group for share %
   const groupRevenue = totals.totalRevenue || 0;
 
   // ---- UI --------------------------------------------------------
@@ -260,7 +294,7 @@ export default function ProductSalesHistory() {
           className="flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
-          Back to Dashboard
+          {t('backToDashboard')}
         </button>
 
         <div className="flex items-center justify-between">
@@ -275,7 +309,7 @@ export default function ProductSalesHistory() {
                     : '#111827',
                 }}
               >
-                Sales History – {productTypeLabel}
+                {t('salesHistory')} – {productTypeLabel}
               </h1>
               <p
                 className="text-sm mt-1"
@@ -291,6 +325,7 @@ export default function ProductSalesHistory() {
               </p>
             </div>
           </div>
+
           {summary && (
             <div
               className="text-sm"
@@ -300,7 +335,7 @@ export default function ProductSalesHistory() {
                   : '#6b7280',
               }}
             >
-              Orders in period:{' '}
+              {t('ordersInPeriod')}{' '}
               <span
                 className="font-semibold"
                 style={{
@@ -345,7 +380,7 @@ export default function ProductSalesHistory() {
                 : '#111827',
             }}
           >
-            Select Time Period
+            {t('selectTimePeriod')}
           </h2>
         </div>
 
@@ -396,9 +431,9 @@ export default function ProductSalesHistory() {
                 : '#374151',
             }}
           >
-            Or select a custom start date (end date auto-fills from the chosen
-            period):
+            {t('customDateHelp')}
           </label>
+
           <div className="flex items-center gap-4">
             <input
               type="date"
@@ -423,6 +458,7 @@ export default function ProductSalesHistory() {
                   : '#111827',
               }}
             />
+
             {useCustomDate && customStartDate && (
               <div className="flex items-center gap-2">
                 <span
@@ -432,8 +468,9 @@ export default function ProductSalesHistory() {
                       : '#6b7280',
                   }}
                 >
-                  to
+                  {t('to')}
                 </span>
+
                 <input
                   type="date"
                   value={endDate}
@@ -455,6 +492,7 @@ export default function ProductSalesHistory() {
                       : '#6b7280',
                   }}
                 />
+
                 <button
                   onClick={() => {
                     setUseCustomDate(false);
@@ -462,7 +500,7 @@ export default function ProductSalesHistory() {
                   }}
                   className="px-4 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
                 >
-                  Clear
+                  {t('clear')}
                 </button>
               </div>
             )}
@@ -496,7 +534,7 @@ export default function ProductSalesHistory() {
                     : '#6b7280',
                 }}
               >
-                Total Products
+                {t('totalProducts')}
               </p>
               <p
                 className="text-3xl font-bold"
@@ -539,7 +577,7 @@ export default function ProductSalesHistory() {
                     : '#6b7280',
                 }}
               >
-                Total Units Sold
+                {t('totalUnitsSold')}
               </p>
               <p
                 className="text-3xl font-bold"
@@ -582,7 +620,7 @@ export default function ProductSalesHistory() {
                     : '#6b7280',
                 }}
               >
-                Total Sales
+                {t('totalSalesAmount')}
               </p>
               <p
                 className="text-3xl font-bold"
@@ -635,7 +673,7 @@ export default function ProductSalesHistory() {
                 : '#111827',
             }}
           >
-            Product Sales Details
+            {t('productSalesDetails')}
           </h2>
         </div>
 
@@ -665,8 +703,9 @@ export default function ProductSalesHistory() {
                       : '#374151',
                   }}
                 >
-                  Product Name
+                  {t('productName')}
                 </th>
+
                 <th
                   className="px-6 py-4 text-left text-xs sm:text-sm font-semibold"
                   style={{
@@ -675,8 +714,9 @@ export default function ProductSalesHistory() {
                       : '#374151',
                   }}
                 >
-                  Brand
+                  {t('brand')}
                 </th>
+
                 <th
                   className="px-6 py-4 text-right text-xs sm:text-sm font-semibold"
                   style={{
@@ -685,8 +725,9 @@ export default function ProductSalesHistory() {
                       : '#374151',
                   }}
                 >
-                  Units Sold
+                  {t('unitsSold')}
                 </th>
+
                 <th
                   className="px-6 py-4 text-right text-xs sm:text-sm font-semibold"
                   style={{
@@ -695,8 +736,9 @@ export default function ProductSalesHistory() {
                       : '#374151',
                   }}
                 >
-                  Orders
+                  {t('ordersShort')}
                 </th>
+
                 <th
                   className="px-6 py-4 text-right text-xs sm:text-sm font-semibold"
                   style={{
@@ -705,8 +747,9 @@ export default function ProductSalesHistory() {
                       : '#374151',
                   }}
                 >
-                  Unit Price
+                  {t('avgUnitPrice')}
                 </th>
+
                 <th
                   className="px-6 py-4 text-right text-xs sm:text-sm font-semibold"
                   style={{
@@ -715,8 +758,9 @@ export default function ProductSalesHistory() {
                       : '#374151',
                   }}
                 >
-                  Total Sales
+                  {t('totalSalesAmount')}
                 </th>
+
                 <th
                   className="px-6 py-4 text-right text-xs sm:text-sm font-semibold"
                   style={{
@@ -725,8 +769,10 @@ export default function ProductSalesHistory() {
                       : '#374151',
                   }}
                 >
-                  Avg Units / Order
+                  {/* No key in resources, show EN fallback text */}
+                  {`${t('unitsSold')} / ${t('ordersShort')}`}
                 </th>
+
                 <th
                   className="px-6 py-4 text-right text-xs sm:text-sm font-semibold"
                   style={{
@@ -735,6 +781,7 @@ export default function ProductSalesHistory() {
                       : '#374151',
                   }}
                 >
+                  {/* also no key in resources yet, fallback */}
                   Revenue Share
                 </th>
               </tr>
@@ -764,7 +811,7 @@ export default function ProductSalesHistory() {
                             : '#6b7280',
                         }}
                       >
-                        Loading sales data...
+                        {t('loadingSalesData')}
                       </span>
                     </div>
                   </td>
@@ -782,7 +829,7 @@ export default function ProductSalesHistory() {
                         : '#6b7280',
                     }}
                   >
-                    No sales data available for the selected period
+                    {t('noSalesData')}
                   </td>
                 </tr>
               ) : (

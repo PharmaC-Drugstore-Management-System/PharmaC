@@ -150,7 +150,7 @@ const resources = {
       clearFilters: "Clear Filters",
       pdfPreview: "PDF Preview",
       openInNewTab: "Open in new tab",
-      
+
       // Search and Filter
       search: "Search",
       searchByDocNumber: "Search by document number",
@@ -158,13 +158,13 @@ const resources = {
       signerName: "signer name",
       sortBy: "Sort by",
       dateNewestFirst: "Date (Newest First)",
-      dateOldestFirst: "Date (Oldest First)", 
+      dateOldestFirst: "Date (Oldest First)",
       poNumber: "PO Number",
       signatureStatus: "Signature Status",
       allDocuments: "All Documents",
       signedOnly: "Signed Only",
       unsignedOnly: "Unsigned Only",
-      
+
       // Bulk Actions
       selected: "selected",
       download: "Download",
@@ -407,6 +407,32 @@ const resources = {
       selectDefaultRole: "Select default role:",
       addEmployee: "Add Employee",
 
+      // group sale page
+      backToDashboard: "Back to Dashboard",
+      salesHistory: "Sales History",
+      ordersInPeriod: "Orders in period:",
+      selectTimePeriod: "Select Time Period",
+      last7Days: "7 Days",
+      last14Days: "14 Days",
+      last1Month: "1 Month",
+      last3Months: "3 Months",
+      last6Months: "6 Months",
+      customDateHelp: "Or select a custom start date (end date auto-fills from the chosen period):",
+      to: "to",
+      clear: "Clear",
+
+      totalProducts: "Total Products",
+      totalUnitsSold: "Total Units Sold",
+      totalSalesAmount: "Total Sales Amount",
+
+      productSalesDetails: "Product Sales Details",
+      unitsSold: "Units Sold",
+      ordersShort: "Orders",
+      totalSalesPrice: "Total Sales Price",
+      avgUnitPrice: "Avg Unit Price",
+      loadingSalesData: "Loading sales data...",
+      noSalesData: "No sales data available for the selected period",
+      failedToLoadSalesData: "Failed to load sales data",
 
     },
   },
@@ -558,7 +584,7 @@ const resources = {
       clearFilters: "ล้างตัวกรอง",
       pdfPreview: "ดูตัวอย่าง PDF",
       openInNewTab: "เปิดในแท็บใหม่",
-      
+
       // Search and Filter
       search: "ค้นหา",
       searchByDocNumber: "ค้นหาด้วยเลขที่เอกสาร",
@@ -572,7 +598,7 @@ const resources = {
       allDocuments: "เอกสารทั้งหมด",
       signedOnly: "เซ็นแล้วเท่านั้น",
       unsignedOnly: "ยังไม่เซ็นเท่านั้น",
-      
+
       // Bulk Actions
       selected: "เลือกแล้ว",
       download: "ดาวน์โหลด",
@@ -806,6 +832,33 @@ const resources = {
       newEmployeeEmail: "อีเมล์พนักงานใหม่...",
       selectDefaultRole: "เลือก Role เริ่มต้น:",
       addEmployee: "เพิ่มพนักงาน",
+
+      // group sale
+      backToDashboard: "กลับไปหน้าหลัก",
+      salesHistory: "ประวัติการขาย",
+      ordersInPeriod: "ออเดอร์ในช่วงเวลา:",
+      selectTimePeriod: "เลือกช่วงเวลา",
+      last7Days: "7 วัน",
+      last14Days: "14 วัน",
+      last1Month: "1 เดือน",
+      last3Months: "3 เดือน",
+      last6Months: "6 เดือน",
+      customDateHelp: "หรือเลือกวันเริ่มต้นเอง (ระบบจะคำนวณวันสิ้นสุดตามช่วงที่เลือก)",
+      to: "ถึง",
+      clear: "ล้าง",
+
+      totalProducts: "จำนวนสินค้า",
+      totalUnitsSold: "จำนวนที่ขายได้",
+      totalSalesAmount: "ยอดขายรวม",
+
+      productSalesDetails: "รายละเอียดการขายสินค้า",
+      unitsSold: "จำนวนที่ขาย",
+      ordersShort: "ออเดอร์",
+      totalSalesPrice: "ราคารวม (ก่อน VAT)",
+      avgUnitPrice: "ราคาเฉลี่ยต่อหน่วย",
+      loadingSalesData: "กำลังโหลดข้อมูลการขาย...",
+      noSalesData: "ไม่มีข้อมูลการขายในช่วงเวลาที่เลือก",
+      failedToLoadSalesData: "โหลดข้อมูลการขายไม่สำเร็จ",
     },
   },
 };
