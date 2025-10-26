@@ -80,7 +80,7 @@ export default function PharmaDashboard() {
     ];
   };
 
-  const [productType, setProductType] = useState([]);
+  const [productType, setProductType] = useState<string[]>([]);
   const [forecastData, setForecastData] = useState<any>(null);
   const [loadingForecast, setLoadingForecast] = useState(false);
   const [totalSales, setTotalSales] = useState(0);
@@ -93,7 +93,7 @@ export default function PharmaDashboard() {
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [restockRecommendations, setRestockRecommendations] = useState<any[]>([]);
   const [loadingRestock, setLoadingRestock] = useState(true);
-  
+
   // Forecast configuration states
   const [forecastDays, setForecastDays] = useState(7);
   const [startDate, setStartDate] = useState(() => {
@@ -123,6 +123,10 @@ export default function PharmaDashboard() {
   }
 
   console.log("PRODUCT TYPE IN USESTATE", productType)
+
+  const openGroupHistory = (type: string) => {
+    navigate(`/sales-history?type=${encodeURIComponent(type)}`);
+  };
 
   // loadPredictor function moved inline to useEffect
 
@@ -155,7 +159,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET TOTAL SALES', data);
-      
+
       if (data.status && data.data) {
         setTotalSales(data.data.totalSales);
       }
@@ -175,7 +179,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET TOTAL ORDERS', data);
-      
+
       if (data.status && data.data) {
         setTotalOrders(data.data.totalOrder);
       }
@@ -195,7 +199,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET TOTAL PRODUCTS', data);
-      
+
       if (data.status && data.data) {
         setTotalProducts(data.data.totalProduct);
       }
@@ -215,7 +219,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET TOTAL MEMBERS', data);
-      
+
       if (data.status && data.data) {
         setTotalMembers(data.data.totalMember);
       }
@@ -235,7 +239,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET RESTOCK RECOMMENDATIONS', data);
-      
+
       if (data.status && data.data) {
         setRestockRecommendations(data.data);
       }
@@ -249,13 +253,13 @@ export default function PharmaDashboard() {
   const loadForecastData = async () => {
     try {
       setLoadingForecast(true);
-      
+
       // Get product types if not already loaded
       let types = productType;
       if (types.length === 0) {
         types = await loadProductType();
       }
-      
+
       if (types.length > 0) {
         const info = await fetch(`${API_URL}/predictor/generate`, {
           method: 'POST',
@@ -273,7 +277,7 @@ export default function PharmaDashboard() {
 
         const data = await info.json();
         console.log("Forecast response:", data);
-        
+
         if (data.status && data.data.results.success) {
           setForecastData(data.data.results);
         }
@@ -314,7 +318,7 @@ export default function PharmaDashboard() {
 
           const data = await info.json();
           console.log("Predictor response:", data);
-          
+
           if (data.status && data.data.results.success) {
             setForecastData(data.data.results);
           }
@@ -433,8 +437,8 @@ export default function PharmaDashboard() {
                   style={{ color: isDark ? '#d1d5db' : '#374151' }}>
                   Forecast Days:
                 </label>
-                <select 
-                  value={forecastDays} 
+                <select
+                  value={forecastDays}
                   onChange={(e) => setForecastDays(Number(e.target.value))}
                   className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   style={{
@@ -450,7 +454,7 @@ export default function PharmaDashboard() {
               </div>
               {/* Date Range Selector */}
               <div className="flex items-center space-x-2">
-                <input 
+                <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
@@ -463,7 +467,7 @@ export default function PharmaDashboard() {
                 />
                 <span className="text-sm transition-colors"
                   style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>to</span>
-                <input 
+                <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
@@ -489,13 +493,13 @@ export default function PharmaDashboard() {
             {productType.map((type: string, index: number) => {
               // Get forecast data for this product type
               const typeForecast = forecastData?.forecasts?.[type]?.ARIMA;
-              
+
               // Transform forecast data for chart with better day labels
               const chartData = typeForecast ? typeForecast.dates.map((date: string, idx: number) => {
                 const dateObj = new Date(date);
                 const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
                 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                
+
                 return {
                   day: dayNames[dateObj.getDay()],
                   date: `${monthNames[dateObj.getMonth()]} ${dateObj.getDate()}`,
@@ -516,7 +520,7 @@ export default function PharmaDashboard() {
                   histDate.setDate(histDate.getDate() - (historicalDays - i));
                   const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
                   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                  
+
                   chartData.unshift({
                     day: dayNames[histDate.getDay()],
                     date: `${monthNames[histDate.getMonth()]} ${histDate.getDate()}`,
@@ -530,7 +534,7 @@ export default function PharmaDashboard() {
               }
 
               // Calculate stats
-              const avgPrediction = typeForecast ? 
+              const avgPrediction = typeForecast ?
                 typeForecast.predictions.reduce((a: number, b: number) => a + b, 0) / typeForecast.predictions.length : 0;
               const peakPrediction = typeForecast ? Math.max(...typeForecast.predictions) : 0;
 
@@ -539,11 +543,16 @@ export default function PharmaDashboard() {
               const color = colors[index % colors.length];
 
               return (
-                <div key={type} className="rounded-2xl shadow-lg border p-6"
-                  style={{
-                    backgroundColor: isDark ? '#374151' : 'white',
-                    borderColor: isDark ? '#4b5563' : '#e5e7eb'
-                  }}>
+                <div
+                  key={type}
+                  className="rounded-2xl shadow-lg border p-6 cursor-pointer hover:shadow-xl transition"
+                  style={{ backgroundColor: isDark ? '#374151' : 'white', borderColor: isDark ? '#4b5563' : '#e5e7eb' }}
+                  onClick={() => openGroupHistory(type)}
+                  title="View sales history for this group"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && openGroupHistory(type)}
+                >
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className="font-semibold text-lg transition-colors"
@@ -578,7 +587,7 @@ export default function PharmaDashboard() {
                     ) : chartData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" 
+                          <CartesianGrid strokeDasharray="3 3"
                             stroke={isDark ? '#4b5563' : '#f0f4f8'} />
                           <XAxis
                             dataKey="day"
@@ -702,8 +711,8 @@ export default function PharmaDashboard() {
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="w-3 h-0.5 border-t-2 border-dashed" 
-                           style={{ borderColor: color }}></div>
+                      <div className="w-3 h-0.5 border-t-2 border-dashed"
+                        style={{ borderColor: color }}></div>
                       <span className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
                         Forecast
@@ -784,7 +793,7 @@ export default function PharmaDashboard() {
                   </tr>
                 ) : restockRecommendations.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center" 
+                    <td colSpan={6} className="px-6 py-8 text-center"
                       style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
                       No restock recommendations available
                     </td>
@@ -826,10 +835,10 @@ export default function PharmaDashboard() {
                     </td>
                     <td className="px-4 py-4 text-center">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold border ${item.color}`}>
-                        {item.priority === 'critical' ? 'Critical' : 
-                         item.priority === 'high' ? 'High' : 
-                         item.priority === 'medium' ? 'Medium' : 
-                         item.priority === 'low' ? 'Low' : 'None'}
+                        {item.priority === 'critical' ? 'Critical' :
+                          item.priority === 'high' ? 'High' :
+                            item.priority === 'medium' ? 'Medium' :
+                              item.priority === 'low' ? 'Low' : 'None'}
                       </span>
                     </td>
                   </tr>
