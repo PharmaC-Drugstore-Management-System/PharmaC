@@ -6,7 +6,7 @@ DATA_FOLDER = 'data/sales/'  # For backward compatibility
 OUTPUT_BASE_PATH = 'predictions/'
 
 USE_API = True
-API_ENDPOINT = "http://localhost:5000/sales/sales-volume"  # ตัวอย่าง backend endpoint
+API_ENDPOINT = "http://localhost:5000/api/sales/sales-volume"  # ตัวอย่าง backend endpoint
 
 # Forecasting parameters
 FORECAST_DAYS = 180

@@ -343,5 +343,3 @@ model stock_transaction {
   note           String?   @db.VarChar(255)
   lot            lot?      @relation(fields: [lot_id_fk], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_lot_fk")
 }
-
-

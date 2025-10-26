@@ -26,6 +26,27 @@ const formatCurrency = (amount: number) => {
   return `฿${amount.toLocaleString()}`;
 };
 
+// Helper function to format forecast period label
+const formatForecastPeriod = (days: number) => {
+  if (days === 7) return '7 Days';
+  if (days === 14) return '14 Days';
+  if (days === 90) return '3 Months';
+  if (days === 180) return '6 Months';
+  return `${days} Days`;
+};
+
+// Product Type Descriptions Mapping
+const productTypeDescriptions: Record<string, string> = {
+  'M01AB': 'Anti-inflammatory and antirheumatic products, non-steroids, Acetic acid derivatives and related substances',
+  'M01AE': 'Anti-inflammatory and antirheumatic products, non-steroids, Propionic acid derivatives',
+  'N02BA': 'Other analgesics and antipyretics, Salicylic acid and derivatives',
+  'N02BE/B': 'Other analgesics and antipyretics, Pyrazolones and Anilides',
+  'N05B': 'Psycholeptics drugs, Anxiolytic drugs',
+  'N05C': 'Psycholeptics drugs, Hypnotics and sedatives drugs',
+  'R03': 'Drugs for obstructive airway diseases',
+  'R06': 'Antihistamines for systemic use'
+};
+
 // All stats now use real API data
 // Static productTypes removed - now using dynamic data from API with ARIMA predictions
 // Restock recommendations now fetched from API
@@ -435,7 +456,7 @@ export default function PharmaDashboard() {
               <div className="flex items-center space-x-2">
                 <label className="text-sm font-medium transition-colors"
                   style={{ color: isDark ? '#d1d5db' : '#374151' }}>
-                  Forecast Days:
+                  Forecast Period:
                 </label>
                 <select
                   value={forecastDays}
@@ -446,10 +467,10 @@ export default function PharmaDashboard() {
                     borderColor: isDark ? '#4b5563' : '#d1d5db',
                     color: isDark ? 'white' : '#111827'
                   }}>
-                  <option value={3}>3 Days</option>
                   <option value={7}>7 Days</option>
                   <option value={14}>14 Days</option>
-                  <option value={30}>30 Days</option>
+                  <option value={90}>3 Months</option>
+                  <option value={180}>6 Months</option>
                 </select>
               </div>
               {/* Date Range Selector */}
@@ -554,17 +575,27 @@ export default function PharmaDashboard() {
                   onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && openGroupHistory(type)}
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-lg transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>
                         {type}
                       </h3>
-                      <p className="text-sm transition-colors"
+                      {/* Product Type Description Subtitle */}
+                      {productTypeDescriptions[type] && (
+                        <p className="text-xs mt-1 leading-relaxed transition-colors"
+                          style={{ 
+                            color: isDark ? '#9ca3af' : '#6b7280',
+                            fontStyle: 'italic'
+                          }}>
+                          {productTypeDescriptions[type]}
+                        </p>
+                      )}
+                      <p className="text-sm mt-2 transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {typeForecast ? `${forecastDays}-day ARIMA forecast` : 'Loading prediction...'}
+                        {typeForecast ? `${formatForecastPeriod(forecastDays)} ARIMA forecast` : 'Loading prediction...'}
                       </p>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
                       <Package className="w-6 h-6" style={{ color: color }} />
                       {avgPrediction > 0 && (
                         <span className="text-sm font-semibold" style={{ color: color }}>

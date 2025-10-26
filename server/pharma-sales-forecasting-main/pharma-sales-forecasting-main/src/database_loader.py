@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Simple database loader for pharmacy sales forecasting.
 Works with the backend integration from main.py.

@@ -9,6 +9,7 @@ const resources = {
       pharmacyTitle: "PharmaC",
       pageSettings: "Page Settings",
       buyMedicine: "Buy Medicine",
+      buy: "Buy",
 
       // Navigation
       home: "Home",
@@ -443,6 +444,7 @@ const resources = {
       pharmacyTitle: "PharmaC",
       pageSettings: "การตั้งค่าหน้าเว็บ",
       buyMedicine: "สั่งซื้อยา",
+      buy: "สั่งซื้อ",
 
       // Navigation
       home: "หน้าหลัก",
