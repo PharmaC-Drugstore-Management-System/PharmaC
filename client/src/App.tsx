@@ -28,6 +28,7 @@ import RevenueDetail from "./pages/RevenueDetail.tsx";
 import { useEffect } from 'react';
 import LotPage from "./pages/InventoryLotPage.tsx";
 import OtpAuth from "./pages/otpPage.tsx";
+import ProductSalesHistory from "./pages/GroupSalesPage.tsx";
 
 function AppContent() {
   const location = useLocation();
@@ -195,6 +196,11 @@ function AppContent() {
             <Route path="/customer-payment" element={
               <ProtectedRoute allowedRoles={['Customer']}>
                 <CustomerPaymentPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/sales-history" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <ProductSalesHistory />
               </ProtectedRoute>
             } />
           </Routes>

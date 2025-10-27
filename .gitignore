@@ -29,3 +29,4 @@ __pycache__/
 # Ignore build and output
 dist/
 build/
+client/.env

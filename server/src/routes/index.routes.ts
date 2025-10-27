@@ -65,4 +65,7 @@ router.use("/dashboard", dashboardRoute);
 import historicalDetailRoute from "./historical-detail.routes.ts";
 router.use("/historical", historicalDetailRoute);
 
+import groupSalesHistoryRoute from "./group-sales-history.routes.ts";
+router.use("/group-sales-history", groupSalesHistoryRoute);
+
 export default router;

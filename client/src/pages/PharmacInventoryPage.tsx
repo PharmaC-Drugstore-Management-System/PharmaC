@@ -74,6 +74,7 @@ export default function PharmacInventoryPage() {
       console.log("Error", error);
     }
   };
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const checkme = async () => {
     try {
