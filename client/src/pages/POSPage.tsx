@@ -57,7 +57,6 @@ export default function POSPage() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [stockReduced, setStockReduced] = useState(false); // Flag to prevent duplicate stock reduction
 
   // Payment verification states
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
@@ -511,13 +510,6 @@ export default function POSPage() {
   // ฟังก์ชันสำหรับการลดจำนวนสินค้าจาก lots ตามลำดับวันหมดอายุ
   const processStockReduction = async () => {
     console.log('🎉 ===== STARTING STOCK REDUCTION PROCESS =====');
-    console.log('🔒 Current stockReduced flag:', stockReduced);
-    
-    // CRITICAL: Prevent duplicate stock reduction at the function level
-    if (stockReduced) {
-      console.log('⚠️⚠️⚠️ DUPLICATE CALL PREVENTED - Stock already reduced for this order!');
-      return;
-    }
 
     for (const cartItem of cart) {
       console.log("IN FOR LOOP", cartItem);
@@ -754,7 +746,7 @@ export default function POSPage() {
 
   const checkme = async () => {
     try {
-      const authme = await fetch('http://localhost:5000/api/me', {
+      const authme = await fetch(`${API_URL}/me`, {
         method: 'GET',
         credentials: 'include'
       })
