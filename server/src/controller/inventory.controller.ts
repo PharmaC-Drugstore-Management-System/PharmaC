@@ -73,5 +73,40 @@ const controller = {
         .json({ message: "Internal server error", error: errorMessage });
     }
   },
+
+  delete: async (req: any, res: any) => {
+    try {
+      const id = req.params.id;
+      console.log("Deleting product ID:", id);
+      
+      const response = await inventory_service.delete_service(id);
+      
+      return res.status(200).json({
+        status: true,
+        message: "Medicine deleted successfully",
+        data: response
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("Error deleting medicine:", errorMessage);
+      
+      // Check if it's a business logic error (Cannot delete)
+      if (errorMessage.includes("Cannot delete")) {
+        return res.status(400).json({ 
+          status: false,
+          message: errorMessage,
+          error: errorMessage 
+        });
+      }
+      
+      // Other errors
+      return res.status(500).json({ 
+        status: false,
+        message: "Failed to delete medicine", 
+        error: errorMessage 
+      });
+    }
+  },
 };
 export default controller;

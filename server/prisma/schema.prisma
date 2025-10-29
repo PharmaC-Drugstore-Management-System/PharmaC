@@ -204,6 +204,8 @@ model product {
   product_id         Int                  @id @default(autoincrement())
   producttype        String?              @db.VarChar(255)
   unit               String?              @db.VarChar(255)
+  deleted_at         DateTime?            @db.Timestamp(6)
+  is_active          Boolean?             @default(true)
   cart               cart[]
   cost               cost[]
   forecasted_product forecasted_product[]
