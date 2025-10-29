@@ -5,7 +5,7 @@ import { createServer } from 'http';
 import app from './src/app'; 
 import { initWebSocket } from './ws';
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 
 const server = createServer(app);
 

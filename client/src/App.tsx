@@ -93,7 +93,15 @@ function AppContent() {
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes for Admin/Staff */}
+            {/* หน้าแรก - POS สำหรับขายของทันที */}
             <Route path="/" element={
+              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+                <POSPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Dashboard/Menu - ดูภาพรวม */}
+            <Route path="/dashboard" element={
               <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
                 <MainMenu />
               </ProtectedRoute>
@@ -185,7 +193,7 @@ function AppContent() {
               </ProtectedRoute>
             } />
 
-            {/* POS accessible by Owner and Staff only */}
+            {/* POS - ย้ายไปหน้าแรกแล้ว แต่ยังเข้าได้จาก /pos */}
             <Route path="/pos" element={
               <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
                 <POSPage />

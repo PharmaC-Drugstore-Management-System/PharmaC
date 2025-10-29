@@ -13,6 +13,7 @@ const resources = {
 
       // Navigation
       home: "Home",
+      dashboard: "Dashboard",
       inventory: "Inventory",
       pointOfSale: "Point of Sale",
       purchaseOrders: "Purchase Orders",
@@ -484,6 +485,7 @@ const resources = {
 
       // Navigation
       home: "หน้าหลัก",
+      dashboard: "แดชบอร์ด",
       inventory: "คลังสินค้า",
       pointOfSale: "จุดขาย",
       purchaseOrders: "ใบสั่งซื้อ",
