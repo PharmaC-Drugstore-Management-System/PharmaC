@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import StockTransactionsTab from '../components/StockTransactionsTab';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const SERVER_URL = API_URL.replace('/api', ''); // For static files (uploads)
 
 type LotRow = {
     lotNo: string;
@@ -459,14 +460,24 @@ export default function LotPage() {
 
     const imageSrc = useMemo(() => {
         if (!medicine) return null;
-        if (medicine.image && medicine.image.startsWith("http")) {
-            return medicine.image;
+        
+        const rawImage = medicine.image;
+        if (!rawImage) return null;
+        
+        // Handle image URL construction (same logic as PharmacInventoryPage)
+        if (rawImage.startsWith("http://") || rawImage.startsWith("https://")) {
+            // Already a complete URL
+            return rawImage;
+        } else if (rawImage.startsWith("/uploads/")) {
+            // Path starts with /uploads/
+            return `${SERVER_URL}${rawImage}`;
+        } else if (rawImage.startsWith("uploads/")) {
+            // Path without leading slash
+            return `${SERVER_URL}/${rawImage}`;
+        } else {
+            // Any other path
+            return `${SERVER_URL}/${rawImage}`;
         }
-        if (medicine.image) {
-            return `${API_URL}${medicine.image}`;
-        }
-        // No image available - return null to show placeholder
-        return null;
     }, [medicine]);
 
     // Show loading state
@@ -748,7 +759,7 @@ export default function LotPage() {
                                             <button
                                                 onClick={handleOpenAddLotModal}
                                                 className="inline-flex items-center px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
-                                                <Plus className="w-4 h-4 mr-1" /> Add New Lot
+                                                <Plus className="w-4 h-4 mr-1" /> Add lot
                                             </button>
                                             <button
                                                 onClick={fetchLotsByProductId}
