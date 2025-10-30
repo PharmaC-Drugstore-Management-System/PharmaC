@@ -13,6 +13,7 @@ const resources = {
 
       // Navigation
       home: "Home",
+      dashboard: "Dashboard",
       inventory: "Inventory",
       pointOfSale: "Point of Sale",
       purchaseOrders: "Purchase Orders",
@@ -52,6 +53,7 @@ const resources = {
 
       // Membership
       membership: "Membership",
+      membershipManagement: "Membership Management",
       searchMember: "Search member by name or phone",
       addNewMember: "Add New Member",
       memberName: "Member Name",
@@ -72,6 +74,24 @@ const resources = {
       memberDetails: "Member Details",
       totalPurchases: "Total Purchases",
       currentPoints: "Current Points",
+      completeMemberList: "Complete member list and management",
+      platinumMembers: "Platinum Members",
+      newMembersThisMonth: "New Members This Month",
+      totalPoints: "Total Points",
+      searchMembers: "Search members...",
+      memberList: "Member List",
+      totalMembersCount: "Total {{count}} members",
+      showRankings: "Show Rankings",
+      hideRankings: "Hide Rankings",
+      member: "Member",
+      contactInfo: "Contact Info",
+      birthdate: "Birthdate",
+      membershipLevel: "Membership Level",
+      pointsRank: "Points & Rank",
+      notSpecified: "Not specified",
+      rank: "Rank",
+      topMembersRanking: "Top Members Ranking",
+      joined: "Joined",
 
       // Inventory
       pharmacyInventory: "Pharmacy Inventory",
@@ -484,6 +504,7 @@ const resources = {
 
       // Navigation
       home: "หน้าหลัก",
+      dashboard: "แดชบอร์ด",
       inventory: "คลังสินค้า",
       pointOfSale: "จุดขาย",
       purchaseOrders: "ใบสั่งซื้อ",
@@ -523,6 +544,7 @@ const resources = {
 
       // Membership
       membership: "สมาชิก",
+      membershipManagement: "การจัดการสมาชิก",
       searchMember: "ค้นหาสมาชิกด้วยชื่อหรือเบอร์โทร",
       addNewMember: "เพิ่มสมาชิกใหม่",
       memberName: "ชื่อสมาชิก",
@@ -543,6 +565,24 @@ const resources = {
       memberDetails: "รายละเอียดสมาชิก",
       totalPurchases: "ยอดซื้อทั้งหมด",
       currentPoints: "แต้มปัจจุบัน",
+      completeMemberList: "รายชื่อสมาชิกและการจัดการที่สมบูรณ์",
+      platinumMembers: "สมาชิกแพลทินัม",
+      newMembersThisMonth: "สมาชิกใหม่เดือนนี้",
+      totalPoints: "แต้มทั้งหมด",
+      searchMembers: "ค้นหาสมาชิก...",
+      memberList: "รายชื่อสมาชิก",
+      totalMembersCount: "ทั้งหมด {{count}} คน",
+      showRankings: "แสดงอันดับ",
+      hideRankings: "ซ่อนอันดับ",
+      member: "สมาชิก",
+      contactInfo: "ข้อมูลติดต่อ",
+      birthdate: "วันเกิด",
+      membershipLevel: "ระดับสมาชิก",
+      pointsRank: "แต้มและอันดับ",
+      notSpecified: "ไม่ระบุ",
+      rank: "อันดับ",
+      topMembersRanking: "อันดับสมาชิกชั้นนำ",
+      joined: "เข้าร่วม",
 
       // Inventory
       pharmacyInventory: "คลังสินค้าร้านยา",

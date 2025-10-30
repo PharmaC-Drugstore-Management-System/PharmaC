@@ -7,9 +7,12 @@ import {
   CheckCircle,
   AlertTriangle,
   Clock,
+  XCircle,
+  RotateCcw,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import Swal from "sweetalert2";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const SERVER_URL = API_URL.replace('/api', ''); // For static files (uploads)
@@ -35,9 +38,14 @@ export default function PharmacInventoryPage() {
   const [items, setItems] = useState<MedicineItem[]>([]);
   const [editMode, setEditMode] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  
+  // Search and Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("name"); // name, stock, expiry
 
   const loadData = async () => {
-    try {
+    try { 
       const res = await fetch(`${API_URL}/inventory/get-medicine`, {
         method: "GET",
         credentials: "include",
@@ -111,11 +119,47 @@ export default function PharmacInventoryPage() {
 
   const handleDeleteItem = () => {
     if (selectedItemId !== null) {
-      setItems((prevItems) =>
-        prevItems.filter((item) => item.id !== selectedItemId)
-      );
-      setSelectedItemId(null);
-      setEditMode(false);
+      const selectedItem = items.find((item) => item.id === selectedItemId);
+      
+      Swal.fire({
+        title: "ลบรายการชั่วคระว?",
+        html: `
+          <div style="text-align: left;">
+            <p><strong>ยา:</strong> ${selectedItem?.name || 'N/A'}</p>
+            <p><strong>แบรนด์:</strong> ${selectedItem?.brand || 'N/A'}</p>
+            <hr style="margin: 15px 0;">
+            <p style="color: #f97316; font-weight: 600;">⚠️ การลบนี้เป็นการลบชั่วคราวเท่านั้น</p>
+            <p style="font-size: 14px; color: #6b7280;">
+              • รายการจะหายจากหน้าจอนี้<br>
+              • <strong>ข้อมูลใน Database ยังอยู่</strong><br>
+              • เมื่อ Refresh หน้า รายการจะกลับมาอีกครั้ง
+            </p>
+          </div>
+        `,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "ใช่, ลบชั่วคราว",
+        cancelButtonText: "ยกเลิก",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Remove from frontend state only (not from database)
+          setItems((prevItems) =>
+            prevItems.filter((item) => item.id !== selectedItemId)
+          );
+          setSelectedItemId(null);
+          setEditMode(false);
+          
+          Swal.fire({
+            title: "ลบออกจากหน้าจอแล้ว!",
+            text: "รายการถูกซ่อนชั่วคราว (ข้อมูลใน Database ยังอยู่)",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      });
     }
   };
 
@@ -136,15 +180,56 @@ export default function PharmacInventoryPage() {
     return diffDays >= 0 && diffDays <= 180;
   };
 
-  // const getExpirationClass = (dateStr: string): string => {
-  //   if (!dateStr || dateStr === "-") return "";
-  //   return isExpiringSoon(dateStr) ? "text-orange-600" : "";
-  // };
-
   const lowStockItems = items.filter((item) => item.amount <= 10);
   const expireSoonItems = items.filter((item) =>
     isExpiringSoon(item.expiredDate)
   );
+
+  // Get unique categories from items
+  const categories = Array.from(
+    new Set(items.map((item) => item.productType).filter(Boolean))
+  ) as string[];
+
+  // Filter and sort items
+  const getFilteredAndSortedItems = () => {
+    let filtered = [...items];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(query) ||
+          item.brand.toLowerCase().includes(query) ||
+          (item.productType && item.productType.toLowerCase().includes(query))
+      );
+    }
+
+    // Apply category filter
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((item) => item.productType === selectedCategory);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      if (sortBy === "name") {
+        return a.name.localeCompare(b.name);
+      } else if (sortBy === "stock") {
+        return b.amount - a.amount; // High to low
+      } else if (sortBy === "expiry") {
+        // Sort by expiry date (nearest first)
+        if (a.expiredDate === "-" && b.expiredDate === "-") return 0;
+        if (a.expiredDate === "-") return 1;
+        if (b.expiredDate === "-") return -1;
+        return new Date(a.expiredDate).getTime() - new Date(b.expiredDate).getTime();
+      }
+      return 0;
+    });
+
+    return filtered;
+  };
+
+  const filteredItems = getFilteredAndSortedItems();
 
   useEffect(() => {
     loadData();
@@ -295,18 +380,32 @@ export default function PharmacInventoryPage() {
             <input
               type="text"
               placeholder="Search medicines, brands, or types..."
-              className="pl-10 pr-4 py-3 w-full rounded-lg border focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10 py-3 w-full rounded-lg border focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
               style={{
                 backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f9fafb',
                 borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
                 color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
               }}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 hover:bg-gray-200 rounded-full p-1 transition-colors"
+                title="Clear search"
+              >
+                <XCircle className="h-5 w-5"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}} />
+              </button>
+            )}
           </div>
 
           {/* Filter Controls */}
           <div className="flex items-center space-x-3">
             <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               className="px-4 py-3 rounded-lg border focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
               style={{
                 backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
@@ -314,13 +413,17 @@ export default function PharmacInventoryPage() {
                 color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
               }}
             >
-              <option>All Categories</option>
-              <option>Pain Relief</option>
-              <option>Antibiotics</option>
-              <option>Supplements</option>
+              <option value="all">All Categories</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
             </select>
 
             <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
               className="px-4 py-3 rounded-lg border focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
               style={{
                 backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
@@ -328,10 +431,31 @@ export default function PharmacInventoryPage() {
                 color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
               }}
             >
-              <option>Sort by Name</option>
-              <option>Sort by Stock</option>
-              <option>Sort by Expiry</option>
+              <option value="name">Sort by Name</option>
+              <option value="stock">Sort by Stock</option>
+              <option value="expiry">Sort by Expiry</option>
             </select>
+
+            {/* Clear All Filters Button */}
+            {(searchQuery || selectedCategory !== "all" || sortBy !== "name") && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("all");
+                  setSortBy("name");
+                }}
+                className="px-4 py-3 rounded-lg border font-medium transition-all duration-300 flex items-center space-x-2 hover:bg-gray-100"
+                style={{
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                  borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                  color: document.documentElement.classList.contains('dark') ? '#f59e0b' : '#f97316'
+                }}
+                title="Clear all filters"
+              >
+                <RotateCcw className="h-5 w-5" />
+                <span>Clear</span>
+              </button>
+            )}
 
             {/* Edit Mode Toggle */}
             <button
@@ -369,7 +493,7 @@ export default function PharmacInventoryPage() {
           <h3 className="text-lg font-semibold flex items-center"
               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1e293b'}}>
             <div className="w-1 h-5 bg-green-500 mr-3 rounded-full"></div>
-            Medicine Inventory ({items.length} items)
+            Medicine Inventory ({filteredItems.length} items)
             {editMode && (
               <span className="ml-4 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
                 Edit Mode Active
@@ -409,7 +533,7 @@ export default function PharmacInventoryPage() {
 
         {/* Enhanced Table Body */}
         <div>
-          {items.length === 0 ? (
+          {filteredItems.length === 0 ? (
             <div className="p-12 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
                    style={{backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f1f5f9'}}>
@@ -421,19 +545,34 @@ export default function PharmacInventoryPage() {
               </h3>
               <p className="text-sm"
                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
-                Add your first medicine to get started
+                {searchQuery || selectedCategory !== "all"
+                  ? "Try adjusting your search or filters"
+                  : "Add your first medicine to get started"}
               </p>
             </div>
           ) : (
-            items.map((item) => {
+            filteredItems.map((item) => {
               const isSelected = selectedItemId === item.id;
               const isDimmed = editMode && selectedItemId !== null && !isSelected;
               const rawImage = item.image ?? "";
-              const imgSrc = rawImage
-                ? rawImage.startsWith("http")
-                  ? rawImage
-                  : `${SERVER_URL}${rawImage}`
-                : null;
+              
+              // Handle image URL construction
+              let imgSrc = null;
+              if (rawImage) {
+                if (rawImage.startsWith("http://") || rawImage.startsWith("https://")) {
+                  // Already a complete URL
+                  imgSrc = rawImage;
+                } else if (rawImage.startsWith("/uploads/")) {
+                  // Path starts with /uploads/
+                  imgSrc = `${SERVER_URL}${rawImage}`;
+                } else if (rawImage.startsWith("uploads/")) {
+                  // Path without leading slash
+                  imgSrc = `${SERVER_URL}/${rawImage}`;
+                } else {
+                  // Any other path
+                  imgSrc = `${SERVER_URL}/${rawImage}`;
+                }
+              }
 
               return (
                 <div key={item.id} className="relative">
