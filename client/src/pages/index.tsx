@@ -18,7 +18,6 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
-import i18n from '../i18n/config';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -64,7 +63,7 @@ export default function PharmaDashboard() {
   const getDashboardStats = () => {
     return [
       {
-        title: t("totalSales"),
+        title: "Total Sales",
         value: loadingSales ? "Loading..." : formatCurrency(totalSales),
         change: "",
         isPositive: true,
@@ -73,7 +72,7 @@ export default function PharmaDashboard() {
         isLoading: loadingSales
       },
       {
-        title: t("totalOrders"),
+        title: "Orders",
         value: loadingOrders ? "Loading..." : totalOrders.toLocaleString(),
         change: "",
         isPositive: true,
@@ -82,7 +81,7 @@ export default function PharmaDashboard() {
         isLoading: loadingOrders
       },
       {
-        title: t("products"),
+        title: "Products",
         value: loadingProducts ? "Loading..." : totalProducts.toLocaleString(),
         change: "",
         isPositive: true,
@@ -91,7 +90,7 @@ export default function PharmaDashboard() {
         isLoading: loadingProducts
       },
       {
-        title: t("members"),
+        title: "Members",
         value: loadingMembers ? "Loading..." : totalMembers.toLocaleString(),
         change: "",
         isPositive: true,
@@ -102,9 +101,10 @@ export default function PharmaDashboard() {
     ];
   };
 
-  const [productType, setProductType] = useState<string[]>([]);
+  const [productType, setProductType] = useState([]);
   const [forecastData, setForecastData] = useState<any>(null);
   const [loadingForecast, setLoadingForecast] = useState(false);
+  const [isCachedData, setIsCachedData] = useState(false);
   const [totalSales, setTotalSales] = useState(0);
   const [loadingSales, setLoadingSales] = useState(true);
   const [totalOrders, setTotalOrders] = useState(0);
@@ -115,7 +115,7 @@ export default function PharmaDashboard() {
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [restockRecommendations, setRestockRecommendations] = useState<any[]>([]);
   const [loadingRestock, setLoadingRestock] = useState(true);
-
+  
   // Forecast configuration states
   const [forecastDays, setForecastDays] = useState(7);
   const [startDate, setStartDate] = useState(() => {
@@ -127,6 +127,62 @@ export default function PharmaDashboard() {
     const date = new Date();
     return date.toISOString().split('T')[0];
   });
+
+  // LocalStorage cache management
+  const CACHE_KEY = 'pharma_forecast_cache';
+  const CACHE_EXPIRY_MS = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+
+  const saveForecastToLocalStorage = (data: any, params: any) => {
+    try {
+      const cacheData = {
+        data,
+        params,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+      console.log('💾 Forecast saved to localStorage');
+    } catch (error) {
+      console.error('Failed to save forecast to localStorage:', error);
+    }
+  };
+
+  const getForecastFromLocalStorage = (params: any) => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (!cached) return null;
+
+      const cacheData = JSON.parse(cached);
+      const age = Date.now() - cacheData.timestamp;
+
+      // Check if cache is expired
+      if (age > CACHE_EXPIRY_MS) {
+        console.log('⏰ Cache expired, clearing...');
+        localStorage.removeItem(CACHE_KEY);
+        return null;
+      }
+
+      // Check if parameters match
+      if (
+        cacheData.params.forecastDays === params.forecastDays &&
+        JSON.stringify(cacheData.params.drugFilter) === JSON.stringify(params.drugFilter) &&
+        cacheData.params.model === params.model
+      ) {
+        console.log('✅ Loaded forecast from localStorage (age:', Math.round(age / 1000 / 60), 'minutes)');
+        return cacheData.data;
+      }
+
+      console.log('🔄 Cache params mismatch, will fetch fresh data');
+      return null;
+    } catch (error) {
+      console.error('Failed to read forecast from localStorage:', error);
+      return null;
+    }
+  };
+
+  const clearForecastCache = () => {
+    localStorage.removeItem(CACHE_KEY);
+    console.log('🗑️  Forecast cache cleared');
+  };
 
   const loadProductType = async () => {
     try {
@@ -145,10 +201,6 @@ export default function PharmaDashboard() {
   }
 
   console.log("PRODUCT TYPE IN USESTATE", productType)
-
-  const openGroupHistory = (type: string) => {
-    navigate(`/sales-history?type=${encodeURIComponent(type)}`);
-  };
 
   // loadPredictor function moved inline to useEffect
 
@@ -181,7 +233,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET TOTAL SALES', data);
-
+      
       if (data.status && data.data) {
         setTotalSales(data.data.totalSales);
       }
@@ -201,7 +253,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET TOTAL ORDERS', data);
-
+      
       if (data.status && data.data) {
         setTotalOrders(data.data.totalOrder);
       }
@@ -221,7 +273,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET TOTAL PRODUCTS', data);
-
+      
       if (data.status && data.data) {
         setTotalProducts(data.data.totalProduct);
       }
@@ -241,7 +293,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET TOTAL MEMBERS', data);
-
+      
       if (data.status && data.data) {
         setTotalMembers(data.data.totalMember);
       }
@@ -261,7 +313,7 @@ export default function PharmaDashboard() {
 
       const data = await info.json();
       console.log('GET RESTOCK RECOMMENDATIONS', data);
-
+      
       if (data.status && data.data) {
         setRestockRecommendations(data.data);
       }
@@ -275,33 +327,56 @@ export default function PharmaDashboard() {
   const loadForecastData = async () => {
     try {
       setLoadingForecast(true);
-
+      
       // Get product types if not already loaded
       let types = productType;
       if (types.length === 0) {
         types = await loadProductType();
       }
-
+      
       if (types.length > 0) {
+        const requestParams = {
+          forecastDays: forecastDays,
+          drugFilter: types,
+          model: "arima",
+          startDate: startDate,
+          endDate: endDate
+        };
+
+        // Try to get from localStorage first
+        const cachedData = getForecastFromLocalStorage(requestParams);
+        if (cachedData) {
+          setForecastData(cachedData);
+          setIsCachedData(true);
+          setLoadingForecast(false);
+          return;
+        }
+
+        // If no cache, fetch from API
+        console.log('🔄 Fetching fresh forecast data from API...');
         const info = await fetch(`${API_URL}/predictor/generate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            forecastDays: forecastDays,
-            drugFilter: types,
-            model: "arima",
-            startDate: startDate,
-            endDate: endDate
-          })
+          body: JSON.stringify(requestParams)
         });
 
         const data = await info.json();
         console.log("Forecast response:", data);
-
+        
         if (data.status && data.data.results.success) {
-          setForecastData(data.data.results);
+          const forecastResults = data.data.results;
+          setForecastData(forecastResults);
+          setIsCachedData(false);
+          
+          // Save to localStorage for next time
+          saveForecastToLocalStorage(forecastResults, requestParams);
+          
+          // Also log if it came from backend cache
+          if (data.data.cached) {
+            console.log('📦 Data was from backend cache');
+          }
         }
       }
     } catch (error) {
@@ -323,26 +398,48 @@ export default function PharmaDashboard() {
     const loadData = async () => {
       const types = await loadProductType();
       if (types.length > 0) {
-        // Load predictor with the types we just fetched
+        const requestParams = {
+          forecastDays: forecastDays,
+          drugFilter: types,
+          model: "arima"
+        };
+
+        // Try localStorage first for instant loading
+        const cachedData = getForecastFromLocalStorage(requestParams);
+        if (cachedData) {
+          console.log('⚡ Instant load from localStorage on page load');
+          setForecastData(cachedData);
+          setIsCachedData(true);
+          setLoadingForecast(false);
+          return;
+        }
+
+        // If no cache, fetch from API
         try {
           setLoadingForecast(true);
+          console.log('🔄 Initial fetch from API...');
           const info = await fetch(`${API_URL}/predictor/generate`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-              forecastDays: forecastDays,
-              drugFilter: types,
-              model: "arima"
-            })
+            body: JSON.stringify(requestParams)
           });
 
           const data = await info.json();
           console.log("Predictor response:", data);
-
+          
           if (data.status && data.data.results.success) {
-            setForecastData(data.data.results);
+            const forecastResults = data.data.results;
+            setForecastData(forecastResults);
+            setIsCachedData(false);
+            
+            // Save to localStorage for future visits
+            saveForecastToLocalStorage(forecastResults, requestParams);
+            
+            if (data.data.cached) {
+              console.log('📦 Data was from backend cache');
+            }
           }
         } catch (error) {
           console.error("Error loading predictor:", error);
@@ -374,7 +471,7 @@ export default function PharmaDashboard() {
             </h1>
             <p className="mt-2 text-sm lg:text-base transition-colors"
               style={{ color: isDark ? '#d1d5db' : '#4b5563' }}>
-              {t("monitorPharmacyAnalytics")}
+              Monitor your pharmacy analytics and performance
             </p>
           </div>
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
@@ -385,19 +482,14 @@ export default function PharmaDashboard() {
               <ShoppingCart className="w-5 h-5" />
               <span>{t("openSalePOS")}</span>
             </button>
-            <span
-              className="text-sm lg:text-base font-medium transition-colors"
-              style={{ color: isDark ? '#9ca3af' : '#6b7280' }}
-            >
-              {new Date().toLocaleDateString(
-                i18n.language === "th" ? "th-TH" : "en-US",
-                {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }
-              )}
+            <span className="text-sm lg:text-base font-medium transition-colors"
+              style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+              {new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
             </span>
           </div>
         </div>
@@ -455,17 +547,17 @@ export default function PharmaDashboard() {
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <h2 className="text-2xl lg:text-3xl font-bold transition-colors"
               style={{ color: isDark ? 'white' : '#111827' }}>
-              {t("productTypesPerformance")}
+              Product Types Performance
             </h2>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
               {/* Forecast Days Selector */}
               <div className="flex items-center space-x-2">
                 <label className="text-sm font-medium transition-colors"
                   style={{ color: isDark ? '#d1d5db' : '#374151' }}>
-                  {t("forecastPeriod")}
+                  Forecast Period:
                 </label>
-                <select
-                  value={forecastDays}
+                <select 
+                  value={forecastDays} 
                   onChange={(e) => setForecastDays(Number(e.target.value))}
                   className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   style={{
@@ -473,15 +565,15 @@ export default function PharmaDashboard() {
                     borderColor: isDark ? '#4b5563' : '#d1d5db',
                     color: isDark ? 'white' : '#111827'
                   }}>
-                  <option value={7}>{t("days7")}</option>
-                  <option value={14}>{t("days14")}</option>
-                  <option value={90}>{t("months3")}</option>
-                  <option value={180}>{t("months6")}</option>
+                  <option value={7}>7 Days</option>
+                  <option value={14}>14 Days</option>
+                  <option value={90}>3 Months</option>
+                  <option value={180}>6 Months</option>
                 </select>
               </div>
               {/* Date Range Selector */}
               <div className="flex items-center space-x-2">
-                <input
+                <input 
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
@@ -494,7 +586,7 @@ export default function PharmaDashboard() {
                 />
                 <span className="text-sm transition-colors"
                   style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>to</span>
-                <input
+                <input 
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
@@ -510,7 +602,36 @@ export default function PharmaDashboard() {
                 onClick={() => loadForecastData()}
                 className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
-                {t("updateForecast")}
+                Update Forecast
+              </button>
+              
+              {/* Cache Status Indicator */}
+              {isCachedData && (
+                <div className="flex items-center space-x-2 px-3 py-1 rounded-md text-xs"
+                  style={{
+                    backgroundColor: isDark ? '#065f46' : '#d1fae5',
+                    color: isDark ? '#6ee7b7' : '#047857'
+                  }}>
+                  <span>💾 Cached</span>
+                </div>
+              )}
+              
+              {/* Clear Cache Button */}
+              <button
+                onClick={() => {
+                  clearForecastCache();
+                  setForecastData(null);
+                  setIsCachedData(false);
+                  loadForecastData();
+                }}
+                className="px-3 py-2 text-xs border rounded-md hover:bg-opacity-10 hover:bg-gray-500 transition-colors"
+                style={{
+                  borderColor: isDark ? '#4b5563' : '#d1d5db',
+                  color: isDark ? '#9ca3af' : '#6b7280'
+                }}
+                title="Clear cache and fetch fresh data"
+              >
+                🗑️ Clear Cache
               </button>
             </div>
           </div>
@@ -520,13 +641,13 @@ export default function PharmaDashboard() {
             {productType.map((type: string, index: number) => {
               // Get forecast data for this product type
               const typeForecast = forecastData?.forecasts?.[type]?.ARIMA;
-
+              
               // Transform forecast data for chart with better day labels
               const chartData = typeForecast ? typeForecast.dates.map((date: string, idx: number) => {
                 const dateObj = new Date(date);
                 const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
                 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
+                
                 return {
                   day: dayNames[dateObj.getDay()],
                   date: `${monthNames[dateObj.getMonth()]} ${dateObj.getDate()}`,
@@ -547,7 +668,7 @@ export default function PharmaDashboard() {
                   histDate.setDate(histDate.getDate() - (historicalDays - i));
                   const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
                   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
+                  
                   chartData.unshift({
                     day: dayNames[histDate.getDay()],
                     date: `${monthNames[histDate.getMonth()]} ${histDate.getDate()}`,
@@ -561,7 +682,7 @@ export default function PharmaDashboard() {
               }
 
               // Calculate stats
-              const avgPrediction = typeForecast ?
+              const avgPrediction = typeForecast ? 
                 typeForecast.predictions.reduce((a: number, b: number) => a + b, 0) / typeForecast.predictions.length : 0;
               const peakPrediction = typeForecast ? Math.max(...typeForecast.predictions) : 0;
 
@@ -570,15 +691,15 @@ export default function PharmaDashboard() {
               const color = colors[index % colors.length];
 
               return (
-                <div
-                  key={type}
-                  className="rounded-2xl shadow-lg border p-6 cursor-pointer hover:shadow-xl transition"
-                  style={{ backgroundColor: isDark ? '#374151' : 'white', borderColor: isDark ? '#4b5563' : '#e5e7eb' }}
-                  onClick={() => openGroupHistory(type)}
-                  title="View sales history for this group"
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && openGroupHistory(type)}
+                <div 
+                  key={type} 
+                  className="rounded-2xl shadow-lg border p-6 cursor-pointer transition-all hover:shadow-xl hover:scale-[1.02]"
+                  style={{
+                    backgroundColor: isDark ? '#374151' : 'white',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                  }}
+                  onClick={() => navigate(`/sales-history?type=${encodeURIComponent(type)}`)}
+                  title={`Click to view detailed sales history for ${type}`}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex-1 min-w-0">
@@ -589,7 +710,7 @@ export default function PharmaDashboard() {
                       {/* Product Type Description Subtitle */}
                       {productTypeDescriptions[type] && (
                         <p className="text-xs mt-1 leading-relaxed transition-colors"
-                          style={{
+                          style={{ 
                             color: isDark ? '#9ca3af' : '#6b7280',
                             fontStyle: 'italic'
                           }}>
@@ -624,7 +745,7 @@ export default function PharmaDashboard() {
                     ) : chartData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3"
+                          <CartesianGrid strokeDasharray="3 3" 
                             stroke={isDark ? '#4b5563' : '#f0f4f8'} />
                           <XAxis
                             dataKey="day"
@@ -654,12 +775,12 @@ export default function PharmaDashboard() {
                                     </p>
                                     {data.historical !== null && (
                                       <p className="text-sm" style={{ color: '#6b7280' }}>
-                                        {t("historicalUnits", { value: data.historical })}
+                                        Historical: {data.historical} units
                                       </p>
                                     )}
                                     {data.forecast !== null && (
                                       <p className="text-sm" style={{ color: color }}>
-                                        {t("forecastUnits", { value: data.forecast })}
+                                        Forecast: {data.forecast} units
                                       </p>
                                     )}
                                   </div>
@@ -709,55 +830,62 @@ export default function PharmaDashboard() {
                     <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {t("avgForecast")}
+                        Avg Forecast
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>
-                        {avgPrediction > 0
-                          ? t("unitsPerDay", { value: Math.round(avgPrediction * 10) / 10 })
-                          : "—"}
+                        {avgPrediction > 0 ? Math.round(avgPrediction * 10) / 10 : '—'} units/day
                       </p>
                     </div>
                     <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {t("peakDay")}
+                        Peak Day
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>
-                        {peakPrediction > 0
-                          ? t("unitsSingle", { value: Math.round(peakPrediction * 10) / 10 })
-                          : "—"}
+                        {peakPrediction > 0 ? Math.round(peakPrediction * 10) / 10 : '—'} units
                       </p>
                     </div>
                     <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {t("trendLabel")}
+                        Trend
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: avgPrediction > peakPrediction * 0.8 ? '#10b981' : '#f59e0b' }}>
-                        {avgPrediction > peakPrediction * 0.8 ? t("trendUp") : t("trendDown")}
+                        {avgPrediction > peakPrediction * 0.8 ? '↗ Rising' : '↘ Declining'}
                       </p>
                     </div>
                   </div>
 
                   {/* Legend for Chart Lines */}
-                  <div className="mt-4 flex justify-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-0.5 bg-gray-500"></div>
-                      <span className="text-xs transition-colors"
-                        style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {t("historical")}
-                      </span>
+                  <div className="mt-4 flex justify-between items-center">
+                    <div className="flex space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-0.5 bg-gray-500"></div>
+                        <span className="text-xs transition-colors"
+                          style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                          Historical
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-0.5 border-t-2 border-dashed" 
+                             style={{ borderColor: color }}></div>
+                        <span className="text-xs transition-colors"
+                          style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                          Forecast
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-0.5 border-t-2 border-dashed"
-                        style={{ borderColor: color }}></div>
-                      <span className="text-xs transition-colors"
-                        style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {t("forecast")}
-                      </span>
+                    
+                    {/* Click Indicator */}
+                    <div className="flex items-center space-x-1 text-xs font-medium transition-colors"
+                      style={{ color: color }}>
+                      <span>View Details</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </div>
                   </div>
                 </div>
@@ -788,11 +916,11 @@ export default function PharmaDashboard() {
               <div>
                 <h2 className="text-xl lg:text-2xl font-bold transition-colors"
                   style={{ color: isDark ? 'white' : '#111827' }}>
-                  {t("restockRecommendations")}
+                  Restock Recommendations
                 </h2>
                 <p className="text-sm lg:text-base mt-1 transition-colors"
                   style={{ color: isDark ? '#d1d5db' : '#4b5563' }}>
-                  {t('restockSubtitle')}
+                  Advanced analytics with ABC classification, sales velocity trends, and safety stock calculations
                 </p>
               </div>
             </div>
@@ -805,17 +933,17 @@ export default function PharmaDashboard() {
               }}>
                 <tr>
                   <th className="px-4 py-4 text-left text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t("group")}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Group</th>
                   <th className="px-4 py-4 text-left text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t("productType")}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Product Type</th>
                   <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t("available")}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Available</th>
                   <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t("expected")}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Expected</th>
                   <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t("restock")}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Restock</th>
                   <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t("priority")}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Priority</th>
                 </tr>
               </thead>
               <tbody style={{
@@ -834,9 +962,9 @@ export default function PharmaDashboard() {
                   </tr>
                 ) : restockRecommendations.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center"
+                    <td colSpan={6} className="px-6 py-8 text-center" 
                       style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                      {t("noRecommend")}
+                      No restock recommendations available
                     </td>
                   </tr>
                 ) : restockRecommendations.map((item, index) => (
@@ -876,10 +1004,10 @@ export default function PharmaDashboard() {
                     </td>
                     <td className="px-4 py-4 text-center">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold border ${item.color}`}>
-                        {item.priority === 'critical' ? 'Critical' :
-                          item.priority === 'high' ? 'High' :
-                            item.priority === 'medium' ? 'Medium' :
-                              item.priority === 'low' ? 'Low' : 'None'}
+                        {item.priority === 'critical' ? 'Critical' : 
+                         item.priority === 'high' ? 'High' : 
+                         item.priority === 'medium' ? 'Medium' : 
+                         item.priority === 'low' ? 'Low' : 'None'}
                       </span>
                     </td>
                   </tr>
@@ -889,6 +1017,6 @@ export default function PharmaDashboard() {
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }
