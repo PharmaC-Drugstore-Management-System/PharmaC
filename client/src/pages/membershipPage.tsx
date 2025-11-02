@@ -576,7 +576,7 @@ export default function MemberManagementPage() {
                              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                           <Calendar className="w-3 h-3"
                                     style={{color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'}} />
-                          {t('joined')}:{" "}
+                          Joined:{" "}
                           {new Date(member.joinDate).toLocaleDateString(
                             "th-TH"
                           )}
@@ -608,7 +608,7 @@ export default function MemberManagementPage() {
                          style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                       {member.birthday
                         ? new Date(member.birthday).toLocaleDateString("th-TH")
-                        : t('notSpecified')}
+                        : "Not specified"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -625,11 +625,11 @@ export default function MemberManagementPage() {
                       <div className="text-sm">
                         <div className="font-semibold"
                              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                          {member.score} {t('points')}
+                          {member.score} Points
                         </div>
                         <div className="text-xs"
                              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                          {t('rank')} #{member.rank}
+                          Rank #{member.rank}
                         </div>
                       </div>
                     </td>
@@ -659,7 +659,7 @@ export default function MemberManagementPage() {
           <h3 className="text-md font-semibold mb-4 flex items-center gap-2"
               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
             <Trophy className="w-5 h-5 text-yellow-500" />
-            {t('topMembersRanking')}
+            Top Members Ranking
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {members.slice(0, 3).map((member, index) => (
@@ -686,7 +686,7 @@ export default function MemberManagementPage() {
                   </div>
                   <div className="text-xs"
                        style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                    {member.score} {t('points')}
+                    {member.score} คะแนน
                   </div>
                 </div>
                 {index === 0 && (
