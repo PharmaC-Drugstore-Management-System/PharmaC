@@ -36,9 +36,9 @@ export default function ContactUsPage() {
       position: t('fullStackDeveloper'),
       role: t('juniorDeveloper'),
       image: '/images/developers/neo_dev.png', 
-      email: 'dev3@pharmac.com',
-      phone: '083-xxx-xxxx',
-      github: '#',
+      email: 'issadaorn.kuls@gmail.com',
+      phone: '096-335-3953',
+      github: 'https://github.com/IssadaornNK',
       description: t('specializedFullStack')
     }
   ];

@@ -1179,7 +1179,7 @@ export default function POSPage() {
                         backgroundColor: document.documentElement.classList.contains('dark') ? '#1e40af' : '#dbeafe',
                         color: document.documentElement.classList.contains('dark') ? '#bfdbfe' : '#1e40af'
                       }}>
-                      <span className="mr-1">📦</span> Lot #{product.lot_no}
+                       Lot #{product.lot_no}
                     </div>
                   )}
                   
