@@ -449,6 +449,7 @@ export default function PharmaDashboard() {
       }
     };
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forecastDays]);
 
 
@@ -642,42 +643,115 @@ export default function PharmaDashboard() {
               // Get forecast data for this product type
               const typeForecast = forecastData?.forecasts?.[type]?.ARIMA;
               
-              // Transform forecast data for chart with better day labels
-              const chartData = typeForecast ? typeForecast.dates.map((date: string, idx: number) => {
-                const dateObj = new Date(date);
-                const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                
-                return {
-                  day: dayNames[dateObj.getDay()],
-                  date: `${monthNames[dateObj.getMonth()]} ${dateObj.getDate()}`,
-                  fullDate: date,
-                  forecast: Math.round(typeForecast.predictions[idx] * 100) / 100,
-                  upper: Math.round(typeForecast.upper_confidence[idx] * 100) / 100,
-                  lower: Math.round(typeForecast.lower_confidence[idx] * 100) / 100,
-                  // Add historical data if available (mock for now - you can integrate real historical API)
-                  historical: idx === 0 ? Math.round(typeForecast.predictions[idx] * 0.9 * 100) / 100 : null
-                };
-              }) : [];
+              // Helper function to aggregate data by time period
+              const aggregateData = (dates: string[], predictions: number[], interval: number) => {
+                const aggregated = [];
+                for (let i = 0; i < dates.length; i += interval) {
+                  const chunk = predictions.slice(i, i + interval);
+                  const avgPrediction = chunk.reduce((a, b) => a + b, 0) / chunk.length;
+                  aggregated.push({
+                    date: dates[i],
+                    prediction: avgPrediction
+                  });
+                }
+                return aggregated;
+              };
 
-              // Add some mock historical data points for better visualization
-              if (chartData.length > 0) {
-                const historicalDays = 3; // Show 3 days of historical data
-                for (let i = 0; i < historicalDays; i++) {
-                  const histDate = new Date(chartData[0].fullDate);
-                  histDate.setDate(histDate.getDate() - (historicalDays - i));
+              // Determine aggregation interval based on forecast period
+              let aggregationInterval = 1; // Default: daily
+              
+              if (forecastDays >= 180) {
+                // 6 months: aggregate by ~30 days (monthly)
+                aggregationInterval = 30;
+              } else if (forecastDays >= 90) {
+                // 3 months: aggregate by ~14 days (bi-weekly)
+                aggregationInterval = 14;
+              } else if (forecastDays >= 14) {
+                // 14 days: aggregate by 2 days
+                aggregationInterval = 2;
+              }
+              // 7 days or less: keep daily (interval = 1)
+              
+              // Transform and aggregate forecast data for chart
+              let chartData: Array<{
+                day: string;
+                date: string;
+                fullDate: string;
+                forecast: number | null;
+                upper: number | null;
+                lower: number | null;
+                historical: number | null;
+              }> = [];
+              if (typeForecast) {
+                const aggregated = aggregateData(
+                  typeForecast.dates, 
+                  typeForecast.predictions, 
+                  aggregationInterval
+                );
+                
+                chartData = aggregated.map((item: any, idx: number) => {
+                  const dateObj = new Date(item.date);
                   const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
                   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                   
-                  chartData.unshift({
-                    day: dayNames[histDate.getDay()],
-                    date: `${monthNames[histDate.getMonth()]} ${histDate.getDate()}`,
-                    fullDate: histDate.toISOString().split('T')[0],
-                    forecast: null,
-                    upper: null,
+                  // Format label based on aggregation level
+                  let label = '';
+                  if (aggregationInterval >= 30) {
+                    // Monthly view: show "Jan", "Feb", etc.
+                    label = monthNames[dateObj.getMonth()];
+                  } else if (aggregationInterval >= 7) {
+                    // Weekly/Bi-weekly view: show "Week 1", "Week 2", etc.
+                    label = `W${idx + 1}`;
+                  } else if (aggregationInterval > 1) {
+                    // Every few days: show date like "Jan 1"
+                    label = `${monthNames[dateObj.getMonth()]} ${dateObj.getDate()}`;
+                  } else {
+                    // Daily view: show day name
+                    label = dayNames[dateObj.getDay()];
+                  }
+                  
+                  return {
+                    day: label,
+                    date: `${monthNames[dateObj.getMonth()]} ${dateObj.getDate()}`,
+                    fullDate: item.date,
+                    forecast: Math.round(item.prediction * 100) / 100,
+                    upper: null, // Confidence intervals would need aggregation too
                     lower: null,
-                    historical: Math.round((chartData[0].forecast || 0) * (0.8 + Math.random() * 0.4) * 100) / 100
-                  });
+                    historical: idx === 0 ? Math.round(item.prediction * 0.9 * 100) / 100 : null
+                  };
+                });
+
+                // Add some mock historical data points for better visualization
+                if (chartData.length > 0) {
+                  const historicalPoints = Math.min(3, Math.ceil(chartData.length * 0.2)); // 20% historical or max 3
+                  for (let i = 0; i < historicalPoints; i++) {
+                    const histDate = new Date(chartData[0].fullDate);
+                    histDate.setDate(histDate.getDate() - (aggregationInterval * (historicalPoints - i)));
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    
+                    // Format historical label the same way
+                    let label = '';
+                    if (aggregationInterval >= 30) {
+                      label = monthNames[histDate.getMonth()];
+                    } else if (aggregationInterval >= 7) {
+                      label = `W${-i}`;
+                    } else if (aggregationInterval > 1) {
+                      label = `${monthNames[histDate.getMonth()]} ${histDate.getDate()}`;
+                    } else {
+                      const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                      label = dayNames[histDate.getDay()];
+                    }
+                    
+                    chartData.unshift({
+                      day: label,
+                      date: `${monthNames[histDate.getMonth()]} ${histDate.getDate()}`,
+                      fullDate: histDate.toISOString().split('T')[0],
+                      forecast: null,
+                      upper: null,
+                      lower: null,
+                      historical: Math.round((chartData[0].forecast || 0) * (0.8 + Math.random() * 0.4) * 100) / 100
+                    });
+                  }
                 }
               }
 
@@ -685,6 +759,14 @@ export default function PharmaDashboard() {
               const avgPrediction = typeForecast ? 
                 typeForecast.predictions.reduce((a: number, b: number) => a + b, 0) / typeForecast.predictions.length : 0;
               const peakPrediction = typeForecast ? Math.max(...typeForecast.predictions) : 0;
+              
+              // Determine time unit label based on aggregation
+              let timeUnit = 'day';
+              if (aggregationInterval >= 30) {
+                timeUnit = 'month';
+              } else if (aggregationInterval >= 7) {
+                timeUnit = 'week';
+              }
 
               // Color scheme for different product types
               const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
@@ -726,7 +808,7 @@ export default function PharmaDashboard() {
                       <Package className="w-6 h-6" style={{ color: color }} />
                       {avgPrediction > 0 && (
                         <span className="text-sm font-semibold" style={{ color: color }}>
-                          {Math.round(avgPrediction * 10) / 10}/day
+                          {Math.round(avgPrediction * 10) / 10}/{timeUnit}
                         </span>
                       )}
                     </div>
@@ -834,13 +916,13 @@ export default function PharmaDashboard() {
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>
-                        {avgPrediction > 0 ? Math.round(avgPrediction * 10) / 10 : '—'} units/day
+                        {avgPrediction > 0 ? Math.round(avgPrediction * 10) / 10 : '—'} units/{timeUnit}
                       </p>
                     </div>
                     <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        Peak Day
+                        Peak {timeUnit === 'day' ? 'Day' : timeUnit === 'week' ? 'Week' : 'Month'}
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>

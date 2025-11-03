@@ -204,6 +204,8 @@ model product {
   product_id         Int                  @id @default(autoincrement())
   producttype        String?              @db.VarChar(255)
   unit               String?              @db.VarChar(255)
+  deleted_at         DateTime?            @db.Timestamp(6)
+  is_active          Boolean?             @default(true)
   cart               cart[]
   cost               cost[]
   forecasted_product forecasted_product[]
@@ -343,3 +345,7 @@ model stock_transaction {
   note           String?   @db.VarChar(255)
   lot            lot?      @relation(fields: [lot_id_fk], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_lot_fk")
 }
+
+/// We could not retrieve columns for the underlying table. Either it has none or you are missing rights to see them. Please check your privileges.
+// model forecast_result {
+// }
