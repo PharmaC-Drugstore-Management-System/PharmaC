@@ -16,7 +16,7 @@ type Supplier = {
 type ProductSupplier = {
   supplier_id: number;
   supplier_name: string;
-  price: number; // kept for reference/filtering; not auto-used
+  price: number; // เปลี่ยนจาก cost เป็น price
   is_active: boolean;
 };
 
@@ -25,11 +25,11 @@ type OrderItem = {
   name: string;
   brand: string;
   amount: number;
-  unit: string;                 // unit to BUY (user selects)
-  price?: number | null;        // supplier price to BUY (user enters)
+  unit: string;
+  price: number;
   image: string;
-  isCustom?: boolean;
-  suppliers?: ProductSupplier[];
+  isCustom?: boolean; // Flag สำหรับยาที่เพิ่มใหม่
+  suppliers?: ProductSupplier[]; // เพิ่ม supplier data
 };
 
 type NewMedicineForm = {
@@ -58,14 +58,14 @@ const PurchaseOrder = () => {
       if (imageUrl.startsWith("uploads/")) {
         return `${SERVER_URL}/${imageUrl}`;
       }
-      // If it's just an emoji or short text, return null to show as text
+      // If it's just an emoji or text, return null to show as text
       if (imageUrl.length <= 4) {
         return null;
       }
       return `${SERVER_URL}${imageUrl}`;
     };
   }, []);
-
+  
   // Supplier states
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null);
@@ -76,7 +76,7 @@ const PurchaseOrder = () => {
     address: '',
     description: ''
   });
-
+  
   // States for Add New Medicine modal
   const [showAddMedicineModal, setShowAddMedicineModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,52 +96,58 @@ const PurchaseOrder = () => {
   const [newMedicineCost, setNewMedicineCost] = useState<string>('');
 
   // Product types and units
-  const [productTypes] = useState(["Tablet", "Capsule", "Syrup", "Injection"] as string[]);
+  const [productTypes] = useState([
+    "Tablet",
+    "Capsule", 
+    "Syrup",
+    "Injection",
+  ] as string[]);
+
   const [units] = useState(["Pack", "Capsule", "Bottle", "Box"] as string[]);
+
   const [customProductType, setCustomProductType] = useState("");
   const [customUnit, setCustomUnit] = useState("");
 
-  // Filters
+  // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBrand, setFilterBrand] = useState("");
 
   const navigate = useNavigate();
 
-  // Dark mode
+  // Check if dark mode is enabled
   const isDark = document.documentElement.classList.contains('dark');
 
-  // Load initial data
+  // useEffect to load initial data
   useEffect(() => {
     loadData();
     loadSuppliers();
-    checkme();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = async () => {
     try {
-      // Try new endpoint
-      const res = await fetch(`${API_URL}/products-with-suppliers`, {
+      // Load products with suppliers
+  const res = await fetch(`${API_URL}/products-with-suppliers`, {
         method: "GET",
         credentials: "include",
       });
-
+      
       if (res.ok) {
         const products = await res.json();
         const formattedItems = products.map((item: any): OrderItem => ({
           id: item.id,
           name: item.name || "Unknown Product",
           brand: item.brand || "Unknown Brand",
-          price: null,                 // user will enter
+          price: item.suppliers?.length > 0 ? item.suppliers[0].price : 1,
           amount: 1,
-          unit: "",                    // user will choose
+          unit: item.unit || "pcs",
           image: item.image || "💊",
           suppliers: item.suppliers || []
         }));
+        console.log("Products with suppliers:", formattedItems);
         setOrderItems(formattedItems);
       } else {
-        // Fallback endpoint (no price there either)
-        const fallbackRes = await fetch(`${API_URL}/inventory/get-medicine`, {
+        // Fallback to old endpoint if new one fails
+  const fallbackRes = await fetch(`${API_URL}/inventory/get-medicine`, {
           method: "GET",
           credentials: "include",
         });
@@ -150,9 +156,9 @@ const PurchaseOrder = () => {
           id: item.product_id,
           name: item.product_name || "Unknown Product",
           brand: item.brand || "Unknown Brand",
-          price: null,                 // user will enter
-          amount: 1,
-          unit: "",                    // user will choose
+          price: item.price ?? 1,
+          amount: item.amount ?? 1,
+          unit: "pcs",
           image: "💊",
           suppliers: []
         }));
@@ -166,12 +172,14 @@ const PurchaseOrder = () => {
 
   const loadSuppliers = async () => {
     try {
-      const res = await fetch(`${API_URL}/suppliers`, {
+  const res = await fetch(`${API_URL}/suppliers`, {
         method: "GET",
         credentials: "include",
       });
+      
       if (res.ok) {
         const suppliersData = await res.json();
+        console.log("Loaded suppliers:", suppliersData);
         setSuppliers(suppliersData);
       }
     } catch (error) {
@@ -185,19 +193,19 @@ const PurchaseOrder = () => {
       newSelectedItems.delete(id);
     } else {
       newSelectedItems.add(id);
-      // initialize editable fields when selecting the first time
-      setOrderItems(curr =>
-        curr.map(it =>
-          it.id === id ? { ...it, price: it.price ?? null, unit: it.unit || "" } : it
-        )
-      );
     }
     setSelectedItems(newSelectedItems);
-    if (newSelectedItems.size > 0) setErrorMessage("");
+    
+    // Clear error message when items are selected
+    if (newSelectedItems.size > 0) {
+      setErrorMessage("");
+    }
   };
 
   const updateQuantity = (id: number, newAmount: number) => {
-    if (!selectedItems.has(id)) return; // only when selected
+    // Only allow updates if the item is selected
+    if (!selectedItems.has(id)) return;
+    
     setOrderItems(
       orderItems.map((item) =>
         item.id === id ? { ...item, amount: Math.max(1, newAmount) } : item
@@ -208,17 +216,16 @@ const PurchaseOrder = () => {
   // Filter function for inventory items
   const getFilteredItems = () => {
     return orderItems.filter(item => {
-      const matchesSearch =
-        searchTerm === "" ||
+      const matchesSearch = searchTerm === "" || 
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.id.toString().includes(searchTerm);
-
+      
       const matchesBrand = filterBrand === "" || item.brand === filterBrand;
-
-      const matchesSupplier = selectedSupplierId === null ||
+      
+      const matchesSupplier = selectedSupplierId === null || 
         (item.suppliers && item.suppliers.some(supplier => supplier.supplier_id === selectedSupplierId));
-
+      
       return matchesSearch && matchesBrand && matchesSupplier;
     });
   };
@@ -231,15 +238,20 @@ const PurchaseOrder = () => {
 
   const getTotalValue = () => {
     return orderItems
-      .filter(item => selectedItems.has(item.id) && item.price != null)
-      .reduce((total, item) => total + item.amount * (item.price as number), 0);
+      .filter(item => selectedItems.has(item.id))
+      .reduce(
+        (total, item) => total + item.amount * (item.price ?? 0),
+        0
+      );
   };
 
   const copyOrderText = () => {
-    const selected = orderItems.filter(i => selectedItems.has(i.id));
-    const orderText = selected
-      .map((item) =>
-        `${item.name || "Unknown Product"} (${item.id}) - ${item.amount} ${item.unit || "(unit?)"} @ ${(item.price ?? 0).toLocaleString()} THB`
+    const orderText = orderItems
+      .map(
+        (item) =>
+          `${item.name || "Unknown Product"} (${item.id}) - ${item.amount} ${
+            item.unit
+          } @ ${(item.price ?? 0).toLocaleString()} THB`
       )
       .join("\n");
     navigator.clipboard.writeText(orderText);
@@ -251,22 +263,18 @@ const PurchaseOrder = () => {
       setErrorMessage("Please select at least one item to create a quotation.");
       return;
     }
-
-    // validate entered price & unit for each selected item
-    const invalid = orderItems
-      .filter(i => selectedItems.has(i.id))
-      .filter(i => i.price == null || i.unit.trim() === "");
-
-    if (invalid.length > 0) {
-      setErrorMessage("Please enter a Price and select a Unit for all selected items.");
-      return;
-    }
     setErrorMessage("");
-
+    
+    // Get selected items data และแปลงข้อมูลให้เหมาะสำหรับ POForm
     const selectedOrderItems = orderItems
       .filter(item => selectedItems.has(item.id))
       .map(item => {
-        const supplierInfo = selectedSupplierId
+        // หาราคาจาก supplier ที่เลือก หรือใช้ supplier แรก
+        const supplierPrice = selectedSupplierId 
+          ? item.suppliers?.find(s => s.supplier_id === selectedSupplierId)?.price 
+          : item.suppliers?.[0]?.price || item.price;
+        
+        const supplierInfo = selectedSupplierId 
           ? suppliers.find(s => s.supplier_id === selectedSupplierId)
           : null;
 
@@ -277,18 +285,22 @@ const PurchaseOrder = () => {
           unit: item.unit,
           image: item.image,
           quantity: item.amount,
-          price: item.price, // user-entered supplier price
+          price: supplierPrice, // ใช้ราคาจาก supplier
           supplier_id: selectedSupplierId || item.suppliers?.[0]?.supplier_id,
           supplier_name: supplierInfo?.name || item.suppliers?.[0]?.supplier_name
         };
       });
-
-    const selectedSupplierData = selectedSupplierId
+    
+    // เตรียมข้อมูล supplier ที่เลือก
+    const selectedSupplierData = selectedSupplierId 
       ? suppliers.find(s => s.supplier_id === selectedSupplierId)
       : null;
 
+    console.log("Selected items for PO:", selectedOrderItems);
+    console.log("Selected supplier data:", selectedSupplierData);
+    
     navigate('/poform', {
-      state: {
+      state: { 
         selectedOrderItems,
         selectedSupplier: selectedSupplierData
       }
@@ -312,9 +324,11 @@ const PurchaseOrder = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${API_URL}/suppliers`, {
+  const response = await fetch(`${API_URL}/suppliers`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         credentials: "include",
         body: JSON.stringify({
           name: newSupplierForm.name,
@@ -325,9 +339,20 @@ const PurchaseOrder = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log("New supplier added:", result);
+        
+        // Reload suppliers list
         await loadSuppliers();
+        
+        // Close modal and reset form
         setShowAddSupplierModal(false);
-        setNewSupplierForm({ name: '', tax_id: '', address: '', description: '' });
+        setNewSupplierForm({
+          name: '',
+          tax_id: '',
+          address: '',
+          description: ''
+        });
         setErrorMessage("");
       } else {
         const errorData = await response.json();
@@ -343,7 +368,12 @@ const PurchaseOrder = () => {
 
   // Reset supplier form
   const resetSupplierForm = () => {
-    setNewSupplierForm({ name: '', tax_id: '', address: '', description: '' });
+    setNewSupplierForm({
+      name: '',
+      tax_id: '',
+      address: '',
+      description: ''
+    });
     setErrorMessage("");
   };
 
@@ -367,7 +397,10 @@ const PurchaseOrder = () => {
 
   // Handle form input changes
   const handleFormChange = (field: keyof NewMedicineForm, value: string | boolean) => {
-    setNewMedicineForm(prev => ({ ...prev, [field]: value }));
+    setNewMedicineForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   // Add new medicine to inventory and order list
@@ -380,9 +413,12 @@ const PurchaseOrder = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${API_URL}/inventory/add-micine`, {
+      // Create new product in inventory using the specified JSON format
+  const response = await fetch(`${API_URL}/inventory/add-micine`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         credentials: "include",
         body: JSON.stringify({
           product_name: newMedicineForm.product_name,
@@ -398,56 +434,70 @@ const PurchaseOrder = () => {
 
       if (response.ok) {
         const result = await response.json();
+        console.log("New medicine added:", result);
+
         const productId = result.data?.product_id || result.product_id;
 
-        // Optionally create product-supplier relation if provided in modal
+        // If supplier is selected, create product-supplier relationship
         if (selectedSupplierForNewMedicine && newMedicineCost && productId) {
           try {
             const supplierResponse = await fetch(`${API_URL}/product-supplier`, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+              },
               credentials: "include",
               body: JSON.stringify({
                 product_id: productId,
                 supplier_id: selectedSupplierForNewMedicine,
-                cost: parseFloat(newMedicineCost), // DB field still named cost
+                cost: parseFloat(newMedicineCost), // ยังใช้ cost ใน API เพราะ database เก็บเป็น cost
                 is_active: true
               })
             });
-            if (!supplierResponse.ok) console.warn("Failed to create product-supplier relationship");
+
+            if (supplierResponse.ok) {
+              console.log("Product-supplier relationship created");
+            } else {
+              console.warn("Failed to create product-supplier relationship");
+            }
           } catch (error) {
             console.warn("Error creating product-supplier relationship:", error);
           }
         }
 
-        const supplierData = selectedSupplierForNewMedicine
-          ? suppliers.find(s => s.supplier_id === selectedSupplierForNewMedicine)
-          : null;
-
-        // Add to the list with price unset & unit empty (user fills later)
+        // Add to order items list with supplier data
+        const supplierData = selectedSupplierForNewMedicine ? 
+          suppliers.find(s => s.supplier_id === selectedSupplierForNewMedicine) : null;
+        
         const newOrderItem: OrderItem = {
           id: productId || Date.now(),
           name: newMedicineForm.product_name,
           brand: newMedicineForm.brand,
           amount: 1,
-          unit: "",           // require selection in the selected list
-          price: null,        // require entry in the selected list
+          unit: newMedicineForm.unit,
+          price: newMedicineCost ? parseFloat(newMedicineCost) : 0,
           image: newMedicineForm.image,
           isCustom: true,
           suppliers: supplierData && newMedicineCost ? [{
             supplier_id: supplierData.supplier_id,
             supplier_name: supplierData.name,
-            price: parseFloat(newMedicineCost),
+            price: parseFloat(newMedicineCost), // เปลี่ยนจาก cost เป็น price
             is_active: true
           }] : []
         };
 
         setOrderItems(prev => [...prev, newOrderItem]);
-        setSelectedItems(prev => new Set([...prev, newOrderItem.id])); // auto-select
+        
+        // Auto-select the new item
+        setSelectedItems(prev => new Set([...prev, newOrderItem.id]));
+        
+        // Close modal and reset form
         setShowAddMedicineModal(false);
         resetNewMedicineForm();
         setErrorMessage("");
+
         alert(`New medicine "${newMedicineForm.product_name}" added successfully!`);
+
       } else {
         throw new Error("Failed to add new medicine");
       }
@@ -458,27 +508,37 @@ const PurchaseOrder = () => {
       setIsSubmitting(false);
     }
   };
-
-  const checkme = async () => {
-    try {
-      const authme = await fetch(`${API_URL}/me`, {
-        method: 'GET',
-        credentials: 'include'
-      });
-      const data = await authme.json();
-      if (authme.status === 401 || authme.status === 403) {
-        navigate('/login');
-        return;
+    const checkme = async () => {
+      try {
+  const authme = await fetch(`${API_URL}/me`, {
+          method: 'GET',
+          credentials: 'include'
+        })
+        const data = await authme.json();
+        if (authme.status === 401 || authme.status === 403) {
+          navigate('/login');
+          return;
+        }
+  
+        console.log('Authme data:', data);
+      } catch (error) {
+        console.log('Error', error)
+  
       }
-      console.log('Authme data:', data);
-    } catch (error) {
-      console.log('Error', error);
     }
-  };
+  
+  
+  useEffect(() => {
+    loadData();
+    checkme();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);  
 
   return (
     <div className="min-h-screen transition-colors duration-300"
          style={{backgroundColor: isDark ? '#111827' : '#f9fafb'}}>
+      {/* Main Content */}
+
       {/* Purchase Order Content */}
       <div className="p-6">
         <h2 className="text-3xl font-light mb-8 transition-colors duration-300"
@@ -573,7 +633,7 @@ const PurchaseOrder = () => {
                 ))}
               </select>
             </div>
-
+            
             <button
               onClick={() => {
                 setSearchTerm("");
@@ -586,8 +646,8 @@ const PurchaseOrder = () => {
             </button>
           </div>
 
-          {/* Inventory Items Header (no 'Available') */}
-          <div className="grid grid-cols-5 gap-4 pb-4 border-b text-sm font-medium transition-colors duration-300"
+          {/* Inventory Items Header */}
+          <div className="grid grid-cols-6 gap-4 pb-4 border-b text-sm font-medium transition-colors duration-300"
                style={{
                  borderColor: isDark ? '#4b5563' : '#e5e7eb',
                  color: isDark ? '#d1d5db' : '#4b5563'
@@ -595,6 +655,7 @@ const PurchaseOrder = () => {
             <div>Select</div>
             <div className="col-span-2">Product Name</div>
             <div>Product ID</div>
+            <div>Available</div>
             <div>Price (THB)</div>
           </div>
 
@@ -609,56 +670,60 @@ const PurchaseOrder = () => {
                 </div>
               ) : (
                 getFilteredItems().map((item) => (
-                  <div
-                    key={item.id}
-                    className="grid grid-cols-5 gap-4 items-center py-3 px-2 transition-colors duration-300"
-                    style={{borderColor: isDark ? '#4b5563' : '#f3f4f6'}}
-                  >
+                <div
+                  key={item.id}
+                  className="grid grid-cols-6 gap-4 items-center py-3 px-2 transition-colors duration-300"
+                  style={{borderColor: isDark ? '#4b5563' : '#f3f4f6'}}
+                >
+                  <div>
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.has(item.id)}
+                      onChange={() => handleItemSelection(item.id)}
+                      className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500 focus:ring-2"
+                      style={{
+                        backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                        borderColor: isDark ? '#4b5563' : '#d1d5db'
+                      }}
+                    />
+                  </div>
+                  <div className="col-span-2 flex items-center space-x-3">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center text-lg transition-colors duration-300"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#f3f4f6'}}>
+                      {getImageSrc(item.image) ? (
+                        <img 
+                          src={getImageSrc(item.image)!} 
+                          alt={item.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <span>{item.image}</span>
+                      )}
+                    </div>
                     <div>
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.has(item.id)}
-                        onChange={() => handleItemSelection(item.id)}
-                        className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500 focus:ring-2"
-                        style={{
-                          backgroundColor: isDark ? '#374151' : '#f3f4f6',
-                          borderColor: isDark ? '#4b5563' : '#d1d5db'
-                        }}
-                      />
-                    </div>
-                    <div className="col-span-2 flex items-center space-x-3">
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center text-lg transition-colors duration-300"
-                           style={{backgroundColor: isDark ? '#4b5563' : '#f3f4f6'}}>
-                        {getImageSrc(item.image) ? (
-                          <img
-                            src={getImageSrc(item.image)!}
-                            alt={item.name}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <span>{item.image}</span>
-                        )}
-                      </div>
-                      <div>
-                        <span className="font-medium transition-colors duration-300"
-                              style={{color: isDark ? 'white' : '#1f2937'}}>{item.name}</span>
-                        <div className="text-sm transition-colors duration-300"
-                             style={{color: isDark ? '#9ca3af' : '#6b7280'}}>{item.brand}</div>
-                        {item.suppliers && item.suppliers.length > 0 && (
-                          <div className="text-xs mt-1 transition-colors duration-300"
-                               style={{color: isDark ? '#60a5fa' : '#2563eb'}}>
-                            Suppliers: {item.suppliers.map(s => `${s.supplier_name} (฿${s.price})`).join(', ')}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="transition-colors duration-300"
-                         style={{color: isDark ? '#d1d5db' : '#4b5563'}}>{item.id}</div>
-                    <div className="font-semibold transition-colors duration-300"
-                         style={{color: isDark ? 'white' : '#1f2937'}}>
-                      {item.price != null ? (item.price || 0).toLocaleString() : "-"}
+                      <span className="font-medium transition-colors duration-300"
+                            style={{color: isDark ? 'white' : '#1f2937'}}>{item.name}</span>
+                      <div className="text-sm transition-colors duration-300"
+                           style={{color: isDark ? '#9ca3af' : '#6b7280'}}>{item.brand}</div>
+                      {item.suppliers && item.suppliers.length > 0 && (
+                        <div className="text-xs mt-1 transition-colors duration-300"
+                             style={{color: isDark ? '#60a5fa' : '#2563eb'}}>
+                          Suppliers: {item.suppliers.map(s => `${s.supplier_name} (฿${s.price})`).join(', ')}
+                        </div>
+                      )}
                     </div>
                   </div>
+                  <div className="transition-colors duration-300"
+                       style={{color: isDark ? '#d1d5db' : '#4b5563'}}>{item.id}</div>
+                  <div className="transition-colors duration-300"
+                       style={{color: isDark ? '#d1d5db' : '#4b5563'}}>
+                    {item.amount} {item.unit}
+                  </div>
+                  <div className="font-semibold transition-colors duration-300"
+                       style={{color: isDark ? 'white' : '#1f2937'}}>
+                    {(item.price ?? 0).toLocaleString()}
+                  </div>
+                </div>
                 ))
               )}
             </div>
@@ -682,12 +747,6 @@ const PurchaseOrder = () => {
               </div>
             </div>
           </div>
-
-          {selectedItems.size > 0 && (
-            <p className="text-sm mb-3" style={{color: isDark ? '#fbbf24' : '#b45309'}}>
-              Tip: Enter a price and select the unit to buy for each selected item.
-            </p>
-          )}
 
           {/* Selected Items Table Header */}
           <div className="grid grid-cols-6 gap-4 pb-4 border-b text-sm font-medium transition-colors duration-300"
@@ -730,121 +789,95 @@ const PurchaseOrder = () => {
                         }}
                       />
                     </div>
-                    <div className="col-span-2 flex items-center space-x-3">
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center text-lg transition-colors duration-300"
-                           style={{backgroundColor: isDark ? '#4b5563' : '#f3f4f6'}}>
-                        {getImageSrc(item.image) ? (
-                          <img
-                            src={getImageSrc(item.image)!}
-                            alt={item.name}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <span>{item.image}</span>
-                        )}
-                      </div>
-                      <div>
-                        <span className="font-medium transition-colors duration-300"
-                              style={{color: isDark ? 'white' : '#1f2937'}}>{item.name}</span>
-                        <div className="text-sm transition-colors duration-300"
-                             style={{color: isDark ? '#9ca3af' : '#6b7280'}}>{item.brand}</div>
-                      </div>
+                  <div className="col-span-2 flex items-center space-x-3">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center text-lg transition-colors duration-300"
+                         style={{backgroundColor: isDark ? '#4b5563' : '#f3f4f6'}}>
+                      {getImageSrc(item.image) ? (
+                        <img 
+                          src={getImageSrc(item.image)!} 
+                          alt={item.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <span>{item.image}</span>
+                      )}
                     </div>
-                    <div className="transition-colors duration-300"
-                         style={{color: isDark ? '#d1d5db' : '#4b5563'}}>{item.id}</div>
-
-                    {/* Quantity + Unit selector */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => updateQuantity(item.id, Math.max(1, item.amount - 1))}
-                        className="w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-200"
-                        style={{ backgroundColor: isDark ? '#4b5563' : '#f3f4f6' }}
-                        onMouseEnter={(e) => {
-                          const target = e.target as HTMLButtonElement;
-                          target.style.backgroundColor = isDark ? '#6b7280' : '#e5e7eb';
-                        }}
-                        onMouseLeave={(e) => {
-                          const target = e.target as HTMLButtonElement;
-                          target.style.backgroundColor = isDark ? '#4b5563' : '#f3f4f6';
-                        }}
-                      >
-                        <Minus className="w-3 h-3" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
-                      </button>
-
-                      <input
-                        type="number"
-                        min={1}
-                        value={item.amount}
-                        onChange={e => {
-                          const value = Number(e.target.value);
-                          updateQuantity(item.id, isNaN(value) || value < 1 ? 1 : value);
-                        }}
-                        className="mx-1 min-w-12 text-center border rounded px-2 py-1 w-20 transition-colors duration-300"
-                        style={{
-                          backgroundColor: isDark ? '#374151' : 'white',
-                          borderColor: isDark ? '#4b5563' : '#d1d5db',
-                          color: isDark ? 'white' : '#1f2937'
-                        }}
-                      />
-
-                      <select
-                        value={item.unit || ""}
-                        onChange={(e) =>
-                          setOrderItems(curr =>
-                            curr.map(it => it.id === item.id ? { ...it, unit: e.target.value } : it)
-                          )
-                        }
-                        className="px-2 py-1 border rounded w-28"
-                        style={{
-                          backgroundColor: isDark ? '#374151' : 'white',
-                          borderColor: isDark ? '#4b5563' : '#d1d5db',
-                          color: isDark ? 'white' : '#1f2937'
-                        }}
-                      >
-                        <option value="" disabled>Select unit</option>
-                        {units.map(u => <option key={u} value={u}>{u}</option>)}
-                      </select>
-
-                      <button
-                        onClick={() => updateQuantity(item.id, item.amount + 1)}
-                        className="w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-200"
-                        style={{ backgroundColor: isDark ? '#4b5563' : '#f3f4f6' }}
-                        onMouseEnter={(e) => {
-                          const target = e.target as HTMLButtonElement;
-                          target.style.backgroundColor = isDark ? '#6b7280' : '#e5e7eb';
-                        }}
-                        onMouseLeave={(e) => {
-                          const target = e.target as HTMLButtonElement;
-                          target.style.backgroundColor = isDark ? '#4b5563' : '#f3f4f6';
-                        }}
-                      >
-                        <Plus className="w-3 h-3" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
-                      </button>
-                    </div>
-
-                    {/* Price input */}
                     <div>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={item.price ?? ""}
-                        onChange={(e) => {
-                          const val = e.target.value === "" ? null : Number(e.target.value);
-                          setOrderItems(curr =>
-                            curr.map(it => it.id === item.id ? { ...it, price: val } : it)
-                          );
-                        }}
-                        placeholder="Enter price"
-                        className="w-28 px-2 py-1 border rounded text-right font-semibold"
-                        style={{
-                          backgroundColor: isDark ? '#374151' : 'white',
-                          borderColor: isDark ? '#4b5563' : '#d1d5db',
-                          color: isDark ? 'white' : '#1f2937'
-                        }}
-                      />
+                      <span className="font-medium transition-colors duration-300"
+                            style={{color: isDark ? 'white' : '#1f2937'}}>{item.name}</span>
+                      <div className="text-sm transition-colors duration-300"
+                           style={{color: isDark ? '#9ca3af' : '#6b7280'}}>{item.brand}</div>
                     </div>
                   </div>
+                  <div className="transition-colors duration-300"
+                       style={{color: isDark ? '#d1d5db' : '#4b5563'}}>{item.id}</div>
+                  <div className="flex items-center space-x-2">
+                      {selectedItems.has(item.id) && (
+                        <button
+                          onClick={() => updateQuantity(item.id, Math.max(1, item.amount - 1))}
+                          className="w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-200"
+                          style={{
+                            backgroundColor: isDark ? '#4b5563' : '#f3f4f6'
+                          }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = isDark ? '#6b7280' : '#e5e7eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = isDark ? '#4b5563' : '#f3f4f6';
+                          }}
+                        >
+                          <Minus className="w-3 h-3" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
+                        </button>
+                      )}
+                      {selectedItems.has(item.id) ? (
+                        <input
+                          type="number"
+                          min={1}
+                          value={item.amount}
+                          onChange={e => {
+                            const value = Number(e.target.value);
+                            updateQuantity(item.id, isNaN(value) || value < 1 ? 1 : value);
+                          }}
+                          className="mx-2 min-w-12 text-center border rounded px-2 py-1 w-20 transition-colors duration-300"
+                          style={{
+                            backgroundColor: isDark ? '#374151' : 'white',
+                            borderColor: isDark ? '#4b5563' : '#d1d5db',
+                            color: isDark ? 'white' : '#1f2937'
+                          }}
+                        />
+                      ) : (
+                        <span className="mx-2 min-w-12 text-center transition-colors duration-300"
+                              style={{color: isDark ? '#d1d5db' : '#4b5563'}}>
+                          {item.amount} {item.unit}
+                        </span>
+                      )}
+                      {selectedItems.has(item.id) && (
+                        <button
+                          onClick={() => updateQuantity(item.id, item.amount + 1)}
+                          className="w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-200"
+                          style={{
+                            backgroundColor: isDark ? '#4b5563' : '#f3f4f6'
+                          }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = isDark ? '#6b7280' : '#e5e7eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.backgroundColor = isDark ? '#4b5563' : '#f3f4f6';
+                          }}
+                        >
+                          <Plus className="w-3 h-3" style={{color: isDark ? '#d1d5db' : '#4b5563'}} />
+                        </button>
+                      )}
+                  </div>
+                  <div className="font-semibold transition-colors duration-300"
+                       style={{color: isDark ? 'white' : '#1f2937'}}>
+                    {(item.price ?? 0).toLocaleString()}
+                  </div>
+                </div>
                 ))
               )}
             </div>
@@ -873,7 +906,7 @@ const PurchaseOrder = () => {
                 : "hover:bg-green-900 text-white"
             }`}
             style={{
-              backgroundColor: selectedItems.size === 0
+              backgroundColor: selectedItems.size === 0 
                 ? (isDark ? '#4b5563' : '#9ca3af')
                 : (isDark ? '#166534' : '#14532d'),
               color: selectedItems.size === 0
@@ -989,6 +1022,7 @@ const PurchaseOrder = () => {
                   value={newMedicineForm.producttype}
                   onChange={(e) => {
                     if (e.target.value === "custom") {
+                      // Handle custom product type
                       setCustomProductType("");
                     } else {
                       handleFormChange('producttype', e.target.value);
@@ -1010,7 +1044,7 @@ const PurchaseOrder = () => {
                     onChange={(e) => {
                       setCustomProductType(e.target.value);
                       handleFormChange('producttype', e.target.value);
-                    })}
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
                     placeholder="Enter custom product type"
                   />
@@ -1025,6 +1059,7 @@ const PurchaseOrder = () => {
                   value={newMedicineForm.unit}
                   onChange={(e) => {
                     if (e.target.value === "custom") {
+                      // Handle custom unit
                       setCustomUnit("");
                     } else {
                       handleFormChange('unit', e.target.value);
@@ -1046,7 +1081,7 @@ const PurchaseOrder = () => {
                     onChange={(e) => {
                       setCustomUnit(e.target.value);
                       handleFormChange('unit', e.target.value);
-                    })}
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
                     placeholder="Enter custom unit"
                   />
