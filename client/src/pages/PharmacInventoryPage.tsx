@@ -21,6 +21,7 @@ type MedicineItem = {
   id: number;
   name: string;
   brand: string;
+  generic_name: string;
   image?: string | null;
   productType?: string | null;
   unit?: string | null;
@@ -57,6 +58,7 @@ export default function PharmacInventoryPage() {
           id: item.product_id,
           name: item.product_name || "-",
           brand: item.brand || "-",
+          generic_name: item.generic_name || "-",
           image: item.image || null,
           productType: item.producttype ?? null,
           unit: item.unit ?? item.unit_name ?? item.unitName ?? null,
@@ -676,7 +678,7 @@ export default function PharmacInventoryPage() {
         </div>
 
         {/* Modern Table Header */}
-        <div className="hidden lg:grid lg:grid-cols-7 gap-4 px-6 py-4 border-b text-sm font-semibold"
+        <div className="hidden lg:grid lg:grid-cols-8 gap-4 px-6 py-4 border-b text-sm font-semibold"
              style={{
                backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f1f5f9',
                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e2e8f0'
@@ -689,6 +691,9 @@ export default function PharmacInventoryPage() {
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
             {t('brand')}
+          </div>
+          <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
+            {t('productGenericName')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
             {t('type')}
@@ -752,7 +757,7 @@ export default function PharmacInventoryPage() {
                   {/* Desktop Layout */}
                   <div
                     onClick={() => !editMode && openItem(item.id)}
-                    className={`hidden lg:grid lg:grid-cols-7 gap-4 px-6 py-5 transition-all duration-300 border-b border-gray-300 ${
+                    className={`hidden lg:grid lg:grid-cols-8 gap-4 px-6 py-5 transition-all duration-300 border-b border-gray-300 ${
                       isDimmed ? "opacity-50" : "opacity-100"
                     } ${!editMode ? "cursor-pointer hover:bg-opacity-75" : "cursor-default"}
                     ${isSelected ? "ring-2 ring-green-500 bg-green-50" : ""}`}
@@ -850,10 +855,32 @@ export default function PharmacInventoryPage() {
                           }}
                         />
                       ) : (
-                        <span className="font-medium"
+                        <span className="font-medium text-center"
                               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>
                           {item.brand}
                         </span>
+                      )}
+                    </div>
+
+                    {/* Generic Name cell */}
+                    <div className="flex items-center justify-center">
+                      {isSelected && editMode ? (
+                        <input
+                          type="text"
+                          value={item.generic_name ?? ""}
+                          onChange={(e) => handleInputChange(item.id, "generic_name", e.target.value)}
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center"
+                          style={{
+                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                            borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                            color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                          }}
+                        />
+                      ) : (
+                        <p className="text-sm text-center"
+                           style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
+                          {item.generic_name || "-"}
+                        </p>
                       )}
                     </div>
 
@@ -973,7 +1000,11 @@ export default function PharmacInventoryPage() {
                             </h4>
                             <p className="text-sm"
                                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
-                              {item.brand} • ID: {item.id}
+                              {item.brand} • {item.generic_name}
+                            </p>
+                            <p className="text-sm"
+                               style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
+                              ID: {item.id}
                             </p>
                           </div>
                           {editMode && (
