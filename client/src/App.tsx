@@ -49,6 +49,7 @@ function AppContent() {
   // Force Customer to stay on CustomerPaymentPage
   useEffect(() => {
     if (user && user.role === 'Customer' && location.pathname !== '/customer-payment') {
+      console.log('🔄 Redirecting customer to /customer-payment');
       navigate('/customer-payment', { replace: true });
     }
   }, [user, location.pathname, navigate]);
@@ -64,6 +65,7 @@ function AppContent() {
 
   // If user is Customer, show Customer Payment Page directly regardless of URL
   if (user && user.role === 'Customer') {
+    console.log('✅ Rendering CustomerPaymentPage for customer:', user.email);
     return <CustomerPaymentPage />;
   }
 

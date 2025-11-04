@@ -345,7 +345,3 @@ model stock_transaction {
   note           String?   @db.VarChar(255)
   lot            lot?      @relation(fields: [lot_id_fk], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "stock_lot_fk")
 }
-
-/// We could not retrieve columns for the underlying table. Either it has none or you are missing rights to see them. Please check your privileges.
-// model forecast_result {
-// }

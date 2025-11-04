@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface User {
   id: string;
   email: string;
-  role: 'Owner' | 'Staff' | 'Customer';
+  role: 'Owner' | 'Staff' | 'Customer' | 'Employee' | 'Pharmacist';
   name?: string;
 }
 
@@ -37,15 +37,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Role mapping function
-  const mapRoleIdToRoleName = (roleId: number | string): 'Owner' | 'Staff' | 'Customer' => {
+  const mapRoleIdToRoleName = (roleId: number | string): 'Owner' | 'Staff' | 'Customer' | 'Employee' | 'Pharmacist' => {
     const id = typeof roleId === 'string' ? parseInt(roleId) : roleId;
+    console.log('🔍 Mapping role_id:', id); // Debug log
     switch (id) {
-      case 1: return 'Customer'; // Admin -> Staff
-      case 2: return 'Owner'; // Owner -> Owner
-      case 3: return 'Staff'; // Employee -> Staff
-      case 4: return 'Staff'; // Pharmacist -> Staff
-      // case 8: return 'Customer'; // Customer -> Customer
-      default: return 'Customer'; // Default fallback
+      case 1: return 'Owner';      // OWNER role
+      case 2: return 'Staff';      // ADMIN role (mapped to Staff)
+      case 3: return 'Employee';   // EMPLOYEE role
+      case 4: return 'Customer';   // CUSTOMER role ✅
+      case 5: return 'Pharmacist'; // PHARMACIST role
+      default: 
+        console.warn('⚠️ Unknown role_id:', id, 'defaulting to Customer');
+        return 'Customer'; // Default fallback
     }
   };
 
@@ -100,12 +103,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (response.ok) {
         const responseData = await response.json();
+        console.log('🔐 authLogin response:', responseData); // Debug log
         
         // If it's a customer, they skip OTP and are logged in directly
         if (responseData.skipOtp) {
           const userData = responseData.data;
           const roleId = userData?.role_id || userData.roleId || userData.role || userData.user_role;
+          console.log('✅ Customer login detected! role_id:', roleId); // Debug log
           const mappedRole = mapRoleIdToRoleName(roleId);
+          console.log('✅ Mapped to role:', mappedRole); // Debug log
           
           const user: User = {
             id: userData?.employee_id || userData.id || userData.user_id || userData.userId,
@@ -114,10 +120,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             name: userData?.firstname || userData.name || userData.username || userData.full_name,
           };
           
+          console.log('👤 Setting customer user:', user); // Debug log
           setUser(user); // Log in the customer directly
           return { success: true, skipOtp: true, userData: user };
         }
         
+        console.log('📧 OTP sent to non-customer user'); // Debug log
         // For non-customers, OTP was sent
         return { success: true, skipOtp: false };
       }
@@ -223,6 +231,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const value = {
