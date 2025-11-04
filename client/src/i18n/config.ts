@@ -102,6 +102,7 @@ const resources = {
 
       // Inventory
       pharmacyInventory: "Pharmacy Inventory",
+      productGenericName:"Product Generic Name",
       products: "Products",
       expiryMonitoring: "Expiry Monitoring",
       addProduct: "Add Product",
@@ -215,6 +216,7 @@ const resources = {
       pdfPreview: "PDF Preview",
       openInNewTab: "Open in new tab",
       
+      
       // Search and Filter
       search: "Search",
       searchByDocNumber: "Search by document number",
@@ -223,11 +225,13 @@ const resources = {
       sortBy: "Sort by",
       dateNewestFirst: "Date (Newest First)",
       dateOldestFirst: "Date (Oldest First)", 
+      dateOldestFirst: "Date (Oldest First)", 
       poNumber: "PO Number",
       signatureStatus: "Signature Status",
       allDocuments: "All Documents",
       signedOnly: "Signed Only",
       unsignedOnly: "Unsigned Only",
+      
       
       // Bulk Actions
       selected: "selected",
@@ -514,10 +518,18 @@ const resources = {
       addEmployee: "Add Employee",
 
       // Sales History Page
+      // Sales History Page
       salesHistory: "Sales History",
+      backToDashboard: "Back to Dashboard",
       backToDashboard: "Back to Dashboard",
       ordersInPeriod: "Orders in period:",
       selectTimePeriod: "Select Time Period",
+      last7Days: "Last 7 Days",
+      last14Days: "Last 14 Days",
+      last1Month: "Last 1 Month",
+      last3Months: "Last 3 Months",
+      last6Months: "Last 6 Months",
+      customDateHelp: "Or select a custom start date:",
       last7Days: "Last 7 Days",
       last14Days: "Last 14 Days",
       last1Month: "Last 1 Month",
@@ -534,9 +546,18 @@ const resources = {
       ordersShort: "Orders",
       avgUnitPrice: "Avg. Unit Price",
       revenueShare: "Revenue Share",
+      avgUnitPrice: "Avg. Unit Price",
+      revenueShare: "Revenue Share",
       loadingSalesData: "Loading sales data...",
       noSalesData: "No sales data for selected period",
+      noSalesData: "No sales data for selected period",
       failedToLoadSalesData: "Failed to load sales data",
+
+      // Product Type Descriptions (Forecast Dashboard)
+      productType_J01: "Antibacterials for systemic use",
+      productType_A02: "Drugs for acid related disorders",
+      productType_N02: "Analgesics",
+      productType_R06: "Antihistamines for systemic use",
 
     },
   },
@@ -640,6 +661,7 @@ const resources = {
 
       // Inventory
       pharmacyInventory: "คลังสินค้าร้านยา",
+      productGenericName:"ชื่อยาสามัญ",
       products: "สินค้า",
       expiryMonitoring: "ตรวจสอบการหมดอายุ",
       addProduct: "เพิ่มสินค้า",
@@ -753,6 +775,7 @@ const resources = {
       pdfPreview: "ดูตัวอย่าง PDF",
       openInNewTab: "เปิดในแท็บใหม่",
       
+      
       // Search and Filter
       search: "ค้นหา",
       searchByDocNumber: "ค้นหาด้วยเลขที่เอกสาร",
@@ -766,6 +789,7 @@ const resources = {
       allDocuments: "เอกสารทั้งหมด",
       signedOnly: "เซ็นแล้วเท่านั้น",
       unsignedOnly: "ยังไม่เซ็นเท่านั้น",
+      
       
       // Bulk Actions
       selected: "เลือกแล้ว",
@@ -1044,10 +1068,19 @@ const resources = {
       addEmployee: "เพิ่มพนักงาน",
 
       // Sales History Page
+      // Sales History Page
       salesHistory: "ประวัติการขาย",
       backToDashboard: "กลับไปที่แดชบอร์ด",
       ordersInPeriod: "คำสั่งซื้อในช่วงเวลา:",
+      backToDashboard: "กลับไปที่แดชบอร์ด",
+      ordersInPeriod: "คำสั่งซื้อในช่วงเวลา:",
       selectTimePeriod: "เลือกช่วงเวลา",
+      last7Days: "7 วันที่ผ่านมา",
+      last14Days: "14 วันที่ผ่านมา",
+      last1Month: "1 เดือนที่ผ่านมา",
+      last3Months: "3 เดือนที่ผ่านมา",
+      last6Months: "6 เดือนที่ผ่านมา",
+      customDateHelp: "หรือเลือกวันที่เริ่มต้นแบบกำหนดเอง:",
       last7Days: "7 วันที่ผ่านมา",
       last14Days: "14 วันที่ผ่านมา",
       last1Month: "1 เดือนที่ผ่านมา",
@@ -1058,8 +1091,14 @@ const resources = {
       clear: "ล้าง",
       totalProducts: "สินค้าทั้งหมด",
       totalUnitsSold: "จำนวนหน่วยที่ขายได้",
+      totalProducts: "สินค้าทั้งหมด",
+      totalUnitsSold: "จำนวนหน่วยที่ขายได้",
       totalSalesAmount: "ยอดขายรวม",
       productSalesDetails: "รายละเอียดการขายสินค้า",
+      unitsSold: "หน่วยที่ขาย",
+      ordersShort: "คำสั่งซื้อ",
+      avgUnitPrice: "ราคาต่อหน่วยเฉลี่ย",
+      revenueShare: "สัดส่วนรายได้",
       unitsSold: "หน่วยที่ขาย",
       ordersShort: "คำสั่งซื้อ",
       avgUnitPrice: "ราคาต่อหน่วยเฉลี่ย",
@@ -1067,6 +1106,14 @@ const resources = {
       loadingSalesData: "กำลังโหลดข้อมูลการขาย...",
       noSalesData: "ไม่มีข้อมูลการขายสำหรับช่วงเวลาที่เลือก",
       failedToLoadSalesData: "ไม่สามารถโหลดข้อมูลการขายได้",
+      noSalesData: "ไม่มีข้อมูลการขายสำหรับช่วงเวลาที่เลือก",
+      failedToLoadSalesData: "ไม่สามารถโหลดข้อมูลการขายได้",
+
+      // Product Type Descriptions (Forecast Dashboard)
+      productType_J01: "สารต้านแบคทีเรียสำหรับทั่วร่างกาย",
+      productType_A02: "ยาสำหรับโรคเกี่ยวกับกรด",
+      productType_N02: "ยาระงับปวด",
+      productType_R06: "สารต้านฮิสตามีนสำหรับทั่วร่างกาย",
     },
   },
 };

@@ -26,16 +26,20 @@ const formatCurrency = (amount: number) => {
   return `฿${amount.toLocaleString()}`;
 };
 
-// Product Type Descriptions Mapping
-const productTypeDescriptions: Record<string, string> = {
-  'M01AB': 'Anti-inflammatory and antirheumatic products, non-steroids, Acetic acid derivatives and related substances',
-  'M01AE': 'Anti-inflammatory and antirheumatic products, non-steroids, Propionic acid derivatives',
-  'N02BA': 'Other analgesics and antipyretics, Salicylic acid and derivatives',
-  'N02BE/B': 'Other analgesics and antipyretics, Pyrazolones and Anilides',
-  'N05B': 'Psycholeptics drugs, Anxiolytic drugs',
-  'N05C': 'Psycholeptics drugs, Hypnotics and sedatives drugs',
-  'R03': 'Drugs for obstructive airway diseases',
-  'R06': 'Antihistamines for systemic use'
+// Helper function to format forecast period label
+const formatForecastPeriod = (days: number) => {
+  if (days === 7) return '7 Days';
+  if (days === 14) return '14 Days';
+  if (days === 90) return '3 Months';
+  if (days === 180) return '6 Months';
+  return `${days} Days`;
+};
+
+// Product Type Descriptions Mapping - now uses translation keys
+const getProductTypeKey = (code: string): string => {
+  // Normalize code (remove slashes and special chars for translation key)
+  const normalizedCode = code.replace(/\//g, '').replace(/-/g, '');
+  return `productType_${normalizedCode}`;
 };
 
 // All stats now use real API data
@@ -50,21 +54,12 @@ export default function PharmaDashboard() {
   // Helper function to determine if current theme is dark
   const isDark = theme === 'dark';
 
-  // Helper function to format forecast period label with translations
-  const getFormattedForecastPeriod = (days: number) => {
-    if (days === 7) return t('sevenDays');
-    if (days === 14) return t('fourteenDays');
-    if (days === 90) return t('threeMonths');
-    if (days === 180) return t('sixMonths');
-    return `${days} ${t('days')}`;
-  };
-
   // Generate dynamic dashboard stats with real data from APIs
   const getDashboardStats = () => {
     return [
       {
-        title: t("totalSales"),
-        value: loadingSales ? t("loading") : formatCurrency(totalSales),
+        title: "Total Sales",
+        value: loadingSales ? "Loading..." : formatCurrency(totalSales),
         change: "",
         isPositive: true,
         icon: DollarSign,
@@ -72,8 +67,8 @@ export default function PharmaDashboard() {
         isLoading: loadingSales
       },
       {
-        title: t("ordersShort"),
-        value: loadingOrders ? t("loading") : totalOrders.toLocaleString(),
+        title: "Orders",
+        value: loadingOrders ? "Loading..." : totalOrders.toLocaleString(),
         change: "",
         isPositive: true,
         icon: ShoppingCart,
@@ -81,8 +76,8 @@ export default function PharmaDashboard() {
         isLoading: loadingOrders
       },
       {
-        title: t("products"),
-        value: loadingProducts ? t("loading") : totalProducts.toLocaleString(),
+        title: "Products",
+        value: loadingProducts ? "Loading..." : totalProducts.toLocaleString(),
         change: "",
         isPositive: true,
         icon: Package,
@@ -90,8 +85,8 @@ export default function PharmaDashboard() {
         isLoading: loadingProducts
       },
       {
-        title: t("members"),
-        value: loadingMembers ? t("loading") : totalMembers.toLocaleString(),
+        title: "Members",
+        value: loadingMembers ? "Loading..." : totalMembers.toLocaleString(),
         change: "",
         isPositive: true,
         icon: Users,
@@ -472,7 +467,7 @@ export default function PharmaDashboard() {
             </h1>
             <p className="mt-2 text-sm lg:text-base transition-colors"
               style={{ color: isDark ? '#d1d5db' : '#4b5563' }}>
-              {t('monitorPharmacyAnalytics')}
+              Monitor your pharmacy analytics and performance
             </p>
           </div>
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
@@ -485,7 +480,7 @@ export default function PharmaDashboard() {
             </button>
             <span className="text-sm lg:text-base font-medium transition-colors"
               style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-              {new Date().toLocaleDateString(t('locale'), {
+              {new Date().toLocaleDateString('en-US', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -519,7 +514,7 @@ export default function PharmaDashboard() {
                           </div>
                           <span className="text-lg font-bold transition-colors"
                             style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                            {t("loading")}
+                            Loading...
                           </span>
                         </div>
                       ) : (
@@ -548,14 +543,14 @@ export default function PharmaDashboard() {
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <h2 className="text-2xl lg:text-3xl font-bold transition-colors"
               style={{ color: isDark ? 'white' : '#111827' }}>
-              {t('productTypesPerformance')}
+              Product Types Performance
             </h2>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
               {/* Forecast Days Selector */}
               <div className="flex items-center space-x-2">
                 <label className="text-sm font-medium transition-colors"
                   style={{ color: isDark ? '#d1d5db' : '#374151' }}>
-                  {t('forecastPeriod')}:
+                  Forecast Period:
                 </label>
                 <select 
                   value={forecastDays} 
@@ -566,10 +561,10 @@ export default function PharmaDashboard() {
                     borderColor: isDark ? '#4b5563' : '#d1d5db',
                     color: isDark ? 'white' : '#111827'
                   }}>
-                  <option value={7}>{t('sevenDays')}</option>
-                  <option value={14}>{t('fourteenDays')}</option>
-                  <option value={90}>{t('threeMonths')}</option>
-                  <option value={180}>{t('sixMonths')}</option>
+                  <option value={7}>7 Days</option>
+                  <option value={14}>14 Days</option>
+                  <option value={90}>3 Months</option>
+                  <option value={180}>6 Months</option>
                 </select>
               </div>
               {/* Date Range Selector */}
@@ -586,7 +581,7 @@ export default function PharmaDashboard() {
                   }}
                 />
                 <span className="text-sm transition-colors"
-                  style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>{t('to')}</span>
+                  style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>to</span>
                 <input 
                   type="date"
                   value={endDate}
@@ -603,7 +598,7 @@ export default function PharmaDashboard() {
                 onClick={() => loadForecastData()}
                 className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
-                {t('updateForecast')}
+                Update Forecast
               </button>
               
               {/* Cache Status Indicator */}
@@ -613,7 +608,7 @@ export default function PharmaDashboard() {
                     backgroundColor: isDark ? '#065f46' : '#d1fae5',
                     color: isDark ? '#6ee7b7' : '#047857'
                   }}>
-                  <span>💾 {t('cached')}</span>
+                  <span>💾 Cached</span>
                 </div>
               )}
               
@@ -630,9 +625,9 @@ export default function PharmaDashboard() {
                   borderColor: isDark ? '#4b5563' : '#d1d5db',
                   color: isDark ? '#9ca3af' : '#6b7280'
                 }}
-                title={t('clearCacheTooltip')}
+                title="Clear cache and fetch fresh data"
               >
-                🗑️ {t('clearCache')}
+                🗑️ Clear Cache
               </button>
             </div>
           </div>
@@ -789,19 +784,24 @@ export default function PharmaDashboard() {
                         style={{ color: isDark ? 'white' : '#111827' }}>
                         {type}
                       </h3>
-                      {/* Product Type Description Subtitle */}
-                      {productTypeDescriptions[type] && (
-                        <p className="text-xs mt-1 leading-relaxed transition-colors"
-                          style={{ 
-                            color: isDark ? '#9ca3af' : '#6b7280',
-                            fontStyle: 'italic'
-                          }}>
-                          {productTypeDescriptions[type]}
-                        </p>
-                      )}
+                      {/* Product Type Description Subtitle with Translation */}
+                      {(() => {
+                        const translationKey = getProductTypeKey(type);
+                        const description = t(translationKey);
+                        // Only show if translation exists (not the key itself)
+                        return description !== translationKey && (
+                          <p className="text-xs mt-1 leading-relaxed transition-colors"
+                            style={{ 
+                              color: isDark ? '#9ca3af' : '#6b7280',
+                              fontStyle: 'italic'
+                            }}>
+                            {description}
+                          </p>
+                        );
+                      })()}
                       <p className="text-sm mt-2 transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {typeForecast ? `${getFormattedForecastPeriod(forecastDays)} ${t('arimaForecast')}` : t('loadingPrediction')}
+                        {typeForecast ? `${formatForecastPeriod(forecastDays)} ARIMA forecast` : 'Loading prediction...'}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
@@ -821,7 +821,7 @@ export default function PharmaDashboard() {
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2"
                           style={{ borderColor: color }}></div>
                         <span className="ml-2 text-sm" style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                          {t('loadingForecast')}
+                          Loading forecast...
                         </span>
                       </div>
                     ) : chartData.length > 0 ? (
@@ -857,12 +857,12 @@ export default function PharmaDashboard() {
                                     </p>
                                     {data.historical !== null && (
                                       <p className="text-sm" style={{ color: '#6b7280' }}>
-                                        {t('historical')}: {data.historical} {t('units')}
+                                        Historical: {data.historical} units
                                       </p>
                                     )}
                                     {data.forecast !== null && (
                                       <p className="text-sm" style={{ color: color }}>
-                                        {t('forecast')}: {data.forecast} {t('units')}
+                                        Forecast: {data.forecast} units
                                       </p>
                                     )}
                                   </div>
@@ -879,7 +879,7 @@ export default function PharmaDashboard() {
                             strokeWidth={2}
                             dot={{ fill: '#6b7280', strokeWidth: 2, r: 3 }}
                             connectNulls={false}
-                            name={t('historical')}
+                            name="Historical"
                           />
                           {/* Forecast Data Line */}
                           <Line
@@ -891,14 +891,14 @@ export default function PharmaDashboard() {
                             dot={{ fill: color, strokeWidth: 2, r: 4 }}
                             activeDot={{ r: 6, fill: color }}
                             connectNulls={false}
-                            name={t('forecast')}
+                            name="Forecast"
                           />
                         </LineChart>
                       </ResponsiveContainer>
                     ) : (
                       <div className="flex items-center justify-center h-full">
                         <p className="text-sm" style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                          {t('noForecastData')}
+                          No forecast data available
                         </p>
                       </div>
                     )}
@@ -912,31 +912,31 @@ export default function PharmaDashboard() {
                     <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {t('avgForecast')}
+                        Avg Forecast
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>
-                        {avgPrediction > 0 ? Math.round(avgPrediction * 10) / 10 : '—'} {t('unitsPerDay')}
+                        {avgPrediction > 0 ? Math.round(avgPrediction * 10) / 10 : '—'} units/{timeUnit}
                       </p>
                     </div>
                     <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {t('peakDay')}
+                        Peak {timeUnit === 'day' ? 'Day' : timeUnit === 'week' ? 'Week' : 'Month'}
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>
-                        {peakPrediction > 0 ? Math.round(peakPrediction * 10) / 10 : '—'} {t('units')}
+                        {peakPrediction > 0 ? Math.round(peakPrediction * 10) / 10 : '—'} units
                       </p>
                     </div>
                     <div className="text-center flex-1">
                       <p className="text-xs transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {t('trend')}
+                        Trend
                       </p>
                       <p className="text-sm font-semibold transition-colors"
                         style={{ color: avgPrediction > peakPrediction * 0.8 ? '#10b981' : '#f59e0b' }}>
-                        {avgPrediction > peakPrediction * 0.8 ? `↗ ${t('rising')}` : `↘ ${t('declining')}`}
+                        {avgPrediction > peakPrediction * 0.8 ? '↗ Rising' : '↘ Declining'}
                       </p>
                     </div>
                   </div>
@@ -948,7 +948,7 @@ export default function PharmaDashboard() {
                         <div className="w-3 h-0.5 bg-gray-500"></div>
                         <span className="text-xs transition-colors"
                           style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                          {t('historical')}
+                          Historical
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -956,7 +956,7 @@ export default function PharmaDashboard() {
                              style={{ borderColor: color }}></div>
                         <span className="text-xs transition-colors"
                           style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                          {t('forecast')}
+                          Forecast
                         </span>
                       </div>
                     </div>
@@ -964,7 +964,7 @@ export default function PharmaDashboard() {
                     {/* Click Indicator */}
                     <div className="flex items-center space-x-1 text-xs font-medium transition-colors"
                       style={{ color: color }}>
-                      <span>{t('viewDetails')}</span>
+                      <span>View Details</span>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
@@ -998,11 +998,11 @@ export default function PharmaDashboard() {
               <div>
                 <h2 className="text-xl lg:text-2xl font-bold transition-colors"
                   style={{ color: isDark ? 'white' : '#111827' }}>
-                  {t('restockRecommendations')}
+                  Restock Recommendations
                 </h2>
                 <p className="text-sm lg:text-base mt-1 transition-colors"
                   style={{ color: isDark ? '#d1d5db' : '#4b5563' }}>
-                  {t('advancedAnalytics')}
+                  Advanced analytics with ABC classification, sales velocity trends, and safety stock calculations
                 </p>
               </div>
             </div>
@@ -1015,17 +1015,17 @@ export default function PharmaDashboard() {
               }}>
                 <tr>
                   <th className="px-4 py-4 text-left text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t('group')}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Group</th>
                   <th className="px-4 py-4 text-left text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t('productType')}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Product Type</th>
                   <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t('available')}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Available</th>
                   <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t('expected')}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Expected</th>
                   <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t('restock')}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Restock</th>
                   <th className="px-4 py-4 text-center text-sm font-semibold transition-colors"
-                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>{t('priority')}</th>
+                    style={{ color: isDark ? '#e5e7eb' : '#374151' }}>Priority</th>
                 </tr>
               </thead>
               <tbody style={{
@@ -1037,7 +1037,7 @@ export default function PharmaDashboard() {
                       <div className="flex items-center justify-center space-x-2">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
                         <span style={{ color: isDark ? '#d1d5db' : '#4b5563' }}>
-                          {t('loadingRestockRecommendations')}
+                          Loading restock recommendations...
                         </span>
                       </div>
                     </td>
@@ -1046,7 +1046,7 @@ export default function PharmaDashboard() {
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center" 
                       style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                      {t('noRestockRecommendations')}
+                      No restock recommendations available
                     </td>
                   </tr>
                 ) : restockRecommendations.map((item, index) => (
@@ -1086,10 +1086,10 @@ export default function PharmaDashboard() {
                     </td>
                     <td className="px-4 py-4 text-center">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold border ${item.color}`}>
-                        {item.priority === 'critical' ? t('critical') : 
-                         item.priority === 'high' ? t('high') : 
-                         item.priority === 'medium' ? t('medium') : 
-                         item.priority === 'low' ? t('low') : t('none')}
+                        {item.priority === 'critical' ? 'Critical' : 
+                         item.priority === 'high' ? 'High' : 
+                         item.priority === 'medium' ? 'Medium' : 
+                         item.priority === 'low' ? 'Low' : 'None'}
                       </span>
                     </td>
                   </tr>

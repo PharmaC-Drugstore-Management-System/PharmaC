@@ -365,7 +365,7 @@ export default function MemberManagementPage() {
           </button>
         </div>
         <p className="mt-1"
-           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('manageMemberInformation')}</p>
+           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>{t('completeMemberList')}</p>
       </div>
 
       {/* Stats Cards */}
@@ -576,9 +576,9 @@ export default function MemberManagementPage() {
                              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                           <Calendar className="w-3 h-3"
                                     style={{color: document.documentElement.classList.contains('dark') ? '#6b7280' : '#9ca3af'}} />
-                          {t('joined')}:{" "}
+                          Joined:{" "}
                           {new Date(member.joinDate).toLocaleDateString(
-                            t('locale')
+                            "th-TH"
                           )}
                         </div>
                       </div>
@@ -607,8 +607,8 @@ export default function MemberManagementPage() {
                     <div className="text-sm"
                          style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
                       {member.birthday
-                        ? new Date(member.birthday).toLocaleDateString(t('locale'))
-                        : t('notSpecified')}
+                        ? new Date(member.birthday).toLocaleDateString("th-TH")
+                        : "Not specified"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -625,11 +625,11 @@ export default function MemberManagementPage() {
                       <div className="text-sm">
                         <div className="font-semibold"
                              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                          {member.score} {t('points')}
+                          {member.score} Points
                         </div>
                         <div className="text-xs"
                              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                          {t('rank')} #{member.rank}
+                          Rank #{member.rank}
                         </div>
                       </div>
                     </td>
@@ -659,7 +659,7 @@ export default function MemberManagementPage() {
           <h3 className="text-md font-semibold mb-4 flex items-center gap-2"
               style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
             <Trophy className="w-5 h-5 text-yellow-500" />
-            {t('topMembersRanking')}
+            Top Members Ranking
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {members.slice(0, 3).map((member, index) => (
@@ -686,7 +686,7 @@ export default function MemberManagementPage() {
                   </div>
                   <div className="text-xs"
                        style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                    {member.score} {t('points')}
+                    {member.score} คะแนน
                   </div>
                 </div>
                 {index === 0 && (
@@ -709,7 +709,7 @@ export default function MemberManagementPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                {t('addNewMember')}
+                เพิ่มสมาชิกใหม่
               </h3>
               <button
                 onClick={() => setShowAddMemberModal(false)}
@@ -724,7 +724,7 @@ export default function MemberManagementPage() {
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('citizenId')}
+                  เลขบัตรประชาชน
                 </label>
                 <input
                   type="text"
@@ -746,7 +746,7 @@ export default function MemberManagementPage() {
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('fullName')}
+                  ชื่อ-นามสกุล
                 </label>
                 <input
                   type="text"
@@ -760,14 +760,14 @@ export default function MemberManagementPage() {
                     borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
                     color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
                   }}
-                  placeholder={t('enterFullName')}
+                  placeholder="กรอกชื่อ-นามสกุล"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('phoneNumber')}
+                  เบอร์โทรศัพท์
                 </label>
                 <input
                   type="tel"
@@ -788,7 +788,7 @@ export default function MemberManagementPage() {
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('birthdate')}
+                  วันเกิด
                 </label>
                 <input
                   type="date"
@@ -808,7 +808,7 @@ export default function MemberManagementPage() {
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('gender')}
+                  เพศ
                 </label>
                 <select
                   value={newMember.gender}
@@ -822,17 +822,17 @@ export default function MemberManagementPage() {
                     color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
                   }}
                 >
-                  <option value="">{t('selectGender')}</option>
-                  <option value="ชาย">{t('male')}</option>
-                  <option value="หญิง">{t('female')}</option>
-                  <option value="อื่นๆ">{t('other')}</option>
+                  <option value="">เลือกเพศ</option>
+                  <option value="ชาย">ชาย</option>
+                  <option value="หญิง">หญิง</option>
+                  <option value="อื่นๆ">อื่นๆ</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('initialPoints')}
+                  คะแนนเริ่มต้น
                 </label>
                 <input
                   type="number"
@@ -869,13 +869,13 @@ export default function MemberManagementPage() {
                   e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#f3f4f6';
                 }}
               >
-                {t('cancel')}
+                ยกเลิก
               </button>
               <button
                 onClick={handleAddMember}
                 className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
-                {t('addMember')}
+                เพิ่มสมาชิก
               </button>
             </div>
           </div>
@@ -893,7 +893,7 @@ export default function MemberManagementPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                {t('editMemberInfo')}
+                แก้ไขข้อมูลสมาชิก
               </h3>
               <button
                 onClick={cancelEditMember}
@@ -908,7 +908,7 @@ export default function MemberManagementPage() {
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('citizenId')}
+                  เลขบัตรประชาชน
                 </label>
                 <input
                   type="text"
@@ -930,7 +930,7 @@ export default function MemberManagementPage() {
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('fullName')}
+                  ชื่อ-นามสกุล
                 </label>
                 <input
                   type="text"
@@ -944,14 +944,14 @@ export default function MemberManagementPage() {
                     borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
                     color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
                   }}
-                  placeholder={t('enterFullName')}
+                  placeholder="กรอกชื่อ-นามสกุล"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('phoneNumber')}
+                  เบอร์โทรศัพท์
                 </label>
                 <input
                   type="tel"
@@ -975,7 +975,7 @@ export default function MemberManagementPage() {
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('birthdate')}
+                  วันเกิด
                 </label>
                 <input
                   type="date"
@@ -995,7 +995,7 @@ export default function MemberManagementPage() {
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('gender')}
+                  เพศ
                 </label>
                 <select
                   value={editMember.gender}
@@ -1009,17 +1009,17 @@ export default function MemberManagementPage() {
                     color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
                   }}
                 >
-                  <option value="">{t('selectGender')}</option>
-                  <option value="ชาย">{t('male')}</option>
-                  <option value="หญิง">{t('female')}</option>
-                  <option value="อื่นๆ">{t('other')}</option>
+                  <option value="">เลือกเพศ</option>
+                  <option value="ชาย">ชาย</option>
+                  <option value="หญิง">หญิง</option>
+                  <option value="อื่นๆ">อื่นๆ</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1"
                        style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}}>
-                  {t('points')}
+                  คะแนน
                 </label>
                 <input
                   type="number"
@@ -1057,13 +1057,13 @@ export default function MemberManagementPage() {
                   e.currentTarget.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#6b7280' : '#f3f4f6';
                 }}
               >
-                {t('cancel')}
+                ยกเลิก
               </button>
               <button
                 onClick={handleUpdateMember}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                {t('saveChanges')}
+                บันทึกการแก้ไข
               </button>
             </div>
           </div>

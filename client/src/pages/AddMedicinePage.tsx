@@ -21,10 +21,10 @@ export default function AddMedicinePage() {
   const [scannedData, setScannedData] = useState("Not Found");
 
   const [productTypes] = useState([
-    "A02",
-    "J01",
     "N02",
     "R06",
+    "A02",
+    "J01",
   ] as string[]);
   
   const [units] = useState(["Pack", "Capsule", "Bottle", "Box"] as string[]);
@@ -37,6 +37,7 @@ export default function AddMedicinePage() {
 
   const [formData, setFormData] = useState({
     productName: "",
+    productGenericName:"",
     brand: "",
     friendlyId: "",
     barcode: "",
@@ -52,6 +53,7 @@ export default function AddMedicinePage() {
 
     return (
       formData.productName.trim() !== "" &&
+      formData.productGenericName.trim() !== "" &&
       formData.brand.trim() !== "" &&
       productTypeValue.trim() !== "" &&
       unitValue.trim() !== ""
@@ -106,6 +108,7 @@ export default function AddMedicinePage() {
       const unitValue = formData.unit === "other" ? customUnit : formData.unit;
 
       payload.append("product_name", formData.productName ?? "");
+      payload.append("product_generic_name", formData.productGenericName ?? "");
       payload.append("brand", formData.brand ?? "");
       payload.append("friendlyid", formData.friendlyId ?? "");
       payload.append("barcode", formData.barcode ?? "");
@@ -210,6 +213,28 @@ export default function AddMedicinePage() {
                 value={formData.productName}
                 onChange={(e) =>
                   setFormData({ ...formData, productName: e.target.value })
+                }
+                className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                style={{
+                  backgroundColor: isDark ? '#4b5563' : 'white',
+                  borderColor: isDark ? '#6b7280' : '#d1d5db',
+                  color: isDark ? 'white' : '#1f2937'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                  e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
+              />
+              <input
+                type="text"
+                placeholder={t('productGenericName')}
+                value={formData.productGenericName}
+                onChange={(e) =>
+                  setFormData({ ...formData, productGenericName: e.target.value })
                 }
                 className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
                 style={{
