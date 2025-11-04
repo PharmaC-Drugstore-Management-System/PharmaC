@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Plus, Minus, PlusCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 const SERVER_URL = API_URL.replace('/api', ''); // For static files (uploads)
@@ -47,6 +48,125 @@ const PurchaseOrder = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [errorMessage, setErrorMessage] = useState<string>("");
+
+  // i18n
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    // add TH + EN strings (safe if already exists)
+    const th = {
+      po: {
+        title: "ใบสั่งซื้อ",
+        inventory: "สต็อกสินค้า",
+        addSupplier: "เพิ่มผู้จำหน่าย",
+        addMedicine: "เพิ่มยาใหม่",
+        allSuppliers: "ผู้จำหน่ายทั้งหมด",
+        allBrands: "ทุกแบรนด์",
+        clear: "ล้าง",
+        countOf: "{{count}} จาก {{total}} รายการ",
+        searchPlaceholder: "ค้นหาด้วยชื่อ แบรนด์ หรือรหัส...",
+        select: "เลือก",
+        productName: "ชื่อสินค้า",
+        productId: "รหัสสินค้า",
+        noItemsFilter: "ไม่พบรายการที่ตรงกับเงื่อนไข",
+        noItems: "ยังไม่มีสินค้าในสต็อก",
+        selectedItemsTitle: "รายการที่เลือกสำหรับออกใบสั่งซื้อ",
+        selectedCount: "เลือกแล้ว: {{count}}",
+        tip: "คำแนะนำ: กรอกราคาซื้อและเลือกหน่วยที่จะสั่งซื้อสำหรับทุกรายการที่เลือก",
+        remove: "เอาออก",
+        orderQty: "จำนวนสั่งซื้อ",
+        price: "ราคา (บาท)",
+        total: "มูลค่ารวม:",
+        createQuotation: "สร้างเอกสาร",
+        copyText: "คัดลอกข้อความ",
+        // Modal: Add medicine
+        modalAddMedTitle: "เพิ่มยาใหม่",
+        productNameLabel: "ชื่อสินค้า *",
+        brandLabel: "แบรนด์ *",
+        barcodeLabel: "บาร์โค้ด",
+        friendlyIdLabel: "รหัสใช้ง่าย",
+        productTypeLabel: "ชนิดสินค้า *",
+        customOther: "อื่น ๆ (กำหนดเอง)",
+        customTypePlaceholder: "กรอกชนิดสินค้า",
+        unitLabel: "หน่วย *",
+        customUnitPlaceholder: "กรอกหน่วย",
+        imageLabel: "รูปภาพ/ไอคอน",
+        controlled: "ยาควบคุม",
+        supplierInfo: "ข้อมูลผู้จำหน่าย (ไม่บังคับ)",
+        selectSupplier: "เลือกผู้จำหน่าย",
+        costPerUnit: "ต้นทุน/หน่วย (บาท)",
+        needCost: "โปรดกรอกราคาต้นทุนเพื่อผูกกับผู้จำหน่าย",
+        cancel: "ยกเลิก",
+        addMedBtn: "เพิ่มรายการ",
+        // Modal: Add supplier
+        modalAddSupplierTitle: "เพิ่มผู้จำหน่าย",
+        supplierNameLabel: "ชื่อผู้จำหน่าย *",
+        taxIdLabel: "เลขประจำตัวผู้เสียภาษี",
+        addressLabel: "ที่อยู่",
+        descLabel: "คำอธิบาย",
+        // Errors
+        errSupplierName: "โปรดระบุชื่อผู้จำหน่าย",
+        errLoadProducts: "โหลดข้อมูลสินค้าไม่สำเร็จ",
+        errNeedSelect: "โปรดเลือกรายการอย่างน้อย 1 รายการเพื่อสร้างเอกสาร",
+        errNeedPriceUnit: "โปรดกรอกราคาและเลือกหน่วยสำหรับทุกรายการที่เลือก",
+      }
+    };
+    const en = {
+      po: {
+        title: "Purchase Order",
+        inventory: "Inventory",
+        addSupplier: "Add New Supplier",
+        addMedicine: "Add New Medicine",
+        allSuppliers: "All Suppliers",
+        allBrands: "All Brands",
+        clear: "Clear",
+        countOf: "{{count}} of {{total}} items",
+        searchPlaceholder: "Search by name, brand, or ID...",
+        select: "Select",
+        productName: "Product Name",
+        productId: "Product ID",
+        noItemsFilter: "No items match your filter criteria.",
+        noItems: "No items available in inventory.",
+        selectedItemsTitle: "Selected Items for Purchase Order",
+        selectedCount: "Selected: {{count}}",
+        tip: "Tip: Enter a price and select the unit to buy for each selected item.",
+        remove: "Remove",
+        orderQty: "Order Quantity",
+        price: "Price (THB)",
+        total: "Total Order Value:",
+        createQuotation: "Create Quotation",
+        copyText: "Copy text",
+        modalAddMedTitle: "Add New Medicine",
+        productNameLabel: "Product Name *",
+        brandLabel: "Brand *",
+        barcodeLabel: "Barcode",
+        friendlyIdLabel: "Friendly ID",
+        productTypeLabel: "Product Type *",
+        customOther: "Other (Custom)",
+        customTypePlaceholder: "Enter custom product type",
+        unitLabel: "Unit *",
+        customUnitPlaceholder: "Enter custom unit",
+        imageLabel: "Image/Icon",
+        controlled: "Controlled Medicine",
+        supplierInfo: "Supplier Information (Optional)",
+        selectSupplier: "Select Supplier",
+        costPerUnit: "Cost/Unit (THB)",
+        needCost: "Please enter cost to create supplier relationship",
+        cancel: "Cancel",
+        addMedBtn: "Add Medicine",
+        modalAddSupplierTitle: "Add New Supplier",
+        supplierNameLabel: "Supplier Name *",
+        taxIdLabel: "Tax ID",
+        addressLabel: "Address",
+        descLabel: "Description",
+        errSupplierName: "Please enter supplier name.",
+        errLoadProducts: "Failed to load products",
+        errNeedSelect: "Please select at least one item to create a quotation.",
+        errNeedPriceUnit: "Please enter a Price and select a Unit for all selected items.",
+      }
+    };
+    i18n.addResourceBundle('th', 'translation', th, true, true);
+    i18n.addResourceBundle('en', 'translation', en, true, true);
+  }, [i18n]);
 
   // proper image source
   const getImageSrc = useMemo(() => {
@@ -148,7 +268,7 @@ const PurchaseOrder = () => {
       }
     } catch (error) {
       console.log("Error loading products:", error);
-      setErrorMessage("Failed to load products");
+      setErrorMessage(t('po.errLoadProducts'));
     }
   };
 
@@ -230,7 +350,7 @@ const PurchaseOrder = () => {
 
   const createQuotation = () => {
     if (selectedItems.size === 0) {
-      setErrorMessage("Please select at least one item to create a quotation.");
+      setErrorMessage(t('po.errNeedSelect'));
       return;
     }
 
@@ -239,7 +359,7 @@ const PurchaseOrder = () => {
       .filter(i => i.price == null || i.unit.trim() === "");
 
     if (invalid.length > 0) {
-      setErrorMessage("Please enter a Price and select a Unit for all selected items.");
+      setErrorMessage(t('po.errNeedPriceUnit'));
       return;
     }
     setErrorMessage("");
@@ -282,7 +402,7 @@ const PurchaseOrder = () => {
 
   const addNewSupplier = async () => {
     if (!newSupplierForm.name.trim()) {
-      setErrorMessage("Please enter supplier name.");
+      setErrorMessage(t('po.errSupplierName'));
       return;
     }
 
@@ -346,7 +466,7 @@ const PurchaseOrder = () => {
   const addNewMedicine = async () => {
     if (!newMedicineForm.product_name.trim() || !newMedicineForm.brand.trim() || !newMedicineForm.producttype.trim() ||
         !newMedicineForm.unit.trim()) {
-      setErrorMessage("Please fill in all required fields (Product Name, Brand, Product Type, Unit)");
+      setErrorMessage(t('po.errNeedPriceUnit'));
       return;
     }
 
@@ -452,7 +572,7 @@ const PurchaseOrder = () => {
       <div className="p-6">
         <h2 className="text-3xl font-light mb-8 transition-colors duration-300"
             style={{color: isDark ? 'white' : '#1f2937'}}>
-          Purchase Order
+          {t('po.title')}
         </h2>
 
         {/* Inventory */}
@@ -460,10 +580,10 @@ const PurchaseOrder = () => {
              style={{backgroundColor: isDark ? '#374151' : 'white'}}>
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-4">
-              <h3 className="text-xl font-semibold" style={{color: isDark ? 'white' : '#1f2937'}}>Inventory</h3>
+              <h3 className="text-xl font-semibold" style={{color: isDark ? 'white' : '#1f2937'}}>{t('po.inventory')}</h3>
               <div className="text-sm px-2 py-1 rounded"
                    style={{ color: isDark ? '#d1d5db' : '#4b5563', backgroundColor: isDark ? '#4b5563' : '#f3f4f6' }}>
-                {getFilteredItems().length} of {orderItems.length} items
+                {t('po.countOf', { count: getFilteredItems().length, total: orderItems.length })}
               </div>
             </div>
             <div className="flex gap-2">
@@ -472,14 +592,14 @@ const PurchaseOrder = () => {
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center gap-2 transition-colors"
               >
                 <PlusCircle size={16} />
-                Add New Supplier
+                {t('po.addSupplier')}
               </button>
               <button
                 onClick={() => setShowAddMedicineModal(true)}
                 className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center gap-2 transition-colors"
               >
                 <PlusCircle size={16} />
-                Add New Medicine
+                {t('po.addMedicine')}
               </button>
             </div>
           </div>
@@ -489,7 +609,7 @@ const PurchaseOrder = () => {
             <div className="flex-1">
               <input
                 type="text"
-                placeholder="Search by name, brand, or ID..."
+                placeholder={t('po.searchPlaceholder')!}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg"
@@ -511,7 +631,7 @@ const PurchaseOrder = () => {
                   color: isDark ? 'white' : '#1f2937'
                 }}
               >
-                <option value="">All Suppliers</option>
+                <option value="">{t('po.allSuppliers')}</option>
                 {suppliers.map((supplier) => (
                   <option key={supplier.supplier_id} value={supplier.supplier_id}>
                     {supplier.name}
@@ -530,7 +650,7 @@ const PurchaseOrder = () => {
                   color: isDark ? 'white' : '#1f2937'
                 }}
               >
-                <option value="">All Brands</option>
+                <option value="">{t('po.allBrands')}</option>
                 {getUniqueBrands().map((brand) => (
                   <option key={brand} value={brand}>
                     {brand}
@@ -542,17 +662,16 @@ const PurchaseOrder = () => {
               onClick={() => { setSearchTerm(""); setFilterBrand(""); setSelectedSupplierId(null); }}
               className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
-              Clear
+              {t('po.clear')}
             </button>
           </div>
 
-          {/* Inventory header (no Available) */}
-          <div className="grid grid-cols-5 gap-4 pb-4 border-b text-sm font-medium"
+          {/* Inventory header (Price column removed) */}
+          <div className="grid grid-cols-4 gap-4 pb-4 border-b text-sm font-medium"
                style={{ borderColor: isDark ? '#4b5563' : '#e5e7eb', color: isDark ? '#d1d5db' : '#4b5563' }}>
-            <div>Select</div>
-            <div className="col-span-2">Product Name</div>
-            <div>Product ID</div>
-            <div>Price (THB)</div>
+            <div>{t('po.select')}</div>
+            <div className="col-span-2">{t('po.productName')}</div>
+            <div>{t('po.productId')}</div>
           </div>
 
           {/* Inventory list */}
@@ -560,11 +679,11 @@ const PurchaseOrder = () => {
             <div className="max-h-60 overflow-y-auto divide-y rounded" style={{borderColor: isDark ? '#4b5563' : '#f3f4f6'}}>
               {getFilteredItems().length === 0 ? (
                 <div className="text-center py-8" style={{color: isDark ? '#9ca3af' : '#6b7280'}}>
-                  {searchTerm || filterBrand ? 'No items match your filter criteria.' : 'No items available in inventory.'}
+                  {searchTerm || filterBrand ? t('po.noItemsFilter') : t('po.noItems')}
                 </div>
               ) : (
                 getFilteredItems().map((item) => (
-                  <div key={item.id} className="grid grid-cols-5 gap-4 items-center py-3 px-2"
+                  <div key={item.id} className="grid grid-cols-4 gap-4 items-center py-3 px-2"
                        style={{borderColor: isDark ? '#4b5563' : '#f3f4f6'}}>
                     <div>
                       <input
@@ -595,9 +714,6 @@ const PurchaseOrder = () => {
                       </div>
                     </div>
                     <div className="transition-colors" style={{color: isDark ? '#d1d5db' : '#4b5563'}}>{item.id}</div>
-                    <div className="font-semibold" style={{color: isDark ? 'white' : '#1f2937'}}>
-                      {item.price != null ? (item.price || 0).toLocaleString() : "-"}
-                    </div>
                   </div>
                 ))
               )}
@@ -609,28 +725,28 @@ const PurchaseOrder = () => {
         <div className="rounded-lg shadow-sm p-6" style={{backgroundColor: isDark ? '#374151' : 'white'}}>
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-4">
-              <h3 className="text-xl font-semibold" style={{color: isDark ? 'white' : '#1f2937'}}>Selected Items for Purchase Order</h3>
+              <h3 className="text-xl font-semibold" style={{color: isDark ? 'white' : '#1f2937'}}>{t('po.selectedItemsTitle')}</h3>
               <div className="text-sm border px-2 py-1 rounded"
                    style={{ color: isDark ? '#d1d5db' : '#4b5563', backgroundColor: isDark ? '#374151' : 'white', borderColor: isDark ? '#4b5563' : '#e5e7eb' }}>
-                Selected: {selectedItems.size}
+                {t('po.selectedCount', { count: selectedItems.size })}
               </div>
             </div>
           </div>
 
           {selectedItems.size > 0 && (
             <p className="text-sm mb-3" style={{color: isDark ? '#fbbf24' : '#b45309'}}>
-              Tip: Enter a price and select the unit to buy for each selected item.
+              {t('po.tip')}
             </p>
           )}
 
           {/* Header */}
           <div className="grid grid-cols-6 gap-4 pb-4 border-b text-sm font-medium"
                style={{ borderColor: isDark ? '#4b5563' : '#e5e7eb', color: isDark ? '#d1d5db' : '#4b5563' }}>
-            <div>Remove</div>
-            <div className="col-span-2">Product Name</div>
-            <div>Product ID</div>
-            <div>Order Quantity</div>
-            <div>Price (THB)</div>
+            <div>{t('po.remove')}</div>
+            <div className="col-span-2">{t('po.productName')}</div>
+            <div>{t('po.productId')}</div>
+            <div>{t('po.orderQty')}</div>
+            <div>{t('po.price')}</div>
           </div>
 
           {/* Rows */}
@@ -638,7 +754,7 @@ const PurchaseOrder = () => {
             <div className="max-h-80 overflow-y-auto divide-y rounded" style={{borderColor: isDark ? '#4b5563' : '#f3f4f6'}}>
               {selectedItems.size === 0 ? (
                 <div className="text-center py-8" style={{color: isDark ? '#9ca3af' : '#6b7280'}}>
-                  No items selected. Please select items from the inventory to create a purchase order.
+                  {t('po.noItems')}
                 </div>
               ) : (
                 orderItems.filter(item => selectedItems.has(item.id)).map((item) => (
@@ -701,7 +817,7 @@ const PurchaseOrder = () => {
                         className="px-2 py-1 border rounded w-28"
                         style={{ backgroundColor: isDark ? '#374151' : 'white', borderColor: isDark ? '#4b5563' : '#d1d5db', color: isDark ? 'white' : '#1f2937' }}
                       >
-                        <option value="" disabled>Select unit</option>
+                        <option value="" disabled>{t('po.unitLabel')}</option>
                         {units.map(u => <option key={u} value={u}>{u}</option>)}
                       </select>
 
@@ -727,7 +843,7 @@ const PurchaseOrder = () => {
                           const val = e.target.value === "" ? null : Number(e.target.value);
                           setOrderItems(curr => curr.map(it => it.id === item.id ? { ...it, price: val } : it));
                         }}
-                        placeholder="Enter price"
+                        placeholder={t('po.price')!}
                         className="w-28 px-2 py-1 border rounded text-right font-semibold"
                         style={{ backgroundColor: isDark ? '#374151' : 'white', borderColor: isDark ? '#4b5563' : '#d1d5db', color: isDark ? 'white' : '#1f2937' }}
                       />
@@ -741,7 +857,7 @@ const PurchaseOrder = () => {
           {/* Total */}
           <div className="mt-8 pt-6 border-t" style={{borderColor: isDark ? '#4b5563' : '#e5e7eb'}}>
             <div className="flex justify-between items-center text-lg font-semibold">
-              <span style={{color: isDark ? 'white' : '#1f2937'}}>Total Order Value:</span>
+              <span style={{color: isDark ? 'white' : '#1f2937'}}>{t('po.total')}</span>
               <span className="text-teal-600">{getTotalValue().toLocaleString()} THB</span>
             </div>
           </div>
@@ -759,7 +875,7 @@ const PurchaseOrder = () => {
               color: selectedItems.size === 0 ? (isDark ? '#9ca3af' : '#6b7280') : 'white'
             }}
           >
-            Create Quotation
+            {t('po.createQuotation')}
           </button>
           {errorMessage && <p className="text-red-600 text-sm text-center mt-2">{errorMessage}</p>}
           <button
@@ -769,7 +885,7 @@ const PurchaseOrder = () => {
             onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = isDark ? '#6b7280' : '#9ca3af'; }}
             onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = isDark ? '#4b5563' : '#d1d5db'; }}
           >
-            Copy text
+            {t('po.copyText')}
           </button>
         </div>
       </div>
@@ -779,7 +895,7 @@ const PurchaseOrder = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Add New Medicine</h2>
+              <h2 className="text-xl font-bold text-gray-800">{t('po.modalAddMedTitle')}</h2>
               <button
                 onClick={() => { setShowAddMedicineModal(false); resetNewMedicineForm(); setErrorMessage(""); }}
                 className="text-gray-500 hover:text-gray-700"
@@ -790,51 +906,51 @@ const PurchaseOrder = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.productNameLabel')}</label>
                 <input
                   type="text"
                   value={newMedicineForm.product_name}
                   onChange={(e) => handleFormChange('product_name', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter product name"
+                  placeholder={t('po.productNameLabel')!}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.brandLabel')}</label>
                 <input
                   type="text"
                   value={newMedicineForm.brand}
                   onChange={(e) => handleFormChange('brand', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter brand name"
+                  placeholder={t('po.brandLabel')!}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.barcodeLabel')}</label>
                 <input
                   type="text"
                   value={newMedicineForm.barcode}
                   onChange={(e) => handleFormChange('barcode', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter barcode (auto-generated if empty)"
+                  placeholder={t('po.barcodeLabel')!}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Friendly ID</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.friendlyIdLabel')}</label>
                 <input
                   type="text"
                   value={newMedicineForm.friendlyid}
                   onChange={(e) => handleFormChange('friendlyid', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter friendly ID (auto-generated if empty)"
+                  placeholder={t('po.friendlyIdLabel')!}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product Type *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.productTypeLabel')}</label>
                 <select
                   value={newMedicineForm.producttype}
                   onChange={(e) => {
@@ -844,7 +960,7 @@ const PurchaseOrder = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {productTypes.map((type) => (<option key={type} value={type}>{type}</option>))}
-                  <option value="custom">Other (Custom)</option>
+                  <option value="custom">{t('po.customOther')}</option>
                 </select>
                 {newMedicineForm.producttype === "custom" && (
                   <input
@@ -855,13 +971,13 @@ const PurchaseOrder = () => {
                       handleFormChange('producttype', e.target.value);
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-                    placeholder="Enter custom product type"
+                    placeholder={t('po.customTypePlaceholder')!}
                   />
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Unit *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.unitLabel')}</label>
                 <select
                   value={newMedicineForm.unit}
                   onChange={(e) => {
@@ -871,7 +987,7 @@ const PurchaseOrder = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {units.map((unit) => (<option key={unit} value={unit}>{unit}</option>))}
-                  <option value="custom">Other (Custom)</option>
+                  <option value="custom">{t('po.customOther')}</option>
                 </select>
                 {newMedicineForm.unit === "custom" && (
                   <input
@@ -882,19 +998,19 @@ const PurchaseOrder = () => {
                       handleFormChange('unit', e.target.value);
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-                    placeholder="Enter custom unit"
+                    placeholder={t('po.customUnitPlaceholder')!}
                   />
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image/Icon</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.imageLabel')}</label>
                 <input
                   type="text"
                   value={newMedicineForm.image}
                   onChange={(e) => handleFormChange('image', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter emoji or image URL"
+                  placeholder={t('po.imageLabel')!}
                 />
               </div>
 
@@ -906,29 +1022,29 @@ const PurchaseOrder = () => {
                     onChange={(e) => handleFormChange('iscontrolled', e.target.checked)}
                     className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-offset-0 focus:ring-blue-200 focus:ring-opacity-50"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Controlled Medicine</span>
+                  <span className="ml-2 text-sm text-gray-700">{t('po.controlled')}</span>
                 </label>
               </div>
 
               {/* Supplier (optional) */}
               <div className="border-t pt-4 mt-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Supplier Information (Optional)</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">{t('po.supplierInfo')}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Supplier</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.selectSupplier')}</label>
                     <select
                       value={selectedSupplierForNewMedicine || ''}
                       onChange={(e) => setSelectedSupplierForNewMedicine(e.target.value ? parseInt(e.target.value) : null)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="">No Supplier</option>
+                      <option value="">{t('po.selectSupplier')}</option>
                       {suppliers.map((supplier) => (
                         <option key={supplier.supplier_id} value={supplier.supplier_id}>{supplier.name}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Cost/Unit (THB)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.costPerUnit')}</label>
                     <input
                       type="number"
                       value={newMedicineCost}
@@ -942,7 +1058,7 @@ const PurchaseOrder = () => {
                   </div>
                 </div>
                 {selectedSupplierForNewMedicine && !newMedicineCost && (
-                  <p className="text-xs text-amber-600 mt-1">Please enter cost to create supplier relationship</p>
+                  <p className="text-xs text-amber-600 mt-1">{t('po.needCost')}</p>
                 )}
               </div>
             </div>
@@ -959,14 +1075,14 @@ const PurchaseOrder = () => {
                 className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
                 disabled={isSubmitting}
               >
-                Cancel
+                {t('po.cancel')}
               </button>
               <button
                 onClick={addNewMedicine}
                 disabled={isSubmitting}
                 className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
               >
-                {isSubmitting ? 'Adding...' : 'Add Medicine'}
+                {isSubmitting ? 'Adding...' : t('po.addMedBtn')}
               </button>
             </div>
           </div>
@@ -978,7 +1094,7 @@ const PurchaseOrder = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-screen overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Add New Supplier</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('po.modalAddSupplierTitle')}</h3>
               <button
                 onClick={() => { setShowAddSupplierModal(false); resetSupplierForm(); }}
                 className="text-gray-400 hover:text-gray-600"
@@ -989,47 +1105,47 @@ const PurchaseOrder = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Supplier Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.supplierNameLabel')}</label>
                 <input
                   type="text"
                   value={newSupplierForm.name}
                   onChange={(e) => handleSupplierFormChange('name', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter supplier name"
+                  placeholder={t('po.supplierNameLabel')!}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tax ID</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.taxIdLabel')}</label>
                 <input
                   type="text"
                   value={newSupplierForm.tax_id}
                   onChange={(e) => handleSupplierFormChange('tax_id', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter tax ID"
+                  placeholder={t('po.taxIdLabel')!}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.addressLabel')}</label>
                 <textarea
                   value={newSupplierForm.address}
                   onChange={(e) => handleSupplierFormChange('address', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
-                  placeholder="Enter supplier address"
+                  placeholder={t('po.addressLabel')!}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('po.descLabel')}</label>
                 <textarea
                   value={newSupplierForm.description}
                   onChange={(e) => handleSupplierFormChange('description', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={2}
-                  placeholder="Enter supplier description (optional)"
+                  placeholder={t('po.descLabel')!}
                 />
               </div>
             </div>
@@ -1046,14 +1162,14 @@ const PurchaseOrder = () => {
                 className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
                 disabled={isSubmitting}
               >
-                Cancel
+                {t('po.cancel')}
               </button>
               <button
                 onClick={addNewSupplier}
                 disabled={isSubmitting}
                 className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
               >
-                {isSubmitting ? 'Adding...' : 'Add Supplier'}
+                {isSubmitting ? 'Adding...' : t('po.addSupplier')}
               </button>
             </div>
           </div>
