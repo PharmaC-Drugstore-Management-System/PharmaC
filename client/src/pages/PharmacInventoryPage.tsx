@@ -396,7 +396,7 @@ export default function PharmacInventoryPage() {
           <Link to="/add-medicine">
             <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center space-x-2 transition-all duration-300 transform hover:scale-105 shadow-lg">
               <Plus className="h-5 w-5" />
-              <span>Add Medicine</span>
+              <span>{t('addMedicine')}</span>
             </button>
           </Link>
         </div>
@@ -421,7 +421,7 @@ export default function PharmacInventoryPage() {
                 {items.length}
               </p>
               <p className="text-sm text-green-600 mt-1 font-medium">
-                Products in stock
+                {t('productsInStock')}
               </p>
             </div>
             <div className="p-3 bg-green-100 rounded-full">
@@ -447,7 +447,7 @@ export default function PharmacInventoryPage() {
                 {lowStockItems.length}
               </p>
               <p className="text-sm text-red-600 mt-1 font-medium">
-                Need reorder
+                {t('needReorder')}
               </p>
             </div>
             <div className="p-3 bg-red-100 rounded-full">
@@ -486,7 +486,7 @@ export default function PharmacInventoryPage() {
               <p className={`text-sm mt-1 font-medium ${
                 expireSoonItems.length > 0 ? "text-orange-200" : "text-orange-600"
               }`}>
-                {expireSoonItems.length > 0 ? "Requires attention" : "All products fresh"}
+                {expireSoonItems.length > 0 ? t('requiresAttention') : t('allProductsFresh')}
               </p>
             </div>
             <div className={`p-3 rounded-full ${
@@ -513,7 +513,7 @@ export default function PharmacInventoryPage() {
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}} />
             <input
               type="text"
-              placeholder="Search medicines, brands, or types..."
+              placeholder={t("searchMedicinesBrandsOrTypes")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-10 py-3 w-full rounded-lg border focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
@@ -547,7 +547,7 @@ export default function PharmacInventoryPage() {
                 color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
               }}
             >
-              <option value="all">All Categories</option>
+              <option value="all">{t('allCategories')}</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -565,9 +565,9 @@ export default function PharmacInventoryPage() {
                 color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
               }}
             >
-              <option value="name">Sort by Name</option>
-              <option value="stock">Sort by Stock</option>
-              <option value="expiry">Sort by Expiry</option>
+              <option value="name">{t('sortByName')}</option>
+              <option value="stock">{t('sortByStock')}</option>
+              <option value="expiry">{t('sortByExpiry')}</option>
             </select>
 
             {/* Clear All Filters Button */}
@@ -609,7 +609,7 @@ export default function PharmacInventoryPage() {
               }}
             >
               <Edit2 className="h-5 w-5" />
-              <span>{editMode ? "Cancel Edit" : "Edit Mode"}</span>
+              <span>{editMode ? t('cancelEdit') : t('editMode')}</span>
             </button>
           </div>
         </div>
@@ -632,21 +632,21 @@ export default function PharmacInventoryPage() {
                 onChange={handleSelectAll}
                 className="h-4 w-4 text-green-600 focus:ring-green-500 rounded"
               />
-              <span>Select All ({filteredItems.length} items)</span>
+              <span>{t('selectAll')} ({filteredItems.length} {t('items')})</span>
             </button>
 
             {selectedItemIds.length > 0 && (
               <div className="flex items-center space-x-3">
                 <span className="text-sm font-medium"
                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                  {selectedItemIds.length} selected
+                  {selectedItemIds.length} {t('selected')}
                 </span>
                 <button
                   onClick={handleDeleteItem}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold flex items-center space-x-2 transition-all duration-300 shadow-md"
                 >
                   <X className="h-5 w-5" />
-                  <span>Delete Selected</span>
+                  <span>{t('deleteSelected')}</span>
                 </button>
               </div>
             )}
@@ -666,10 +666,10 @@ export default function PharmacInventoryPage() {
           <h3 className="text-lg font-semibold flex items-center"
               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1e293b'}}>
             <div className="w-1 h-5 bg-green-500 mr-3 rounded-full"></div>
-            Medicine Inventory ({filteredItems.length} items)
+            {t('medicineInventory')} ({filteredItems.length} {t('items')})
             {editMode && (
               <span className="ml-4 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
-                Edit Mode Active
+                {t('editModeActive')}
               </span>
             )}
           </h3>
@@ -682,25 +682,25 @@ export default function PharmacInventoryPage() {
                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e2e8f0'
              }}>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Image
+            {t('image')}
           </div>
           <div className="text-left" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Medicine Name
+            {t('medicineName')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Brand
+            {t('brand')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Type
+            {t('type')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Unit
+            {t('unit')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Controlled
+            {t('controlled')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Stock Level
+            {t('stockLevel')}
           </div>
         </div>
 
@@ -714,13 +714,13 @@ export default function PharmacInventoryPage() {
               </div>
               <h3 className="text-lg font-medium mb-2"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1e293b'}}>
-                No medicines found
+                {t('noMedicinesFound')}
               </h3>
               <p className="text-sm"
                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
                 {searchQuery || selectedCategory !== "all"
-                  ? "Try adjusting your search or filters"
-                  : "Add your first medicine to get started"}
+                  ? t('tryAdjustingFilters')
+                  : t('addFirstMedicine')}
               </p>
             </div>
           ) : (
@@ -922,7 +922,7 @@ export default function PharmacInventoryPage() {
                         </div>
                         <div className="text-xs"
                              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
-                          units
+                          {item.unit || t('units')}
                         </div>
                       </div>
                     </div>
@@ -958,7 +958,7 @@ export default function PharmacInventoryPage() {
                                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f1f5f9',
                                  color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'
                                }}>
-                            No Image
+                            {t('noImage')}
                           </div>
                         )}
                       </div>
@@ -990,10 +990,10 @@ export default function PharmacInventoryPage() {
                           <div>
                             <p className="text-xs font-medium"
                                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
-                              Stock
+                              {t('stock')}
                             </p>
                             <p className={`text-lg font-bold ${getAmountStatus(item.amount)}`}>
-                              {item.amount} units
+                              {item.amount} {item.unit || t('units')}
                             </p>
                           </div>
                         </div>
@@ -1004,7 +1004,7 @@ export default function PharmacInventoryPage() {
                               ? "bg-red-100 text-red-700" 
                               : "bg-green-100 text-green-700"
                           }`}>
-                            {item.isControlled ? "Controlled" : "Regular"}
+                            {item.isControlled ? t('controlled') : t('regular')}
                           </span>
                           
                           {item.productType && (

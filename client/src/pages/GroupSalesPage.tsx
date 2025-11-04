@@ -158,8 +158,8 @@ export default function ProductSalesHistory() {
     setLoading(true);
     try {
       const url =
-        api(`group-sales-history/${encodeURIComponent(productType)}`) +
-        `?startDate=${start}&endDate=${end}`;
+        api(`group-sales-history`) +
+        `?productType=${encodeURIComponent(productType)}&startDate=${start}&endDate=${end}`;
 
       const res = await fetch(url, {
         method: 'GET',
