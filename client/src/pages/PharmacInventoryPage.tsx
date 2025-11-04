@@ -484,7 +484,7 @@ export default function PharmacInventoryPage() {
                 {expireSoonItems.length}
               </p>
               <p className={`text-sm mt-1 font-medium ${
-                expireSoonItems.length > 0 ? "text-orange-200" : "text-green-600"
+                expireSoonItems.length > 0 ? "text-orange-200" : "text-orange-600"
               }`}>
                 {expireSoonItems.length > 0 ? t('requiresAttention') : t('allProductsFresh')}
               </p>
