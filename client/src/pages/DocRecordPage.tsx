@@ -2,6 +2,20 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { 
+  Search, 
+  ArrowUpDown, 
+  PenLine, 
+  Download, 
+  Share2, 
+  Trash2, 
+  Check, 
+  FileText, 
+  Eye,
+  Calendar,
+  Clock,
+  File
+} from 'lucide-react';
 interface Document {
   purchase_document_id: number;
   description: string;
@@ -439,23 +453,20 @@ export default function DocumentRecord() {
             {/* Search Input */}
             <div className="md:col-span-2">
               <label
-                className="block text-sm font-medium mb-2"
+                className="flex items-center gap-2 text-sm font-medium mb-2"
                 style={{
                   color: document.documentElement.classList.contains("dark")
                     ? "#d1d5db"
                     : "#374151",
                 }}
               >
-                🔍 {t("search")}
+                <Search className="w-4 h-4" />
+                {t("search")}
               </label>
               <input
                 type="text"
                 placeholder={
-                  t("searchByDocNumber") +
-                  ", " +
-                  t("filename") +
-                  ", " +
-                  t("signerName")
+                  t("searchByDocNumber") + ", " + t("filename") + ", " + t("signerName")
                 }
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -481,14 +492,15 @@ export default function DocumentRecord() {
             {/* Sort Options */}
             <div>
               <label
-                className="block text-sm font-medium mb-2"
+                className="flex items-center gap-2 text-sm font-medium mb-2"
                 style={{
                   color: document.documentElement.classList.contains("dark")
                     ? "#d1d5db"
                     : "#374151",
                 }}
               >
-                📊 {t("sortBy")}
+                <ArrowUpDown className="w-4 h-4" />
+                {t("sortBy")}
               </label>
               <select
                 value={sortBy}
@@ -523,14 +535,15 @@ export default function DocumentRecord() {
             {/* Signature Filter */}
             <div>
               <label
-                className="block text-sm font-medium mb-2"
+                className="flex items-center gap-2 text-sm font-medium mb-2"
                 style={{
                   color: document.documentElement.classList.contains("dark")
                     ? "#d1d5db"
                     : "#374151",
                 }}
               >
-                ✍️ {t("signatureStatus")}
+                <PenLine className="w-4 h-4" />
+                {t("signatureStatus")}
               </label>
               <select
                 value={filterSigned}
@@ -593,19 +606,7 @@ export default function DocumentRecord() {
                   {bulkActionLoading ? (
                     <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
                   ) : (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
+                    <Download className="w-4 h-4" />
                   )}
                   {t("download")}
                 </button>
@@ -618,19 +619,7 @@ export default function DocumentRecord() {
                   {bulkActionLoading ? (
                     <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
                   ) : (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                      />
-                    </svg>
+                    <Share2 className="w-4 h-4" />
                   )}
                   {t("share")}
                 </button>
@@ -643,19 +632,7 @@ export default function DocumentRecord() {
                   {bulkActionLoading ? (
                     <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
                   ) : (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
+                    <Trash2 className="w-4 h-4" />
                   )}
                   {t("delete")}
                 </button>
@@ -823,17 +800,7 @@ export default function DocumentRecord() {
                             name: doc.po_signature.signer_name,
                           })}
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                          <Check className="w-4 h-4" />
                         </div>
                         {/* Label */}
                         <div
@@ -847,17 +814,7 @@ export default function DocumentRecord() {
                         {/* PDF Icon for unsigned documents */}
                         <div className="text-center">
                           <div className="bg-red-500 text-white p-3 rounded-lg mb-2 inline-block">
-                            <svg
-                              className="w-8 h-8"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
+                            <FileText className="w-8 h-8" />
                           </div>
                           <p
                             className="text-xs font-medium"
@@ -881,25 +838,7 @@ export default function DocumentRecord() {
                     {/* Click to view hint */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <div className="bg-black/80 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 shadow-lg">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
+                        <Eye className="w-4 h-4" />
                         {t("clickToPreview")}
                       </div>
                     </div>
@@ -946,7 +885,7 @@ export default function DocumentRecord() {
 
                     {/* Date and Time */}
                     <p
-                      className="text-xs"
+                      className="text-xs flex items-center justify-center gap-1"
                       style={{
                         color: document.documentElement.classList.contains(
                           "dark"
@@ -955,33 +894,21 @@ export default function DocumentRecord() {
                           : "#9ca3af",
                       }}
                     >
-                      📅{" "}
-                      {new Date(doc.issue_date).toLocaleDateString("th-TH", {
+                      <Calendar className="w-3 h-3" />
+                      Create at: {new Date(doc.issue_date).toLocaleDateString("th-TH", {
                         day: "2-digit",
                         month: "2-digit",
                         year: "numeric",
-                      })}
-                    </p>
-                    <p
-                      className="text-xs"
-                      style={{
-                        color: document.documentElement.classList.contains(
-                          "dark"
-                        )
-                          ? "#6b7280"
-                          : "#9ca3af",
-                      }}
-                    >
-                      🕐{" "}
-                      {new Date(doc.issue_date).toLocaleTimeString("th-TH", {
+                      })} {new Date(doc.issue_date).toLocaleTimeString("th-TH", {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
                     </p>
+                   
 
                     {/* File Info */}
                     <p
-                      className="text-xs truncate"
+                      className="text-xs truncate flex items-center justify-center gap-1"
                       style={{
                         color: document.documentElement.classList.contains(
                           "dark"
@@ -991,7 +918,7 @@ export default function DocumentRecord() {
                       }}
                       title={doc.pdf_filename}
                     >
-                      📄{" "}
+                      <File className="w-3 h-3 flex-shrink-0" />
                       {doc.pdf_filename.length > 15
                         ? doc.pdf_filename.substring(0, 15) + "..."
                         : doc.pdf_filename}
@@ -1003,7 +930,7 @@ export default function DocumentRecord() {
                     {doc.po_signature ? (
                       <div className="space-y-1">
                         <p
-                          className="text-xs truncate"
+                          className="text-xs truncate flex items-center justify-center gap-1"
                           style={{
                             color: document.documentElement.classList.contains(
                               "dark"
@@ -1013,10 +940,11 @@ export default function DocumentRecord() {
                           }}
                           title={doc.po_signature.signer_name}
                         >
-                          ✅ {doc.po_signature.signer_name}
+                          <Check className="w-3 h-3 flex-shrink-0" />
+                          {doc.po_signature.signer_name}
                         </p>
                         <p
-                          className="text-xs"
+                          className="text-xs flex items-center justify-center gap-1"
                           style={{
                             color: document.documentElement.classList.contains(
                               "dark"
@@ -1025,15 +953,24 @@ export default function DocumentRecord() {
                               : "#059669",
                           }}
                         >
-                          🕐{" "}
-                          {new Date(
-                            doc.po_signature.signed_at
-                          ).toLocaleDateString("th-TH")}
+                          <Clock className="w-3 h-3" />
+                          Sign at: {new Date(
+                             doc.po_signature.signed_at
+                          ).toLocaleDateString("th-TH", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })} {new Date(
+                             doc.po_signature.signed_at
+                          ).toLocaleTimeString("th-TH", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </p>
                       </div>
                     ) : (
                       <p
-                        className="text-xs"
+                        className="text-xs flex items-center justify-center gap-1"
                         style={{
                           color: document.documentElement.classList.contains(
                             "dark"
@@ -1042,23 +979,12 @@ export default function DocumentRecord() {
                             : "#d97706",
                         }}
                       >
-                        ⏳ {t("awaitingSignature")}
+                        <Clock className="w-3 h-3" />
+                        {t("awaitingSignature")}
                       </p>
                     )}
 
-                    {/* MIME Type */}
-                    <p
-                      className="text-xs"
-                      style={{
-                        color: document.documentElement.classList.contains(
-                          "dark"
-                        )
-                          ? "#6b7280"
-                          : "#9ca3af",
-                      }}
-                    >
-                      🔗 {doc.pdf_mime}
-                    </p>
+                   
                   </div>
                 </div>
               ))}
@@ -1067,18 +993,14 @@ export default function DocumentRecord() {
             {filteredDocuments.length === 0 && documents.length > 0 && (
               <div className="text-center py-16">
                 <div className="mb-4">
-                  <svg
+                  <Search
                     className="w-20 h-20 mx-auto"
                     style={{
                       color: document.documentElement.classList.contains("dark")
                         ? "#4b5563"
                         : "#d1d5db",
                     }}
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                  </svg>
+                  />
                 </div>
                 <h3
                   className="text-lg font-medium mb-2"
@@ -1115,22 +1037,14 @@ export default function DocumentRecord() {
             {documents.length === 0 && (
               <div className="text-center py-16">
                 <div className="mb-4">
-                  <svg
+                  <FileText
                     className="w-20 h-20 mx-auto"
                     style={{
                       color: document.documentElement.classList.contains("dark")
                         ? "#4b5563"
                         : "#d1d5db",
                     }}
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  />
                 </div>
                 <h3
                   className="text-lg font-medium mb-2"

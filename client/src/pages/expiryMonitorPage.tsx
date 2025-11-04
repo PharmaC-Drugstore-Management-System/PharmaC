@@ -53,7 +53,7 @@ export default function ExpiryMonitor() {
           textColor: 'text-red-800',
           borderColor: 'border-red-500',
           icon: AlertTriangle,
-          label: 'Expired',
+          label: t('expired'),
           priority: 4
         };
       case 'critical':
@@ -62,7 +62,7 @@ export default function ExpiryMonitor() {
           textColor: 'text-red-800',
           borderColor: 'border-red-200',
           icon: AlertTriangle,
-          label: 'Critical',
+          label: t('critical'),
           priority: 3
         };
       case 'warning':
@@ -71,7 +71,7 @@ export default function ExpiryMonitor() {
           textColor: 'text-yellow-800',
           borderColor: 'border-yellow-200',
           icon: Clock,
-          label: 'Warning',
+          label: t('warning'),
           priority: 2
         };
       case 'safe':
@@ -80,7 +80,7 @@ export default function ExpiryMonitor() {
           textColor: 'text-green-800',
           borderColor: 'border-green-200',
           icon: CheckCircle,
-          label: 'Safe',
+          label: t('safe'),
           priority: 1
         };
     }
@@ -96,7 +96,24 @@ export default function ExpiryMonitor() {
 
   // Format date to display format
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB');
+    const date = new Date(dateString);
+    const locale = t('locale');
+    
+    if (locale === 'th-TH') {
+      // Thai format with Buddhist Era
+      return date.toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } else {
+      // English format
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    }
   };
 
   const loadData = async () => {
@@ -122,8 +139,8 @@ export default function ExpiryMonitor() {
       console.error('Error loading data:', error);
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'Failed to load expiry data',
+        title: t('error'),
+        text: t('failedToLoadExpiryData'),
         timer: 2000,
         showConfirmButton: false
       });
@@ -206,7 +223,7 @@ export default function ExpiryMonitor() {
             className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            {loading ? 'Loading...' : 'Refresh'}
+            {loading ? t('loading') : t('refresh')}
           </button>
         </div>
       </div>
@@ -214,10 +231,10 @@ export default function ExpiryMonitor() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {[
-          { status: 'expired', label: 'Expired', count: stats.expired, color: 'red' },
-          { status: 'critical', label: 'Critical (<3 months)', count: stats.critical, color: 'red' },
-          { status: 'warning', label: 'Warning (<6 months)', count: stats.warning, color: 'yellow' },
-          { status: 'safe', label: 'Safe', count: stats.safe, color: 'green' },
+          { status: 'expired', label: t('expired'), count: stats.expired, color: 'red' },
+          { status: 'critical', label: t('criticalLessThan3Months'), count: stats.critical, color: 'red' },
+          { status: 'warning', label: t('warningLessThan6Months'), count: stats.warning, color: 'yellow' },
+          { status: 'safe', label: t('safe'), count: stats.safe, color: 'green' },
         ].map((stat) => (
           <div
             key={stat.status}
@@ -256,7 +273,7 @@ export default function ExpiryMonitor() {
           <div className="flex-1">
             <input
               type="text"
-              placeholder="Search by product name, brand, or lot number..."
+              placeholder={t('searchByProductBrandOrLot')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -277,11 +294,11 @@ export default function ExpiryMonitor() {
               color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
             }}
           >
-            <option value="all">All Status</option>
-            <option value="expired">Expired</option>
-            <option value="critical">Critical</option>
-            <option value="warning">Warning</option>
-            <option value="safe">Safe</option>
+            <option value="all">{t('allStatus')}</option>
+            <option value="expired">{t('expired')}</option>
+            <option value="critical">{t('critical')}</option>
+            <option value="warning">{t('warning')}</option>
+            <option value="safe">{t('safe')}</option>
           </select>
         </div>
       </div>
@@ -299,12 +316,12 @@ export default function ExpiryMonitor() {
                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
                color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
              }}>
-          <div>Product</div>
-          <div>Brand</div>
-          <div>Lot Number</div>
-          <div>Amount</div>
-          <div>Expiry Date</div>
-          <div>Status</div>
+          <div>{t('product')}</div>
+          <div>{t('brand')}</div>
+          <div>{t('lotNumber')}</div>
+          <div>{t('amount')}</div>
+          <div>{t('expiryDate')}</div>
+          <div>{t('status')}</div>
         </div>
 
         {/* Table Body */}
@@ -313,14 +330,14 @@ export default function ExpiryMonitor() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
               <p style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                Loading expiry data...
+                {t('loadingExpiryData')}
               </p>
             </div>
           </div>
         ) : sortedLots.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <p style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-              No lots found matching your criteria
+              {t('noLotsFound')}
             </p>
           </div>
         ) : (
@@ -350,13 +367,13 @@ export default function ExpiryMonitor() {
                   <div className="flex flex-col">
                     <span className="font-medium"
                           style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'}}>
-                      {lot.product?.product_name || 'Unknown Product'}
+                      {lot.product?.product_name || t('unknownProduct')}
                     </span>
                   </div>
                   <div>
                     <span className="text-sm"
                           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                      {lot.product?.brand || 'Unknown Brand'}
+                      {lot.product?.brand || t('unknownBrand')}
                     </span>
                   </div>
                   <div>
@@ -377,7 +394,7 @@ export default function ExpiryMonitor() {
                     </span>
                     <span className="text-xs"
                           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
-                      {remainingDays >= 0 ? `${remainingDays} days left` : `${Math.abs(remainingDays)} days overdue`}
+                      {remainingDays >= 0 ? `${remainingDays} ${t('daysLeft')}` : `${Math.abs(remainingDays)} ${t('daysOverdue')}`}
                     </span>
                   </div>
                   <div>

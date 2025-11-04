@@ -4,6 +4,7 @@ import controller from "../controller/group-sales-history.controller";
 
 const router = Router();
 
-router.get("/:producttype", controller.listByProductType);
+// Changed from /:producttype to query parameter to support product types with '/' character
+router.get("/", controller.listByProductType);
 
 export default router;

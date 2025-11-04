@@ -175,8 +175,7 @@ const predictorService = {
             console.error('Error checking status:', error);
             throw error;
         }
-    },
-    
+    }
 }
 
 export default predictorService

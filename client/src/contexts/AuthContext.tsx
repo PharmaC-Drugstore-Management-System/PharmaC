@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface User {
   id: string;
   email: string;
-  role: 'Owner' | 'Staff' | 'Customer';
+  role: 'Owner' | 'Employee' | 'Customer' | 'Pharmacist';
   name?: string;
 }
 
@@ -37,13 +37,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Role mapping function
-  const mapRoleIdToRoleName = (roleId: number | string): 'Owner' | 'Staff' | 'Customer' => {
+  const mapRoleIdToRoleName = (roleId: number | string): 'Owner' | 'Employee' | 'Customer' | 'Pharmacist' => {
     const id = typeof roleId === 'string' ? parseInt(roleId) : roleId;
     switch (id) {
-      case 1: return 'Customer'; // Admin -> Staff
-      case 2: return 'Owner'; // Owner -> Owner
-      case 3: return 'Staff'; // Employee -> Staff
-      case 4: return 'Staff'; // Pharmacist -> Staff
+      case 1: return 'Owner'; // Admin -> Staff
+      case 2: return 'Employee'; // Employee -> Staff
+      case 4: return 'Customer';
+      case 5: return 'Pharmacist'; // Pharmacist -> Staff
       // case 8: return 'Customer'; // Customer -> Customer
       default: return 'Customer'; // Default fallback
     }
@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const user: User = {
           id: userData.user?.id || userData.id || userData.user_id || userData.userId,
           email: userData.user?.email || userData.email,
-          role: mappedRole,
+          role: mappedRole, 
           name: userData.user?.firstname || userData.firstname || userData.user?.name || userData.name || userData.username || userData.full_name,
         };
         console.log('Processed user:', user); // Debug log

@@ -4,13 +4,13 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('Owner' | 'Staff' | 'Customer')[];
+  allowedRoles?: ('Owner'  | 'Employee' | 'Customer' | 'Pharmacist')[];
   requireAuth?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  allowedRoles = ['Owner', 'Staff', 'Customer'],
+  allowedRoles = ['Owner', 'Employee', 'Customer', 'Pharmacist'],
   requireAuth = true 
 }) => {
   const { user, loading } = useAuth();

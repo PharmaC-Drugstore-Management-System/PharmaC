@@ -3,11 +3,16 @@ import groupSalesHistoryService from "../services/group-sales-history.service";
 const controller = {
   listByProductType: async (req: any, res: any) => {
     try {
-      const { producttype } = req.params;
-      const { startDate, endDate } = req.query as {
+      // Changed from req.params to req.query to support product types with '/' character
+      const { productType, startDate, endDate } = req.query as {
+        productType?: string;
         startDate?: string;
         endDate?: string;
       };
+
+      if (!productType) {
+        return res.status(400).json({ status: false, message: "productType is required" });
+      }
 
       if (startDate && isNaN(Date.parse(startDate))) {
         return res.status(400).json({ status: false, message: "Invalid startDate (YYYY-MM-DD)" });
@@ -17,7 +22,7 @@ const controller = {
       }
 
       const data = await groupSalesHistoryService.getByProductType({
-        producttype,
+        producttype: productType,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
       });

@@ -55,7 +55,7 @@ Examples:
         '--backend_url',
         type=str,
         default='http://pharmac-server:5000/api',
-        help='Backend API URL (default: http://pharmac-server:5000/api for Docker network)'
+        help='Backend API URL (default: http://pharmac-server:5000/api)'
     )
     
     parser.add_argument(

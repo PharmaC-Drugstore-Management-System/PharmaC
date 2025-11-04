@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronLeft, Pencil } from 'lucide-react';
+import { ChevronLeft, Pencil, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Swal from 'sweetalert2';
@@ -53,9 +53,7 @@ export default function AccountPage() {
 
     const [userInfo, setUserInfo] = useState(getUserInfoLabels());
 
-    const [imageUrl, setImageUrl] = useState(
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'
-    );
+    const [imageUrl, setImageUrl] = useState('');
 
     const handleInputChange = (index: number, newValue: string) => {
         const newUserInfo = [...userInfo];
@@ -134,6 +132,9 @@ export default function AccountPage() {
     const loadDataFromAPI = async () => {
         try {
             console.log('Loading profile data from API...');
+            
+            // Clear image URL immediately to prevent showing old default
+            setImageUrl('');
 
             // Step 1: Get employee_id from JWT token
             const authResponse = await fetch(`${API_URL}/me`, {
@@ -183,11 +184,16 @@ export default function AccountPage() {
             // Set profile image from database or use default
             if (user.profile_image) {
                                 const p = String(user.profile_image);
-                                // Handle different formats of profile_image
-                                let normalized: string;
                                 
-                                // Check if it's a localhost URL and extract the path
-                                if (p.includes('://localhost') || p.includes('://127.0.0.1')) {
+                                // Skip if it's an Unsplash or external default image
+                                if (p.includes('unsplash.com') || p.includes('images.unsplash')) {
+                                    setImageUrl('');
+                                } else {
+                                    // Handle different formats of profile_image
+                                    let normalized: string;
+                                    
+                                    // Check if it's a localhost URL and extract the path
+                                    if (p.includes('://localhost') || p.includes('://127.0.0.1')) {
                                     // Extract path from localhost URL (e.g., http://localhost:5000/uploads/... -> /uploads/...)
                                     try {
                                         const url = new URL(p);
@@ -211,8 +217,9 @@ export default function AccountPage() {
                                 }
                                 
                                 setImageUrl(normalized);
+                                }
             } else {
-                setImageUrl('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face');
+                setImageUrl('');
             }
 
             // Set user info fields with translated labels
@@ -365,13 +372,20 @@ export default function AccountPage() {
                             {/* Profile Image */}
                             <div className="relative">
                                 <div className="w-32 h-32 rounded-full overflow-hidden bg-white p-1 shadow-lg">
-                                    <div className="w-full h-full rounded-full overflow-hidden group cursor-pointer relative"
+                                    <div className="w-full h-full rounded-full overflow-hidden group cursor-pointer relative flex items-center justify-center"
                                         style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
-                                        <img
-                                            src={imageUrl}
-                                            alt="Profile"
-                                            className="w-full h-full object-cover"
-                                        />
+                                        {imageUrl ? (
+                                            <img
+                                                src={imageUrl}
+                                                alt="Profile"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <User 
+                                                className="w-16 h-16"
+                                                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}
+                                            />
+                                        )}
                                         {/* Always show change profile picture overlay */}
                                         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200">
                                             <div className="text-center">
