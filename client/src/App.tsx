@@ -97,14 +97,14 @@ function AppContent() {
             {/* Protected Routes for Admin/Staff */}
             {/* หน้าแรก - POS สำหรับขายของทันที */}
             <Route path="/" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner']}>
                 <POSPage />
               </ProtectedRoute>
             } />
             
             {/* Dashboard/Menu - ดูภาพรวม */}
             <Route path="/dashboard" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner']}>
                 <MainMenu />
               </ProtectedRoute>
             } />
@@ -130,12 +130,12 @@ function AppContent() {
               </ProtectedRoute>} />
               
             <Route path="/settings" element={
-              <ProtectedRoute allowedRoles={['Owner']}>
+              <ProtectedRoute allowedRoles={['Owner', 'Employee']}>
                 <SettingsPage />
               </ProtectedRoute>
             } />
             <Route path="/accountSetting" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner', 'Employee']}>
                 <AccountPage />
               </ProtectedRoute>
             } />
@@ -150,54 +150,54 @@ function AppContent() {
               </ProtectedRoute>
             } />
             <Route path="/podoc" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner', 'Pharmacist']}>
                 <PODoc />
               </ProtectedRoute>
             } />
             <Route path="/poedit" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner']}>
                 <POEdit />
               </ProtectedRoute>
             } />
             <Route path="/poform" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner']}>
                 <POForm />
               </ProtectedRoute>
             } />
             <Route path="/expiry-monitor" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner']}>
                 <ExpiryMonitor />
               </ProtectedRoute>
             } />
             <Route path="/doc-record" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner']}>
                 <DocumentRecord />
               </ProtectedRoute>
             } />
             <Route path="/order-record" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner']}>
                 <OrderRecord />
               </ProtectedRoute>
             } />
             <Route path="/membership" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner', 'Employee']}>
                 <MembershipRanking />
               </ProtectedRoute>
             } />
             <Route path="/termCondition" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff', 'Customer']}>
+              <ProtectedRoute allowedRoles={['Owner', 'Employee', 'Customer']}>
                 <TermsConditionsPage />
               </ProtectedRoute>
             } />
             <Route path="/contactUs" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff', 'Customer']}>
+              <ProtectedRoute allowedRoles={['Owner', 'Employee', 'Customer']}>
                 <ContactUsPage />
               </ProtectedRoute>
             } />
 
             {/* POS - ย้ายไปหน้าแรกแล้ว แต่ยังเข้าได้จาก /pos */}
             <Route path="/pos" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner', 'Employee']}>
                 <POSPage />
               </ProtectedRoute>
             } />
@@ -209,7 +209,7 @@ function AppContent() {
               </ProtectedRoute>
             } />
             <Route path="/sales-history" element={
-              <ProtectedRoute allowedRoles={['Owner', 'Staff']}>
+              <ProtectedRoute allowedRoles={['Owner', 'Employee']}>
                 <ProductSalesHistory />
               </ProtectedRoute>
             } />

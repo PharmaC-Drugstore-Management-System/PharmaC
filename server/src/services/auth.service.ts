@@ -143,6 +143,21 @@ const auth_service = {
       throw error;
     }
   },
+
+  getUserRole: async (role_id: number | null | undefined): Promise<string> => {
+    try {
+      if (!role_id) {
+        return 'Unknown';
+      }
+      const role = await prisma.role.findUnique({
+        where: { role_id: role_id },
+      });
+      return role?.role_name || 'Unknown';
+    } catch (error: any) {
+      console.error("Error getting user role:", error.message);
+      return 'Unknown';
+    }
+  },
 };
 
 export default auth_service;

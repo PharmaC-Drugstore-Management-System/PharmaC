@@ -37,7 +37,7 @@ export default function PharmacInventoryPage() {
   };
   const [items, setItems] = useState<MedicineItem[]>([]);
   const [editMode, setEditMode] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]); // เปลี่ยนเป็น array
   
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -114,52 +114,186 @@ export default function PharmacInventoryPage() {
   };
 
   const handleRowSelect = (id: number) => {
-    setSelectedItemId(id);
+    setSelectedItemIds((prev) => {
+      if (prev.includes(id)) {
+        // ถ้าเลือกอยู่แล้ว ให้ยกเลิกการเลือก
+        return prev.filter((itemId) => itemId !== id);
+      } else {
+        // ถ้ายังไม่เลือก ให้เพิ่มเข้าไป
+        return [...prev, id];
+      }
+    });
   };
 
-  const handleDeleteItem = () => {
-    if (selectedItemId !== null) {
-      const selectedItem = items.find((item) => item.id === selectedItemId);
-      
-      Swal.fire({
-        title: "ลบรายการชั่วคระว?",
-        html: `
-          <div style="text-align: left;">
-            <p><strong>ยา:</strong> ${selectedItem?.name || 'N/A'}</p>
-            <p><strong>แบรนด์:</strong> ${selectedItem?.brand || 'N/A'}</p>
-            <hr style="margin: 15px 0;">
-            <p style="color: #f97316; font-weight: 600;">⚠️ การลบนี้เป็นการลบชั่วคราวเท่านั้น</p>
-            <p style="font-size: 14px; color: #6b7280;">
-              • รายการจะหายจากหน้าจอนี้<br>
-              • <strong>ข้อมูลใน Database ยังอยู่</strong><br>
-              • เมื่อ Refresh หน้า รายการจะกลับมาอีกครั้ง
-            </p>
-          </div>
-        `,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#ef4444",
-        cancelButtonColor: "#6b7280",
-        confirmButtonText: "ใช่, ลบชั่วคราว",
-        cancelButtonText: "ยกเลิก",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Remove from frontend state only (not from database)
+  const handleSelectAll = () => {
+    if (selectedItemIds.length === filteredItems.length) {
+      // ถ้าเลือกครบแล้ว ให้ยกเลิกทั้งหมด
+      setSelectedItemIds([]);
+    } else {
+      // เลือกทั้งหมด
+      setSelectedItemIds(filteredItems.map((item) => item.id));
+    }
+  };
+
+  const handleDeleteItem = async () => {
+    if (selectedItemIds.length === 0) return;
+
+    const selectedItemsData = items.filter((item) => selectedItemIds.includes(item.id));
+    const count = selectedItemIds.length;
+    
+    const result = await Swal.fire({
+      title: `Delete ${count} Medicine${count > 1 ? 's' : ''}?`,
+      html: `
+        <div style="text-align: left;">
+          <p style="margin-bottom: 10px;"><strong>Selected items:</strong></p>
+          <ul style="max-height: 150px; overflow-y: auto; padding-left: 20px; margin-bottom: 15px;">
+            ${selectedItemsData.map(item => `<li>${item.name} (${item.brand})</li>`).join('')}
+          </ul>
+          <hr style="margin: 15px 0;">
+          <p style="color: #ef4444; font-weight: 600;">⚠️ This action cannot be undone!</p>
+          <p style="font-size: 14px; color: #6b7280;">
+            This will permanently delete ${count} medicine${count > 1 ? 's' : ''} from the database.
+          </p>
+        </div>
+      `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: `Yes, delete ${count > 1 ? 'all' : 'it'}!`,
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        // Show loading
+        Swal.fire({
+          title: "Deleting...",
+          text: `Deleting ${count} item${count > 1 ? 's' : ''}...`,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        // Delete all selected items
+        const deleteResults = await Promise.allSettled(
+          selectedItemIds.map(async (id) => {
+            try {
+              const response = await fetch(`${API_URL}/inventory/delete-medicine/${id}`, {
+                method: "DELETE",
+                credentials: "include",
+              });
+              
+              const data = await response.json();
+              
+              if (!response.ok) {
+                // Extract the most descriptive error message
+                const errorMsg = data.message || data.error || "Failed to delete";
+                console.error(`Failed to delete ID ${id}:`, errorMsg);
+                throw new Error(errorMsg);
+              }
+              
+              return { id, success: true };
+            } catch (error) {
+              console.error(`Error deleting ID ${id}:`, error);
+              throw error;
+            }
+          })
+        );
+
+        // Separate successful and failed deletions
+        const successfulIds: number[] = [];
+        const failedItems: { id: number; reason: string }[] = [];
+
+        deleteResults.forEach((result, index) => {
+          const id = selectedItemIds[index];
+          if (result.status === "fulfilled") {
+            successfulIds.push(id);
+          } else {
+            failedItems.push({
+              id,
+              reason: result.reason?.message || "Unknown error",
+            });
+          }
+        });
+
+        // Remove successfully deleted items from frontend
+        if (successfulIds.length > 0) {
           setItems((prevItems) =>
-            prevItems.filter((item) => item.id !== selectedItemId)
+            prevItems.filter((item) => !successfulIds.includes(item.id))
           );
-          setSelectedItemId(null);
-          setEditMode(false);
-          
+        }
+
+        setSelectedItemIds([]);
+        setEditMode(false);
+
+        // Show appropriate message
+        if (failedItems.length === 0) {
+          // All deleted successfully
           Swal.fire({
-            title: "ลบออกจากหน้าจอแล้ว!",
-            text: "รายการถูกซ่อนชั่วคราว (ข้อมูลใน Database ยังอยู่)",
+            title: "Deleted!",
+            text: `${count} medicine${count > 1 ? 's have' : ' has'} been deleted from database.`,
             icon: "success",
             timer: 2000,
             showConfirmButton: false,
           });
+        } else if (successfulIds.length === 0) {
+          // All failed
+          const errorMessages = failedItems
+            .map((f) => {
+              const item = items.find((i) => i.id === f.id);
+              return `• ${item?.name || `ID ${f.id}`}: ${f.reason}`;
+            })
+            .join("<br>");
+
+          Swal.fire({
+            title: "Cannot Delete!",
+            html: `
+              <div style="text-align: left;">
+                <p style="margin-bottom: 10px;">The following medicines cannot be deleted:</p>
+                <div style="max-height: 200px; overflow-y: auto; font-size: 14px;">
+                  ${errorMessages}
+                </div>
+              </div>
+            `,
+            icon: "error",
+            confirmButtonColor: "#ef4444",
+          });
+        } else {
+          // Partial success
+          const errorMessages = failedItems
+            .map((f) => {
+              const item = items.find((i) => i.id === f.id);
+              return `• ${item?.name || `ID ${f.id}`}: ${f.reason}`;
+            })
+            .join("<br>");
+
+          Swal.fire({
+            title: "Partially Deleted",
+            html: `
+              <div style="text-align: left;">
+                <p style="color: #10b981; margin-bottom: 10px;">✓ Successfully deleted: ${successfulIds.length} item(s)</p>
+                <p style="color: #ef4444; margin-bottom: 10px;">✗ Failed to delete: ${failedItems.length} item(s)</p>
+                <hr style="margin: 10px 0;">
+                <div style="max-height: 200px; overflow-y: auto; font-size: 14px;">
+                  ${errorMessages}
+                </div>
+              </div>
+            `,
+            icon: "warning",
+            confirmButtonColor: "#f59e0b",
+          });
         }
-      });
+      } catch (error) {
+        console.error("Error deleting medicines:", error);
+        Swal.fire({
+          title: "Error!",
+          text: "An unexpected error occurred. Please try again.",
+          icon: "error",
+          confirmButtonColor: "#ef4444",
+        });
+      }
     }
   };
 
@@ -262,7 +396,7 @@ export default function PharmacInventoryPage() {
           <Link to="/add-medicine">
             <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center space-x-2 transition-all duration-300 transform hover:scale-105 shadow-lg">
               <Plus className="h-5 w-5" />
-              <span>Add Medicine</span>
+              <span>{t('addMedicine')}</span>
             </button>
           </Link>
         </div>
@@ -287,7 +421,7 @@ export default function PharmacInventoryPage() {
                 {items.length}
               </p>
               <p className="text-sm text-green-600 mt-1 font-medium">
-                Products in stock
+                {t('productsInStock')}
               </p>
             </div>
             <div className="p-3 bg-green-100 rounded-full">
@@ -313,7 +447,7 @@ export default function PharmacInventoryPage() {
                 {lowStockItems.length}
               </p>
               <p className="text-sm text-red-600 mt-1 font-medium">
-                Need reorder
+                {t('needReorder')}
               </p>
             </div>
             <div className="p-3 bg-red-100 rounded-full">
@@ -352,7 +486,7 @@ export default function PharmacInventoryPage() {
               <p className={`text-sm mt-1 font-medium ${
                 expireSoonItems.length > 0 ? "text-orange-200" : "text-orange-600"
               }`}>
-                {expireSoonItems.length > 0 ? "Requires attention" : "All products fresh"}
+                {expireSoonItems.length > 0 ? t('requiresAttention') : t('allProductsFresh')}
               </p>
             </div>
             <div className={`p-3 rounded-full ${
@@ -379,7 +513,7 @@ export default function PharmacInventoryPage() {
                     style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}} />
             <input
               type="text"
-              placeholder="Search medicines, brands, or types..."
+              placeholder={t("searchMedicinesBrandsOrTypes")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-10 py-3 w-full rounded-lg border focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
@@ -413,7 +547,7 @@ export default function PharmacInventoryPage() {
                 color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
               }}
             >
-              <option value="all">All Categories</option>
+              <option value="all">{t('allCategories')}</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -431,9 +565,9 @@ export default function PharmacInventoryPage() {
                 color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
               }}
             >
-              <option value="name">Sort by Name</option>
-              <option value="stock">Sort by Stock</option>
-              <option value="expiry">Sort by Expiry</option>
+              <option value="name">{t('sortByName')}</option>
+              <option value="stock">{t('sortByStock')}</option>
+              <option value="expiry">{t('sortByExpiry')}</option>
             </select>
 
             {/* Clear All Filters Button */}
@@ -461,7 +595,7 @@ export default function PharmacInventoryPage() {
             <button
               onClick={() => {
                 setEditMode(!editMode);
-                setSelectedItemId(null);
+                setSelectedItemIds([]);
               }}
               className={`px-4 py-3 rounded-lg border font-medium transition-all duration-300 flex items-center space-x-2 ${
                 editMode 
@@ -475,10 +609,49 @@ export default function PharmacInventoryPage() {
               }}
             >
               <Edit2 className="h-5 w-5" />
-              <span>{editMode ? "Cancel Edit" : "Edit Mode"}</span>
+              <span>{editMode ? t('cancelEdit') : t('editMode')}</span>
             </button>
           </div>
         </div>
+
+        {/* Select All / Delete Selected Actions */}
+        {editMode && (
+          <div className="mt-4 flex items-center justify-between">
+            <button
+              onClick={handleSelectAll}
+              className="px-4 py-2 rounded-lg border font-medium transition-all duration-300 flex items-center space-x-2 hover:bg-gray-100"
+              style={{
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
+                color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={selectedItemIds.length === filteredItems.length && filteredItems.length > 0}
+                onChange={handleSelectAll}
+                className="h-4 w-4 text-green-600 focus:ring-green-500 rounded"
+              />
+              <span>{t('selectAll')} ({filteredItems.length} {t('items')})</span>
+            </button>
+
+            {selectedItemIds.length > 0 && (
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium"
+                      style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
+                  {selectedItemIds.length} {t('selected')}
+                </span>
+                <button
+                  onClick={handleDeleteItem}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold flex items-center space-x-2 transition-all duration-300 shadow-md"
+                >
+                  <X className="h-5 w-5" />
+                  <span>{t('deleteSelected')}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Inventory Table */}
@@ -493,10 +666,10 @@ export default function PharmacInventoryPage() {
           <h3 className="text-lg font-semibold flex items-center"
               style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1e293b'}}>
             <div className="w-1 h-5 bg-green-500 mr-3 rounded-full"></div>
-            Medicine Inventory ({filteredItems.length} items)
+            {t('medicineInventory')} ({filteredItems.length} {t('items')})
             {editMode && (
               <span className="ml-4 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
-                Edit Mode Active
+                {t('editModeActive')}
               </span>
             )}
           </h3>
@@ -509,25 +682,25 @@ export default function PharmacInventoryPage() {
                borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e2e8f0'
              }}>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Image
+            {t('image')}
           </div>
           <div className="text-left" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Medicine Name
+            {t('medicineName')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Brand
+            {t('brand')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Type
+            {t('type')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Unit
+            {t('unit')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Controlled
+            {t('controlled')}
           </div>
           <div className="text-center" style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-            Stock Level
+            {t('stockLevel')}
           </div>
         </div>
 
@@ -541,19 +714,19 @@ export default function PharmacInventoryPage() {
               </div>
               <h3 className="text-lg font-medium mb-2"
                   style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1e293b'}}>
-                No medicines found
+                {t('noMedicinesFound')}
               </h3>
               <p className="text-sm"
                  style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
                 {searchQuery || selectedCategory !== "all"
-                  ? "Try adjusting your search or filters"
-                  : "Add your first medicine to get started"}
+                  ? t('tryAdjustingFilters')
+                  : t('addFirstMedicine')}
               </p>
             </div>
           ) : (
             filteredItems.map((item) => {
-              const isSelected = selectedItemId === item.id;
-              const isDimmed = editMode && selectedItemId !== null && !isSelected;
+              const isSelected = selectedItemIds.includes(item.id);
+              const isDimmed = editMode && selectedItemIds.length > 0 && !isSelected;
               const rawImage = item.image ?? "";
               
               // Handle image URL construction
@@ -604,11 +777,10 @@ export default function PharmacInventoryPage() {
                     {editMode && (
                       <div className="absolute left-2 top-1/2 transform -translate-y-1/2">
                         <input
-                          type="radio"
-                          name="selectedItem"
+                          type="checkbox"
                           checked={isSelected}
                           onChange={() => handleRowSelect(item.id)}
-                          className="h-4 w-4 text-green-600 focus:ring-green-500"
+                          className="h-5 w-5 text-green-600 focus:ring-green-500 rounded cursor-pointer"
                         />
                       </div>
                     )}
@@ -750,7 +922,7 @@ export default function PharmacInventoryPage() {
                         </div>
                         <div className="text-xs"
                              style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
-                          units
+                          {item.unit || t('units')}
                         </div>
                       </div>
                     </div>
@@ -786,7 +958,7 @@ export default function PharmacInventoryPage() {
                                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f1f5f9',
                                  color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'
                                }}>
-                            No Image
+                            {t('noImage')}
                           </div>
                         )}
                       </div>
@@ -806,11 +978,10 @@ export default function PharmacInventoryPage() {
                           </div>
                           {editMode && (
                             <input
-                              type="radio"
-                              name="selectedItem"
+                              type="checkbox"
                               checked={isSelected}
                               onChange={() => handleRowSelect(item.id)}
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 ml-4"
+                              className="h-5 w-5 text-green-600 focus:ring-green-500 rounded cursor-pointer ml-4"
                             />
                           )}
                         </div>
@@ -819,10 +990,10 @@ export default function PharmacInventoryPage() {
                           <div>
                             <p className="text-xs font-medium"
                                style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
-                              Stock
+                              {t('stock')}
                             </p>
                             <p className={`text-lg font-bold ${getAmountStatus(item.amount)}`}>
-                              {item.amount} units
+                              {item.amount} {item.unit || t('units')}
                             </p>
                           </div>
                         </div>
@@ -833,7 +1004,7 @@ export default function PharmacInventoryPage() {
                               ? "bg-red-100 text-red-700" 
                               : "bg-green-100 text-green-700"
                           }`}>
-                            {item.isControlled ? "Controlled" : "Regular"}
+                            {item.isControlled ? t('controlled') : t('regular')}
                           </span>
                           
                           {item.productType && (
@@ -855,19 +1026,6 @@ export default function PharmacInventoryPage() {
           )}
         </div>
       </div>
-
-      {/* Action Buttons - Enhanced */}
-      {editMode && selectedItemId && (
-        <div className="mt-6 flex justify-center">
-          <button
-            onClick={handleDeleteItem}
-            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold flex items-center space-x-2 transition-all duration-300 transform hover:scale-105 shadow-lg"
-          >
-            <X className="h-5 w-5" />
-            <span>Delete Selected Item</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
