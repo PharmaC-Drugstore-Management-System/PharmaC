@@ -673,7 +673,7 @@ const resources = {
       productsInStock: "สินค้าคงคลัง",
       needReorder: "ต้องสั่งซื้อเพิ่ม",
       requiresAttention: "ต้องระวัง",
-      allProductsFresh: "สินค้าทั้งหมดยังสด",
+      allProductsFresh: "ไม่มีสินค้าใกล้หมดอายุ",
       cancelEdit: "ยกเลิกการแก้ไข",
       editMode: "โหมดแก้ไข",
       items: "รายการ",
