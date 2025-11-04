@@ -21,13 +21,9 @@ export default function AddMedicinePage() {
   const [scannedData, setScannedData] = useState("Not Found");
 
   const [productTypes] = useState([
-    "M01AB",
-    "M01AE",
-    "N02BA",
-    "N02BE/B",
-    "N05B",
-    "N05C",
-    "R03",
+    "A02",
+    "J01",
+    "N02",
     "R06",
   ] as string[]);
   
