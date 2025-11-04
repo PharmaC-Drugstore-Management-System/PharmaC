@@ -244,9 +244,9 @@ const CustomerPaymentPage: React.FC = () => {
   }, [displayOrder.status, verifyStatus]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen h-screen bg-gray-50 p-6 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+      <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex-shrink-0">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-600 p-2 rounded-lg">
@@ -297,11 +297,11 @@ const CustomerPaymentPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="max-w-6xl mx-auto flex-1 flex flex-col overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
 
           {/* Order Details */}
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col h-full overflow-hidden">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Order Details</h2>
               <div className="flex justify-between text-sm text-gray-600 mb-4">
@@ -327,7 +327,7 @@ const CustomerPaymentPage: React.FC = () => {
             </div>
 
             {/* Order Items */}
-            <div className="space-y-4 mb-6">
+            <div className="space-y-4 mb-6 flex-1 overflow-y-auto">
               {displayOrder.items.map((item) => (
                 <div key={item.cart_id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                   <div className="flex-1">
@@ -351,7 +351,7 @@ const CustomerPaymentPage: React.FC = () => {
             </div>
 
             {/* Total */}
-            <div className="border-t pt-6">
+            <div className="border-t pt-6 flex-shrink-0">
               <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border-2 border-green-200">
                 <span className="text-xl font-bold text-gray-800">Total amount:</span>
                 <span className="text-2xl font-bold text-green-600">
@@ -362,7 +362,7 @@ const CustomerPaymentPage: React.FC = () => {
           </div>
 
           {/* QR Code */}
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col h-full">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Scan QR Code to Pay

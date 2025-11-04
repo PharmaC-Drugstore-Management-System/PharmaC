@@ -70,6 +70,7 @@ export default function NotificationDropdown({
           </div>
         );
       case 'PENDING':
+      case 'REQUIRES_ACTION':
         return (
           <div className="flex items-center space-x-1">
             <AlertCircle className="w-4 h-4 text-orange-500" />

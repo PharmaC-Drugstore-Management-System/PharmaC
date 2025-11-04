@@ -549,10 +549,9 @@ const PurchaseOrderDocument = () => {
               <div className="text-right text-sm text-gray-600">
                 <div>PharmaC</div>
                 <div>
-                  123-45 ก่อนใหญ่กับ นครขอนแก่น เมืองก่อนง ก่อนขันมาก เวลาโล
-                  ดิติง
+                  126 Pracha Uthit Rd, Bang Mot, Thung Khru, Bangkok 10140
                 </div>
-                <div>02-555-5555 pharmac@gmail.com</div>
+                <div>02-410-6254 pharmac@mail.kmutt.ac.th</div>
               </div>
             </div>
 
@@ -847,10 +846,6 @@ const PurchaseOrderDocument = () => {
 
               <div className="  bg-black text-white text-center py-4 px-6 rounded-b-2xl">
                 <div className="text-lg font-semibold mb-1">PharmaC</div>
-                <div className="text-sm">
-                  123/45 ถนนนิมิต ตำบลนิมิต เขตปทุม แขวงอาคารบิน จังหวัดนนทบุรี
-                  10555 โทรศัพท์ 095-555-5555 อีเมล lookatme@gmail.com
-                </div>
               </div>
             </div>
 
