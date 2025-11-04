@@ -102,6 +102,7 @@ const resources = {
 
       // Inventory
       pharmacyInventory: "Pharmacy Inventory",
+      productGenericName:"Product Generic Name",
       products: "Products",
       expiryMonitoring: "Expiry Monitoring",
       addProduct: "Add Product",
@@ -215,6 +216,7 @@ const resources = {
       pdfPreview: "PDF Preview",
       openInNewTab: "Open in new tab",
       
+      
       // Search and Filter
       search: "Search",
       searchByDocNumber: "Search by document number",
@@ -228,6 +230,7 @@ const resources = {
       allDocuments: "All Documents",
       signedOnly: "Signed Only",
       unsignedOnly: "Unsigned Only",
+      
       
       // Bulk Actions
       selected: "selected",
@@ -297,7 +300,7 @@ const resources = {
       clickToUploadImage: "Click to upload image",
       productNamePlaceholder: "Product Name...",
       brandPlaceholder: "Brand...",
-      selectProductType: "Select Product Type",
+      selectProductType: "Select ATC group",
       other: "Other",
       enterOtherProductType: "Enter other product type.",
       selectUnit: "Select Unit",
@@ -514,6 +517,7 @@ const resources = {
       addEmployee: "Add Employee",
 
       // Sales History Page
+      // Sales History Page
       salesHistory: "Sales History",
       backToDashboard: "Back to Dashboard",
       ordersInPeriod: "Orders in period:",
@@ -537,6 +541,12 @@ const resources = {
       loadingSalesData: "Loading sales data...",
       noSalesData: "No sales data for selected period",
       failedToLoadSalesData: "Failed to load sales data",
+
+      // Product Type Descriptions (Forecast Dashboard)
+      productType_J01: "Antibacterials for systemic use",
+      productType_A02: "Drugs for acid related disorders",
+      productType_N02: "Analgesics",
+      productType_R06: "Antihistamines for systemic use",
 
     },
   },
@@ -640,6 +650,7 @@ const resources = {
 
       // Inventory
       pharmacyInventory: "คลังสินค้าร้านยา",
+      productGenericName:"ชื่อยาสามัญ",
       products: "สินค้า",
       expiryMonitoring: "ตรวจสอบการหมดอายุ",
       addProduct: "เพิ่มสินค้า",
@@ -673,7 +684,7 @@ const resources = {
       productsInStock: "สินค้าคงคลัง",
       needReorder: "ต้องสั่งซื้อเพิ่ม",
       requiresAttention: "ต้องระวัง",
-      allProductsFresh: "สินค้าทั้งหมดยังสด",
+      allProductsFresh: "ไม่มีสินค้าใกล้หมดอายุ",
       cancelEdit: "ยกเลิกการแก้ไข",
       editMode: "โหมดแก้ไข",
       items: "รายการ",
@@ -753,6 +764,7 @@ const resources = {
       pdfPreview: "ดูตัวอย่าง PDF",
       openInNewTab: "เปิดในแท็บใหม่",
       
+      
       // Search and Filter
       search: "ค้นหา",
       searchByDocNumber: "ค้นหาด้วยเลขที่เอกสาร",
@@ -766,6 +778,7 @@ const resources = {
       allDocuments: "เอกสารทั้งหมด",
       signedOnly: "เซ็นแล้วเท่านั้น",
       unsignedOnly: "ยังไม่เซ็นเท่านั้น",
+      
       
       // Bulk Actions
       selected: "เลือกแล้ว",
@@ -835,7 +848,7 @@ const resources = {
       clickToUploadImage: "คลิกเพื่ออัปโหลดรูปภาพ",
       productNamePlaceholder: "ชื่อสินค้า...",
       brandPlaceholder: "แบรนด์...",
-      selectProductType: "เลือกประเภทสินค้า",
+      selectProductType: "เลือกกลุ่ม ATC",
       other: "อื่นๆ",
       enterOtherProductType: "กรอกประเภทสินค้าอื่นๆ",
       selectUnit: "เลือกหน่วย",
@@ -1044,6 +1057,7 @@ const resources = {
       addEmployee: "เพิ่มพนักงาน",
 
       // Sales History Page
+      // Sales History Page
       salesHistory: "ประวัติการขาย",
       backToDashboard: "กลับไปที่แดชบอร์ด",
       ordersInPeriod: "คำสั่งซื้อในช่วงเวลา:",
@@ -1067,6 +1081,12 @@ const resources = {
       loadingSalesData: "กำลังโหลดข้อมูลการขาย...",
       noSalesData: "ไม่มีข้อมูลการขายสำหรับช่วงเวลาที่เลือก",
       failedToLoadSalesData: "ไม่สามารถโหลดข้อมูลการขายได้",
+
+      // Product Type Descriptions (Forecast Dashboard)
+      productType_J01: "สารต้านแบคทีเรียสำหรับทั่วร่างกาย",
+      productType_A02: "ยาสำหรับโรคเกี่ยวกับกรด",
+      productType_N02: "ยาระงับปวด",
+      productType_R06: "สารต้านฮิสตามีนสำหรับทั่วร่างกาย",
     },
   },
 };
