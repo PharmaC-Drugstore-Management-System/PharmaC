@@ -20,6 +20,7 @@ const resources = {
       reports: "Reports",
       settings: "Settings",
       logout: "Logout",
+      dashboard: "Dashboard",
 
       // Theme Settings
       locale: "en-US",
@@ -557,6 +558,7 @@ const resources = {
       reports: "รายงาน",
       settings: "การตั้งค่า",
       logout: "ออกจากระบบ",
+      dashboard: "แดชบอร์ด",
 
       // Theme Settings
       locale: "th-TH",
