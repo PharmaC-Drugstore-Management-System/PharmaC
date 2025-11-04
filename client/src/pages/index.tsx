@@ -35,16 +35,11 @@ const formatForecastPeriod = (days: number) => {
   return `${days} Days`;
 };
 
-// Product Type Descriptions Mapping
-const productTypeDescriptions: Record<string, string> = {
-  'M01AB': 'Anti-inflammatory and antirheumatic products, non-steroids, Acetic acid derivatives and related substances',
-  'M01AE': 'Anti-inflammatory and antirheumatic products, non-steroids, Propionic acid derivatives',
-  'N02BA': 'Other analgesics and antipyretics, Salicylic acid and derivatives',
-  'N02BE/B': 'Other analgesics and antipyretics, Pyrazolones and Anilides',
-  'N05B': 'Psycholeptics drugs, Anxiolytic drugs',
-  'N05C': 'Psycholeptics drugs, Hypnotics and sedatives drugs',
-  'R03': 'Drugs for obstructive airway diseases',
-  'R06': 'Antihistamines for systemic use'
+// Product Type Descriptions Mapping - now uses translation keys
+const getProductTypeKey = (code: string): string => {
+  // Normalize code (remove slashes and special chars for translation key)
+  const normalizedCode = code.replace(/\//g, '').replace(/-/g, '');
+  return `productType_${normalizedCode}`;
 };
 
 // All stats now use real API data
@@ -789,16 +784,21 @@ export default function PharmaDashboard() {
                         style={{ color: isDark ? 'white' : '#111827' }}>
                         {type}
                       </h3>
-                      {/* Product Type Description Subtitle */}
-                      {productTypeDescriptions[type] && (
-                        <p className="text-xs mt-1 leading-relaxed transition-colors"
-                          style={{ 
-                            color: isDark ? '#9ca3af' : '#6b7280',
-                            fontStyle: 'italic'
-                          }}>
-                          {productTypeDescriptions[type]}
-                        </p>
-                      )}
+                      {/* Product Type Description Subtitle with Translation */}
+                      {(() => {
+                        const translationKey = getProductTypeKey(type);
+                        const description = t(translationKey);
+                        // Only show if translation exists (not the key itself)
+                        return description !== translationKey && (
+                          <p className="text-xs mt-1 leading-relaxed transition-colors"
+                            style={{ 
+                              color: isDark ? '#9ca3af' : '#6b7280',
+                              fontStyle: 'italic'
+                            }}>
+                            {description}
+                          </p>
+                        );
+                      })()}
                       <p className="text-sm mt-2 transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
                         {typeForecast ? `${formatForecastPeriod(forecastDays)} ARIMA forecast` : 'Loading prediction...'}

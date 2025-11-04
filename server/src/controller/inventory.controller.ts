@@ -6,6 +6,7 @@ const controller = {
     try {
       const {
         product_name,
+        product_generic_name,
         brand,
         friendlyid,
         barcode,
@@ -22,6 +23,7 @@ const controller = {
 
       const response = await inventory_service.add_service(
         product_name,
+        product_generic_name,
         brand,
         friendlyid,
         barcode,

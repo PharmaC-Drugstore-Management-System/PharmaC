@@ -2,6 +2,7 @@ import prisma from "../utils/prisma.utils";
 const inventory_service = {
   add_service: async (
     product_name: string,
+    product_generic_name:string,
     brand: string,
     friendlyid: string,
     barcode: string,
@@ -14,6 +15,7 @@ const inventory_service = {
       const add = await prisma.product.create({
         data: {
           product_name: product_name,
+          generic_name:product_generic_name,
           brand: brand,
           friendlyid: friendlyid,
           barcode: barcode,

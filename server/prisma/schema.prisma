@@ -206,6 +206,7 @@ model product {
   unit               String?              @db.VarChar(255)
   deleted_at         DateTime?            @db.Timestamp(6)
   is_active          Boolean?             @default(true)
+  generic_name       String?              @db.VarChar
   cart               cart[]
   cost               cost[]
   forecasted_product forecasted_product[]

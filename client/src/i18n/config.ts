@@ -75,6 +75,7 @@ const resources = {
 
       // Inventory
       pharmacyInventory: "Pharmacy Inventory",
+      productGenericName:"Product Generic Name",
       products: "Products",
       expiryMonitoring: "Expiry Monitoring",
       addProduct: "Add Product",
@@ -433,6 +434,12 @@ const resources = {
       noSalesData: "No sales data for selected period",
       failedToLoadSalesData: "Failed to load sales data",
 
+      // Product Type Descriptions (Forecast Dashboard)
+      productType_J01: "Antibacterials for systemic use",
+      productType_A02: "Drugs for acid related disorders",
+      productType_N02: "Analgesics",
+      productType_R06: "Antihistamines for systemic use",
+
     },
   },
 
@@ -508,6 +515,7 @@ const resources = {
 
       // Inventory
       pharmacyInventory: "คลังสินค้าร้านยา",
+      productGenericName:"ชื่อยาสามัญ",
       products: "สินค้า",
       expiryMonitoring: "ตรวจสอบการหมดอายุ",
       addProduct: "เพิ่มสินค้า",
@@ -857,6 +865,12 @@ const resources = {
       loadingSalesData: "กำลังโหลดข้อมูลการขาย...",
       noSalesData: "ไม่มีข้อมูลการขายสำหรับช่วงเวลาที่เลือก",
       failedToLoadSalesData: "ไม่สามารถโหลดข้อมูลการขายได้",
+
+      // Product Type Descriptions (Forecast Dashboard)
+      productType_J01: "สารต้านแบคทีเรียสำหรับทั่วร่างกาย",
+      productType_A02: "ยาสำหรับโรคเกี่ยวกับกรด",
+      productType_N02: "ยาระงับปวด",
+      productType_R06: "สารต้านฮิสตามีนสำหรับทั่วร่างกาย",
     },
   },
 };
