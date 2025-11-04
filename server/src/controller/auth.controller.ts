@@ -66,9 +66,13 @@ const controller = {
           .json({ status: false, message: "Failed to Authenticate" });
       }
 
-      // Check if user is Customer (role_id = 4), if so skip OTP and directly login
-      if (user.role_id === 4) {
-        console.log('✅ Customer detected (role_id: 4), skipping OTP'); // Debug log
+      // Get user's role to check if OTP should be skipped
+      const userRole = await auth_service.getUserRole(user.role_id);
+      console.log('🔍 User role:', userRole, 'role_id:', user.role_id);
+
+      // Check if user is Customer role, if so skip OTP and directly login
+      if (userRole === 'Customer') {
+        console.log('✅ Customer detected, skipping OTP'); // Debug log
         // Create JWT token for customer and log them in directly
         const token = jwt.sign(
           {
@@ -97,7 +101,7 @@ const controller = {
         });
       }
 
-      console.log('📧 Non-customer user (role_id: ' + user.role_id + '), sending OTP'); // Debug log
+      console.log('📧 Non-customer user (role: ' + userRole + '), sending OTP'); // Debug log
       // For non-customer users, send OTP as usual
       await auth_service.sendOtp(email);
 
