@@ -293,7 +293,8 @@ export default function Header() {
       );
       console.log("👤 Customer from notification:", data.order?.customer);
 
-      if (data.type === "NEW_ORDER" && data.order) {
+      // Handle both NEW_ORDER (QR) and CASH_PAYMENT
+      if ((data.type === "NEW_ORDER" || data.type === "CASH_PAYMENT") && data.order) {
         const statusText =
           data.order.status === "PAID"
             ? t('paid')
@@ -304,7 +305,7 @@ export default function Header() {
         const newNotification: Notification = {
           id: `order-${data.order.order_id}-${Date.now()}`,
           type: "order",
-          title: t('newOrderReceived'),
+          title: data.type === "CASH_PAYMENT" ? t('cashPaymentReceived') : t('newOrderReceived'),
           message: t('orderValueWithStatus', { 
             orderId: data.order.order_id, 
             amount: data.order.total_amount, 
@@ -314,7 +315,7 @@ export default function Header() {
           isRead: false,
           orderId: data.order.order_id,
           customerName: data.order.customer?.name || t('walkInCustomer'),
-          orderStatus: data.order.status || "PENDING",
+          orderStatus: data.order.status || "PAID", // Cash is always PAID
         };
 
         console.log("✅ Creating new notification:", newNotification);

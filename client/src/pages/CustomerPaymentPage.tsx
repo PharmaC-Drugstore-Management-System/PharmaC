@@ -27,6 +27,9 @@ interface Order {
   timestamp: string;
   qrCode?: string;
   payment_intent_id?: string;
+  discount_amount?: number;
+  discount_type?: string;
+  points_used?: number;
 }
 
 const CustomerPaymentPage: React.FC = () => {
@@ -94,6 +97,11 @@ const CustomerPaymentPage: React.FC = () => {
       // Listen for new orders with QR codes
       socket.on('new-order-qr', (data: any) => {
         console.log('📦 New order received:', data);
+        console.log('🔍 Discount Info from socket:', {
+          discount_amount: data.order.discount_amount,
+          discount_type: data.order.discount_type,
+          points_used: data.order.points_used
+        });
 
         const orderData: Order = {
           order_id: data.order.order_id.toString(),
@@ -104,8 +112,18 @@ const CustomerPaymentPage: React.FC = () => {
           status: 'pending',
           timestamp: data.order.date || new Date().toISOString(),
           qrCode: data.qrCode,
-          payment_intent_id: data.payment_intent_id
+          payment_intent_id: data.payment_intent_id,
+          discount_amount: data.order.discount_amount || 0,
+          discount_type: data.order.discount_type || 'none',
+          points_used: data.order.points_used || 0
         };
+
+        console.log('✅ Order data set with discount:', {
+          discount_amount: orderData.discount_amount,
+          discount_type: orderData.discount_type,
+          points_used: orderData.points_used,
+          total_amount: orderData.total_amount
+        });
 
         setCurrentOrder(orderData);
         setQrCode(data.qrCode || '');
@@ -219,7 +237,10 @@ const CustomerPaymentPage: React.FC = () => {
     total_price: 0,
     items: [],
     status: 'pending',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    discount_amount: 0,
+    discount_type: 'none',
+    points_used: 0
   };
 
   const displayOrder = currentOrder || mockOrder;
@@ -351,13 +372,53 @@ const CustomerPaymentPage: React.FC = () => {
             </div>
 
             {/* Total */}
-            <div className="border-t pt-6 flex-shrink-0">
-              <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border-2 border-green-200">
-                <span className="text-xl font-bold text-gray-800">Total amount:</span>
-                <span className="text-2xl font-bold text-green-600">
-                  ฿{(displayOrder.total_amount || 0).toLocaleString()}
-                </span>
-              </div>
+            <div className="border-t pt-6 flex-shrink-0 space-y-3">
+            
+           
+              
+              {/* Subtotal - แสดงถ้ามีส่วนลด */}
+              {displayOrder.discount_amount && displayOrder.discount_amount > 0 ? (
+                <>
+                  <div className="flex justify-between items-center px-4">
+                    <span className="text-base text-gray-600">Subtotal:</span>
+                    <span className="text-lg text-gray-700">
+                      ฿{((displayOrder.total_amount || 0) + (displayOrder.discount_amount || 0)).toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* Discount */}
+                  <div className="flex justify-between items-center px-4 text-red-600">
+                    <span className="text-base flex items-center">
+                      Discount
+                      {displayOrder.discount_type === 'points' && displayOrder.points_used && (
+                        <span className="ml-2 text-xs bg-red-100 px-2 py-1 rounded">
+                          {displayOrder.points_used} points used
+                        </span>
+                      )}
+                      :
+                    </span>
+                    <span className="text-lg font-semibold">
+                      -฿{(displayOrder.discount_amount || 0).toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* Grand Total */}
+                  <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                    <span className="text-xl font-bold text-gray-800">Total amount:</span>
+                    <span className="text-2xl font-bold text-green-600">
+                      ฿{(displayOrder.total_amount || 0).toLocaleString()}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                /* No Discount - แสดงแบบเดิม */
+                <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                  <span className="text-xl font-bold text-gray-800">Total amount:</span>
+                  <span className="text-2xl font-bold text-green-600">
+                    ฿{(displayOrder.total_amount || 0).toLocaleString()}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

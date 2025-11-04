@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface User {
   id: string;
   email: string;
-  role: 'Owner' | 'Staff' | 'Customer' | 'Employee' | 'Pharmacist';
+  role: 'Owner' | 'Customer' | 'Employee' | 'Pharmacist';
   name?: string;
 }
 
@@ -37,13 +37,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Role mapping function
-  const mapRoleIdToRoleName = (roleId: number | string): 'Owner' | 'Staff' | 'Customer' | 'Employee' | 'Pharmacist' => {
+  const mapRoleIdToRoleName = (roleId: number | string): 'Owner' |  'Customer' | 'Employee' | 'Pharmacist' => {
     const id = typeof roleId === 'string' ? parseInt(roleId) : roleId;
     console.log('🔍 Mapping role_id:', id); // Debug log
     switch (id) {
       case 1: return 'Owner';      // OWNER role
-      case 2: return 'Staff';      // ADMIN role (mapped to Staff)
-      case 3: return 'Employee';   // EMPLOYEE role
+      case 2: return 'Employee';   // EMPLOYEE role
       case 4: return 'Customer';   // CUSTOMER role ✅
       case 5: return 'Pharmacist'; // PHARMACIST role
       default: 

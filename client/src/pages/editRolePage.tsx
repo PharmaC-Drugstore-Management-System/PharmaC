@@ -42,9 +42,10 @@ export default function EditRolePage() {
   const [loading, setLoading] = useState(true);
 
   const roleNames = {
-    1: t('customer'),
-    2: t('owner'), 
-    3: t('pharmacist')
+    4: t('customer'),
+    1: t('owner'), 
+    5: t('pharmacist'),
+    2: t('employee')
   };
 
   const loadUserProfile = async () => {
