@@ -31,13 +31,15 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const result = await authLogin(email, password);
-      console.log("Login attempt result:", result);
+      console.log("✅ Login attempt result:", result);
       if (result.success) {
         // If customer (skip OTP), redirect to customer payment page
         if (result.skipOtp) {
+          console.log("🛒 Customer login detected, redirecting to /customer-payment");
           navigate("/customer-payment", { replace: true });
         } else {
           // For non-customers, go to OTP page
+          console.log("📧 Non-customer login, redirecting to /otp");
           navigate("/otp", { 
             replace: true,
             state: { email } // Pass email to OTP page

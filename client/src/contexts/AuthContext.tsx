@@ -39,6 +39,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Role mapping function
   const mapRoleIdToRoleName = (roleId: number | string): 'Owner' | 'Employee' | 'Customer' | 'Pharmacist' => {
     const id = typeof roleId === 'string' ? parseInt(roleId) : roleId;
+    console.log('🔍 Mapping role_id:', id); // Debug log
     switch (id) {
       case 1: return 'Owner'; // Admin -> Staff
       case 2: return 'Employee'; // Employee -> Staff
@@ -100,12 +101,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (response.ok) {
         const responseData = await response.json();
+        console.log('🔐 authLogin response:', responseData); // Debug log
         
         // If it's a customer, they skip OTP and are logged in directly
         if (responseData.skipOtp) {
           const userData = responseData.data;
           const roleId = userData?.role_id || userData.roleId || userData.role || userData.user_role;
+          console.log('✅ Customer login detected! role_id:', roleId); // Debug log
           const mappedRole = mapRoleIdToRoleName(roleId);
+          console.log('✅ Mapped to role:', mappedRole); // Debug log
           
           const user: User = {
             id: userData?.employee_id || userData.id || userData.user_id || userData.userId,
@@ -114,10 +118,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             name: userData?.firstname || userData.name || userData.username || userData.full_name,
           };
           
+          console.log('👤 Setting customer user:', user); // Debug log
           setUser(user); // Log in the customer directly
           return { success: true, skipOtp: true, userData: user };
         }
         
+        console.log('📧 OTP sent to non-customer user'); // Debug log
         // For non-customers, OTP was sent
         return { success: true, skipOtp: false };
       }
@@ -223,6 +229,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const value = {
