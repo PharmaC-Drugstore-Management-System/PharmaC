@@ -4,6 +4,7 @@ dotenv.config();
 import { createServer } from 'http';
 import app from './src/app'; 
 import { initWebSocket } from './ws';
+import { startScheduler } from './src/utils/scheduler.utils';
 
 const PORT = process.env.PORT || 5000;
 
@@ -20,6 +21,9 @@ server.listen(PORT, () => {
   console.log(`🔌 Socket.IO server initialized ${io}`);
   console.log(`🌐 Frontend URL: http://localhost:5173`);
   console.log(`📱 Customer Display: http://localhost:5173/customer-payment`);
+  
+  // Start the scheduler for checking expired orders
+  startScheduler();
 });
 
 process.on("SIGINT", () => {

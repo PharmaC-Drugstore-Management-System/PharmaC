@@ -161,6 +161,9 @@ model order {
   order_id          Int             @id @default(autoincrement())
   revenue_source_id Int?
   status            String?         @default("PENDING") @db.VarChar(50)
+  discount_amount   Float?          @default(0) @db.Real
+  discount_type     String?         @default("none") @db.VarChar(50)
+  points_used       Int?            @default(0)
   carts             cart[]
   cost              cost?           @relation(fields: [cost_id], references: [cost_id], onDelete: NoAction, onUpdate: NoAction, map: "order_cost_fk")
   customer          customer?       @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "order_customer_fk")

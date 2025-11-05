@@ -9,5 +9,7 @@ router.post('/method', controller.paymentMethod)
 router.post('/qr-code',controller.paymentQrcode)
 
 router.post('/check',controller.paymentCheck)
+router.get('/check-expired', controller.checkExpiredOrders)
+router.post('/cancel', controller.cancelOrder)
 
 export default router;

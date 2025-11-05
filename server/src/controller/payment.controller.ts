@@ -91,6 +91,63 @@ const controller = {
       }
     },
 
+  checkExpiredOrders: async (req: any, res: any) => {
+    try {
+      const result = await paymentService.checkExpiredOrders();
+      
+      console.log(`⏰ Expired orders check completed:`, result);
+      
+      return res.status(200).json({ 
+        success: true, 
+        data: result,
+        message: `Checked ${result.checked} orders, cancelled ${result.cancelled} expired orders`
+      });
+    } catch (error: any) {
+      console.error("Error checking expired orders:", error);
+      return res.status(500).json({ 
+        success: false, 
+        error: error.message 
+      });
+    }
+  },
+
+  cancelOrder: async (req: any, res: any) => {
+    try {
+      const { order_id } = req.body;
+      
+      if (!order_id) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "order_id is required" 
+        });
+      }
+
+      const result = await paymentService.cancelOrder(order_id);
+      
+      // Emit WebSocket event for real-time updates
+      const statusData = {
+        order_id: order_id,
+        status: 'cancelled',
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log("❌ Emitting order cancellation via WebSocket:", statusData);
+      emitPaymentStatusUpdate(statusData);
+      
+      return res.status(200).json({ 
+        success: true, 
+        data: result,
+        message: `Order ${order_id} has been cancelled`
+      });
+    } catch (error: any) {
+      console.error("Error cancelling order:", error);
+      return res.status(500).json({ 
+        success: false, 
+        error: error.message 
+      });
+    }
+  },
+
 };
 
 export default controller;
