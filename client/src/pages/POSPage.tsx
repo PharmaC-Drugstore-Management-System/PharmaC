@@ -4,6 +4,7 @@ import "../styles/pos.css";
 import { useNavigate } from "react-router-dom";
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
+import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -84,7 +85,21 @@ export default function POSPage() {
     email: '',
     address: ''
   });
+
+  // Discount States
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [discountType, setDiscountType] = useState<'none' | 'percentage' | 'amount' | 'points'>('none');
+  const [discountValue, setDiscountValue] = useState<string>('');
+  const [pointsToUse, setPointsToUse] = useState<string>('');
+  const [appliedDiscount, setAppliedDiscount] = useState<{
+    type: 'none' | 'percentage' | 'amount' | 'points';
+    value: number;
+    pointsUsed?: number;
+  }>({ type: 'none', value: 0 });
   const [quickMembers, setQuickMembers] = useState<any[]>([]);
+  
+  // Cash Payment Confirmation Modal
+  const [showCashConfirmModal, setShowCashConfirmModal] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -394,7 +409,16 @@ export default function POSPage() {
   };
 
   const removeFromCart = (productId: number | string) => {
-    setCart(cart.filter(item => item.product_id !== productId));
+    const newCart = cart.filter(item => item.product_id !== productId);
+    setCart(newCart);
+    
+    // Reset discount if cart becomes empty
+    if (newCart.length === 0) {
+      setAppliedDiscount({ type: 'none', value: 0 });
+      setDiscountType('none');
+      setDiscountValue('');
+      setPointsToUse('');
+    }
   };
 
   // Member System Functions
@@ -493,7 +517,7 @@ export default function POSPage() {
   };
 
   const calculatePoints = () => {
-    const totalAmount = getTotalAmount();
+    const totalAmount = getTotalAfterDiscount();
     return Math.floor(totalAmount / 10); // 1 point per 10 baht
   };
 
@@ -501,9 +525,72 @@ export default function POSPage() {
     return cart.reduce((sum, item) => sum + item.total, 0);
   };
 
+  const getDiscountAmount = () => {
+    const subtotal = getTotalAmount();
+    
+    if (appliedDiscount.type === 'none') return 0;
+    
+    if (appliedDiscount.type === 'percentage') {
+      return (subtotal * appliedDiscount.value) / 100;
+    } else if (appliedDiscount.type === 'amount') {
+      return Math.min(appliedDiscount.value, subtotal); // ไม่เกินยอดรวม
+    } else if (appliedDiscount.type === 'points') {
+      // 1 แต้ม = 1 บาท
+      return Math.min(appliedDiscount.value, subtotal);
+    }
+    
+    return 0;
+  };
+
+  const getTotalAfterDiscount = () => {
+    const subtotal = getTotalAmount();
+    const discount = getDiscountAmount();
+    return Math.max(subtotal - discount, 0);
+  };
+
+  const applyDiscount = () => {
+    if (discountType === 'percentage') {
+      const value = parseFloat(discountValue);
+      if (isNaN(value) || value < 0 || value > 100) {
+        alert(t('invalidDiscountPercentage') || 'กรุณากรอกส่วนลด 0-100%');
+        return;
+      }
+      setAppliedDiscount({ type: 'percentage', value });
+    } else if (discountType === 'amount') {
+      const value = parseFloat(discountValue);
+      if (isNaN(value) || value < 0) {
+        alert(t('invalidDiscountAmount') || 'กรุณากรอกจำนวนเงินที่ถูกต้อง');
+        return;
+      }
+      setAppliedDiscount({ type: 'amount', value });
+    } else if (discountType === 'points') {
+      const points = parseInt(pointsToUse);
+      if (isNaN(points) || points < 0) {
+        alert(t('invalidPoints') || 'กรุณากรอกจำนวนแต้มที่ถูกต้อง');
+        return;
+      }
+      if (!currentMember || points > currentMember.points) {
+        alert(t('insufficientPoints') || 'แต้มไม่เพียงพอ');
+        return;
+      }
+      setAppliedDiscount({ type: 'points', value: points, pointsUsed: points });
+    }
+    
+    setShowDiscountModal(false);
+    setDiscountValue('');
+    setPointsToUse('');
+  };
+
+  const removeDiscount = () => {
+    setAppliedDiscount({ type: 'none', value: 0 });
+    setDiscountType('none');
+    setDiscountValue('');
+    setPointsToUse('');
+  };
+
   const getChange = () => {
     const paid = parseFloat(customerPaid) || 0;
-    const total = getTotalAmount();
+    const total = getTotalAfterDiscount();
     return paid - total;
   };
 
@@ -699,33 +786,12 @@ export default function POSPage() {
         setShowQRConfirmModal(true);
         setIsProcessing(false); // Reset processing state since we're showing modal
         return;
-      } else {
-        console.log('💵 Cash payment processing...');
-        // Handle Cash Payment (existing logic)
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        console.log('🔄 CASH PAYMENT: About to call processStockReduction...');
-        // ลดจำนวนสินค้าจาก lots ก่อนสร้าง receipt
-        console.log('✅ CASH PAYMENT: processStockReduction completed');
-
-        const receipt = {
-          id: `POS-${Date.now()}`,
-          date: new Date().toLocaleString('th-TH'),
-          items: cart,
-          subtotal: getTotalAmount(),
-          total: getTotalAmount(),
-          payment: selectedPayment,
-          amountPaid: parseFloat(customerPaid),
-          change: getChange(),
-          member: currentMember,
-          pointsEarned: currentMember ? calculatePoints() : 0,
-        };
-
-        setReceiptData(receipt);
-        setShowReceipt(true);
-        setCart([]);
-        setCustomerPaid("");
-        console.log('💵 Cash payment completed successfully');
+      } else if (selectedPayment === "cash") {
+        console.log('� Cash payment - showing confirmation modal');
+        // Show Cash confirmation modal for staff to verify cash received
+        setShowCashConfirmModal(true);
+        setIsProcessing(false);
+        return;
       }
 
     } catch (error) {
@@ -766,7 +832,7 @@ export default function POSPage() {
   }
 
   const canProcessPayment = () => {
-    const total = getTotalAmount();
+    const total = getTotalAfterDiscount();
     const paid = parseFloat(customerPaid) || 0;
     return cart.length > 0 && (selectedPayment !== "cash" || paid >= total);
   };
@@ -786,7 +852,10 @@ export default function POSPage() {
         employee_id: employee_id,
         customer_id: currentMember?.id ? (isNaN(parseInt(currentMember.id)) ? null : parseInt(currentMember.id)) : null, // Convert string ID back to integer safely
         payment_method_types: "promptpay",
-        total_amount: getTotalAmount()
+        total_amount: getTotalAfterDiscount(), // ใช้ราคาหลังหักส่วนลด
+        discount_amount: getDiscountAmount(), // ส่งจำนวนส่วนลดไปด้วย
+        discount_type: appliedDiscount.type,
+        points_used: appliedDiscount.pointsUsed || 0
       };
 
       console.log('Sending order data to create QR for customer display:', orderData);
@@ -852,6 +921,92 @@ export default function POSPage() {
     }
   };
 
+  // Handle Cash Payment Confirmation
+  const confirmCashPayment = async () => {
+    setIsProcessing(true);
+    setShowCashConfirmModal(false);
+    
+    try {
+      console.log('💵 Processing cash payment...');
+      
+      // Create order via API
+      const orderData = {
+        items: cart.map(item => ({
+          product_id: item.original_product_id || item.product_id,
+          price: item.price,
+          quantity: item.quantity
+        })),
+        employee_id: employee_id,
+        point: calculatePoints(),
+        customer_id: currentMember?.id || null,
+        total_amount: getTotalAfterDiscount(),
+        total_price: getTotalAmount(),
+        discount_amount: getDiscountAmount(),
+        discount_type: appliedDiscount.type,
+        points_used: appliedDiscount.pointsUsed || 0,
+        payment_method: 'CASH'
+      };
+
+      const response = await fetch(`${API_URL}/order/createOrder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(orderData)
+      });
+
+      const result = await response.json();
+      console.log('Cash order creation response:', result);
+
+      if (result.status) {
+        // Add points to member if applicable
+        if (currentMember && calculatePoints() > 0) {
+          await addPoints();
+        }
+
+        // Deduct points if used for discount
+        if (appliedDiscount.type === 'points' && appliedDiscount.pointsUsed && currentMember) {
+          await deductPoints(appliedDiscount.pointsUsed);
+        }
+
+        // Create receipt
+        const receipt = {
+          id: `POS-${result.order.order_id || Date.now()}`,
+          date: new Date().toLocaleString('th-TH'),
+          items: cart,
+          subtotal: getTotalAmount(),
+          discount: getDiscountAmount(),
+          total: getTotalAfterDiscount(),
+          payment: 'cash',
+          amountPaid: parseFloat(customerPaid),
+          change: getChange(),
+          member: currentMember,
+          pointsEarned: currentMember ? calculatePoints() : 0,
+          discountType: appliedDiscount.type,
+          pointsUsed: appliedDiscount.pointsUsed || 0
+        };
+
+        setReceiptData(receipt);
+        setShowReceipt(true);
+        setCart([]);
+        setCustomerPaid("");
+        
+        console.log('✅ Cash payment completed successfully');
+      } else {
+        throw new Error(result.message || 'Failed to create cash order');
+      }
+    } catch (error) {
+      console.error('Cash payment error:', error);
+      await Swal.fire({
+        title: t('errorOccurredTitle'),
+        text: error instanceof Error ? error.message : 'Error processing cash payment',
+        icon: 'error',
+        confirmButtonColor: '#ef4444'
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const addPoints = async () => {
     const calculated = calculatePoints();
 
@@ -887,6 +1042,38 @@ export default function POSPage() {
       alert('Error occurred while adding points');
     }
   }
+
+  const deductPoints = async (pointsToDeduct: number) => {
+    if (!currentMember?.id || pointsToDeduct <= 0) {
+      console.log('No member selected or no points to deduct');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/customer/deduct-point/${currentMember.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          point: pointsToDeduct,
+        })
+      });
+
+      const data = await response.json();
+      console.log('Deduct points response:', data);
+
+      if (data.status) {
+        console.log(`✅ Successfully deducted ${pointsToDeduct} points from ${currentMember.name}`);
+      } else {
+        console.error('❌ Failed to deduct points:', data.error);
+      }
+    } catch (error) {
+      console.error('❌ Error deducting points:', error);
+    }
+  }
+
   const verifyPayment = async () => {
     if (!orderId || !paymentIntentId) {
       setErrorMessage('ไม่พบข้อมูลการสั่งซื้อหรือข้อมูลการชำระเงิน');
@@ -1102,7 +1289,13 @@ export default function POSPage() {
     setIsVerifyingPayment(false);
     isProcessingStockReductionRef.current = false; // Reset stock reduction flag (REF)
     
-    console.log('🔄 New transaction started, all states reset');
+    // Reset discount states
+    setAppliedDiscount({ type: 'none', value: 0 });
+    setDiscountType('none');
+    setDiscountValue('');
+    setPointsToUse('');
+    
+    console.log('🔄 New transaction started, all states reset including discount');
   };
 
   // Get dynamic button text based on verification state
@@ -1338,9 +1531,51 @@ export default function POSPage() {
               <>
                 <div className="border-t pt-4 mb-4"
                   style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
-                  <div className="flex justify-between items-center text-xl font-bold mb-2">
+                  {/* Subtotal */}
+                  <div className="flex justify-between items-center mb-2">
+                    <span style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280' }}>{t('subtotal')}:</span>
+                    <span style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#6b7280' }}>฿{getTotalAmount().toFixed(2)}</span>
+                  </div>
+
+                  {/* Discount Section */}
+                  {appliedDiscount.type !== 'none' ? (
+                    <div className="flex justify-between items-center mb-2 text-red-600">
+                      <span className="flex items-center">
+                        {t('discount')}
+                        {appliedDiscount.type === 'points' && ` (${appliedDiscount.pointsUsed} ${t('points')})`}:
+                      </span>
+                      <span>-฿{getDiscountAmount().toFixed(2)}</span>
+                    </div>
+                  ) : null}
+
+                  {/* Discount Button */}
+                  <div className="mb-3">
+                    {appliedDiscount.type === 'none' ? (
+                      <button
+                        onClick={() => setShowDiscountModal(true)}
+                        className="w-full py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
+                          color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                        }}
+                      >
+                        + {t('addDiscount')}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={removeDiscount}
+                        className="w-full py-2 rounded-lg text-sm font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                      >
+                        ✕ {t('removeDiscount')}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Total After Discount */}
+                  <div className="flex justify-between items-center text-xl font-bold mb-2 pt-2 border-t"
+                    style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
                     <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{t('total')}:</span>
-                    <span className="text-green-600">฿{getTotalAmount().toFixed(2)}</span>
+                    <span className="text-green-600">฿{getTotalAfterDiscount().toFixed(2)}</span>
                   </div>
 
                   {/* Points Section */}
@@ -1349,9 +1584,9 @@ export default function POSPage() {
                       style={{ color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb' }}>
                       <span className="flex items-center">
                         <Star size={16} className="mr-1" />
-                        Points to Earn:
+                        {t('pointsToEarn')}:
                       </span>
-                      <span className="font-medium">+{calculatePoints()} Points</span>
+                      <span className="font-medium">+{calculatePoints()} {t('points')}</span>
                     </div>
                   )}
                 </div>
@@ -1425,25 +1660,307 @@ export default function POSPage() {
                   </div>
                 )}
 
-                <button
-                  onClick={qrSentToDisplay && selectedPayment === "promptpay" ? verifyPayment : processPayment}
-                  disabled={!canProcessPayment() || isProcessing || (qrSentToDisplay && isVerifyingPayment)}
-                  className={`w-full py-3 rounded-lg font-medium ${qrSentToDisplay && selectedPayment === "promptpay"
-                      ? isVerifyingPayment
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-700 text-white"
-                      : canProcessPayment() && !isProcessing
+                {qrSentToDisplay && selectedPayment === "promptpay" ? (
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={verifyPayment}
+                      disabled={isVerifyingPayment}
+                      className={`flex-1 py-3 rounded-lg font-medium ${
+                        isVerifyingPayment
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                      }`}
+                    >
+                      {getPaymentButtonText()}
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const result = await Swal.fire({
+                          title: t('confirmCancelOrder'),
+                          text: t('confirmCancelOrderText'),
+                          icon: 'warning',
+                          showCancelButton: true,
+                          confirmButtonColor: '#ef4444',
+                          cancelButtonColor: '#6b7280',
+                          confirmButtonText: t('yesCancelIt'),
+                          cancelButtonText: t('noKeepIt')
+                        });
+
+                        if (result.isConfirmed) {
+                          try {
+                            // Cancel order via API
+                            const response = await fetch(`${API_URL}/order/cancelOrder`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              credentials: 'include',
+                              body: JSON.stringify({
+                                order_id: orderId,
+                                payment_intent_id: paymentIntentId
+                              })
+                            });
+                            
+                            if (response.ok) {
+                              await Swal.fire({
+                                title: t('cancelledSuccessfully'),
+                                text: t('orderCancelledText'),
+                                icon: 'success',
+                                confirmButtonColor: '#10b981'
+                              });
+                              
+                              // Reset all states
+                              setCart([]);
+                              setQrSentToDisplay(false);
+                              setOrderId(null);
+                              setPaymentIntentId(null);
+                              setSelectedPayment('cash');
+                              setAppliedDiscount({ type: 'none', value: 0 });
+                              setDiscountType('none');
+                              setDiscountValue('');
+                              setPointsToUse('');
+                            } else {
+                              await Swal.fire({
+                                title: t('errorOccurredTitle'),
+                                text: t('cannotCancelOrder'),
+                                icon: 'error',
+                                confirmButtonColor: '#ef4444'
+                              });
+                            }
+                          } catch (error) {
+                            console.error('Cancel order error:', error);
+                            await Swal.fire({
+                              title: t('errorOccurredTitle'),
+                              text: t('errorCancellingOrder'),
+                              icon: 'error',
+                              confirmButtonColor: '#ef4444'
+                            });
+                          }
+                        }
+                      }}
+                      className="flex-1 py-3 rounded-lg font-medium bg-red-500 hover:bg-red-600 text-white"
+                    >
+                      {t('cancel')}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={processPayment}
+                    disabled={!canProcessPayment() || isProcessing}
+                    className={`w-full py-3 rounded-lg font-medium ${
+                      canProcessPayment() && !isProcessing
                         ? "bg-green-600 hover:bg-green-700 text-white"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
-                >
-                  {getPaymentButtonText()}
-                </button>
+                  >
+                    {getPaymentButtonText()}
+                  </button>
+                )}
               </>
             )}
           </div>
         </div>
       </div>
+
+      {/* Discount Modal */}
+      {showDiscountModal && (
+        <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center z-50">
+          <div className="rounded-lg p-8 max-w-md w-full mx-4 border shadow-lg"
+            style={{
+              backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+              borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#60a5fa'
+            }}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold"
+                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
+                {t('addDiscount')}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowDiscountModal(false);
+                  setDiscountType('none');
+                  setDiscountValue('');
+                  setPointsToUse('');
+                }}
+                className="hover:text-gray-700"
+                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Discount Type Selection */}
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => setDiscountType('percentage')}
+                className="w-full p-4 rounded-lg border-2 text-left transition-all"
+                style={{
+                  borderColor: discountType === 'percentage' ? '#3b82f6' : (document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'),
+                  backgroundColor: discountType === 'percentage' ? (document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe') : 'transparent',
+                  color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                }}
+              >
+                <div className="font-medium">{t('percentageDiscount')}</div>
+                <div className="text-sm"
+                  style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                  {t('discountByPercentage')}
+                </div>
+              </button>
+
+              <button
+                onClick={() => setDiscountType('amount')}
+                className="w-full p-4 rounded-lg border-2 text-left transition-all"
+                style={{
+                  borderColor: discountType === 'amount' ? '#3b82f6' : (document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'),
+                  backgroundColor: discountType === 'amount' ? (document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe') : 'transparent',
+                  color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                }}
+              >
+                <div className="font-medium">{t('amountDiscount')}</div>
+                <div className="text-sm"
+                  style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                  {t('discountByAmount')}
+                </div>
+              </button>
+
+              {currentMember && (
+                <button
+                  onClick={() => setDiscountType('points')}
+                  className="w-full p-4 rounded-lg border-2 text-left transition-all"
+                  style={{
+                    borderColor: discountType === 'points' ? '#3b82f6' : (document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'),
+                    backgroundColor: discountType === 'points' ? (document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe') : 'transparent',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                  }}
+                >
+                  <div className="font-medium flex items-center">
+                    <Star size={16} className="mr-2 text-yellow-500" />
+                    {t('usePoints')}
+                  </div>
+                  <div className="text-sm"
+                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                    {t('availablePoints')}: {currentMember.points} {t('points')} (1 {t('point')} = 1 ฿)
+                  </div>
+                </button>
+              )}
+            </div>
+
+            {/* Input Section */}
+            {discountType === 'percentage' && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2"
+                  style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
+                  {t('discountPercentage')} (%)
+                </label>
+                <input
+                  type="number"
+                  value={discountValue}
+                  onChange={(e) => setDiscountValue(e.target.value)}
+                  placeholder="0-100"
+                  min="0"
+                  max="100"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                  }}
+                />
+              </div>
+            )}
+
+            {discountType === 'amount' && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2"
+                  style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
+                  {t('discountAmount')} (฿)
+                </label>
+                <input
+                  type="number"
+                  value={discountValue}
+                  onChange={(e) => setDiscountValue(e.target.value)}
+                  placeholder="0.00"
+                  min="0"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                  }}
+                />
+              </div>
+            )}
+
+            {discountType === 'points' && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2"
+                  style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
+                  {t('pointsToUse')}
+                </label>
+                <input
+                  type="number"
+                  value={pointsToUse}
+                  onChange={(e) => setPointsToUse(e.target.value)}
+                  placeholder={`0 - ${currentMember?.points || 0}`}
+                  min="0"
+                  max={currentMember?.points || 0}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
+                    borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#e5e7eb',
+                    color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                  }}
+                />
+                <p className="text-sm mt-2"
+                  style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                  {t('willReduce')}: ฿{pointsToUse ? parseFloat(pointsToUse).toFixed(2) : '0.00'}
+                </p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowDiscountModal(false);
+                  setDiscountType('none');
+                  setDiscountValue('');
+                  setPointsToUse('');
+                }}
+                className="flex-1 py-3 rounded-lg font-medium"
+                style={{
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
+                  color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                }}
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={applyDiscount}
+                disabled={discountType === 'none' || 
+                         (discountType === 'percentage' && !discountValue) ||
+                         (discountType === 'amount' && !discountValue) ||
+                         (discountType === 'points' && !pointsToUse)}
+                className="flex-1 py-3 rounded-lg font-medium"
+                style={{
+                  backgroundColor: (discountType === 'none' || 
+                                  (discountType === 'percentage' && !discountValue) ||
+                                  (discountType === 'amount' && !discountValue) ||
+                                  (discountType === 'points' && !pointsToUse))
+                    ? (document.documentElement.classList.contains('dark') ? '#4b5563' : '#9ca3af')
+                    : '#10b981',
+                  color: 'white',
+                  cursor: (discountType === 'none' || 
+                          (discountType === 'percentage' && !discountValue) ||
+                          (discountType === 'amount' && !discountValue) ||
+                          (discountType === 'points' && !pointsToUse))
+                    ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {t('applyDiscount')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Member Search Modal */}
       {showMemberModal && (
@@ -1458,7 +1975,7 @@ export default function POSPage() {
               <h3 className="text-xl font-bold flex items-center"
                 style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
                 <User className="mr-2" />
-                {memberModalMode === 'search' ? 'Search Member' : 'Add New Member'}
+                {memberModalMode === 'search' ? t('searchMember') : t('addNewMember')}
               </h3>
               <button
                 onClick={() => {
@@ -1489,7 +2006,7 @@ export default function POSPage() {
                   boxShadow: memberModalMode === 'search' ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)' : 'none'
                 }}
               >
-                Search Member
+                {t('searchMember')}
               </button>
               <button
                 onClick={() => setMemberModalMode('add')}
@@ -1504,7 +2021,7 @@ export default function POSPage() {
                   boxShadow: memberModalMode === 'add' ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)' : 'none'
                 }}
               >
-                Add New Member
+                {t('addNewMember')}
               </button>
             </div>
 
@@ -1514,13 +2031,13 @@ export default function POSPage() {
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2"
                     style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
-                    Phone Number
+                    {t('phoneNumber')}
                   </label>
                   <input
                     type="tel"
                     value={memberPhone}
                     onChange={(e) => setMemberPhone(e.target.value)}
-                    placeholder="Enter phone number..."
+                    placeholder={t('enterPhoneNumber')}
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     style={{
                       backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
@@ -1540,7 +2057,7 @@ export default function POSPage() {
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                       }`}
                   >
-                    {memberSearching ? "Searching..." : "Search"}
+                    {memberSearching ? t('searching') : t('search')}
                   </button>
                   <button
                     onClick={() => {
@@ -1553,7 +2070,7 @@ export default function POSPage() {
                       color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
                     }}
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </div>
 
@@ -1561,7 +2078,7 @@ export default function POSPage() {
                 <div className="pt-4 border-t"
                   style={{ borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb' }}>
                   <p className="text-sm mb-3"
-                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>Quick Access Customers:</p>
+                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>{t('quickAccessCustomers')}:</p>
                   <div className="space-y-2">
                     {quickMembers.length > 0 ? quickMembers.map((customer, index) => (
                       <button
@@ -1588,7 +2105,7 @@ export default function POSPage() {
                       </button>
                     )) : (
                       <p className="text-sm text-center py-2"
-                        style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>No customers found</p>
+                        style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>{t('noCustomersFound')}</p>
                     )}
                   </div>
                 </div>
@@ -1600,13 +2117,13 @@ export default function POSPage() {
                   <div>
                     <label className="block text-sm font-medium mb-2"
                       style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
-                      Full Name <span className="text-red-500">*</span>
+                      {t('fullName')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={newMemberData.name}
                       onChange={(e) => setNewMemberData({ ...newMemberData, name: e.target.value })}
-                      placeholder="Enter full name"
+                      placeholder={t('enterFullName')}
                       className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       style={{
                         backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
@@ -1619,7 +2136,7 @@ export default function POSPage() {
                   <div>
                     <label className="block text-sm font-medium mb-2"
                       style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
-                      Phone Number <span className="text-red-500">*</span>
+                      {t('phoneNumber')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -1639,13 +2156,13 @@ export default function POSPage() {
                   <div>
                     <label className="block text-sm font-medium mb-2"
                       style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
-                      Email
+                      {t('email')}
                     </label>
                     <input
                       type="email"
                       value={newMemberData.email}
                       onChange={(e) => setNewMemberData({ ...newMemberData, email: e.target.value })}
-                      placeholder="example@email.com"
+                      placeholder={t('emailPlaceholder')}
                       className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       style={{
                         backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
@@ -1658,12 +2175,12 @@ export default function POSPage() {
                   <div>
                     <label className="block text-sm font-medium mb-2"
                       style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>
-                      Address
+                      {t('address')}
                     </label>
                     <textarea
                       value={newMemberData.address}
                       onChange={(e) => setNewMemberData({ ...newMemberData, address: e.target.value })}
-                      placeholder="Enter address"
+                      placeholder={t('enterAddress')}
                       className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       style={{
                         backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
@@ -1684,7 +2201,7 @@ export default function POSPage() {
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                       }`}
                   >
-                    {memberSearching ? "Adding Member..." : "Add Member"}
+                    {memberSearching ? t('addingMember') : t('addMember')}
                   </button>
                   <button
                     onClick={() => {
@@ -1698,7 +2215,7 @@ export default function POSPage() {
                       color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
                     }}
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </div>
 
@@ -1706,7 +2223,7 @@ export default function POSPage() {
                   style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe' }}>
                   <p className="text-sm"
                     style={{ color: document.documentElement.classList.contains('dark') ? '#93c5fd' : '#1d4ed8' }}>
-                    💡 <strong>Note:</strong> New members will start at Bronze level with 0 points
+                    💡 <strong>{t('note')}:</strong> {t('newMemberNote')}
                   </p>
                 </div>
               </>
@@ -1811,7 +2328,14 @@ export default function POSPage() {
                 พิมพ์
               </button>
               <button
-                onClick={() => setShowReceipt(false)}
+                onClick={() => {
+                  setShowReceipt(false);
+                  // Reset discount after closing receipt
+                  setAppliedDiscount({ type: 'none', value: 0 });
+                  setDiscountType('none');
+                  setDiscountValue('');
+                  setPointsToUse('');
+                }}
                 className="flex-1 py-2 rounded-lg"
                 style={{
                   backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb',
@@ -1918,6 +2442,11 @@ export default function POSPage() {
                     setShowQRModal(false);
                     setQrCodeData(null);
                     setQrPaymentStatus('pending');
+                    // Reset discount
+                    setAppliedDiscount({ type: 'none', value: 0 });
+                    setDiscountType('none');
+                    setDiscountValue('');
+                    setPointsToUse('');
                     alert('ขายสำเร็จ! ขอบคุณครับ');
                   }}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
@@ -1959,7 +2488,7 @@ export default function POSPage() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold flex items-center">
                 <QrCode className="mr-2" />
-                {qrSentToDisplay ? 'ตรวจสอบการชำระเงิน' : 'ยืนยันการชำระเงินด้วย QR Code'}
+                {qrSentToDisplay ? t('verifyPaymentStatus') : t('confirmQRPayment')}
               </h3>
               <button
                 onClick={() => {
@@ -1978,14 +2507,14 @@ export default function POSPage() {
                 <div className="flex items-center text-orange-700">
                   <div className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
                   <span className="text-sm font-medium">
-                    QR Code ถูกส่งไปยังหน้าจอลูกค้าแล้ว - รอการชำระเงิน
+                    {t('qrCodeSentToDisplay')}
                   </span>
                 </div>
               </div>
             )}
 
             <div className="mb-6">
-              <h4 className="font-bold mb-4">รายการสินค้า</h4>
+              <h4 className="font-bold mb-4">{t('orderItems')}</h4>
 
               {/* Order Details */}
               <div className="space-y-2 mb-4">
@@ -2007,23 +2536,38 @@ export default function POSPage() {
                 <div className="bg-blue-50 p-3 rounded-lg mb-4">
                   <div className="flex items-center space-x-2">
                     <User size={16} className="text-blue-600" />
-                    <span className="text-sm font-medium">สมาชิก: {currentMember.name}</span>
+                    <span className="text-sm font-medium">{t('member')}: {currentMember.name}</span>
                   </div>
                   <div className="flex items-center space-x-2 mt-1">
                     <Star size={14} className="text-yellow-500" />
                     <span className="text-xs text-gray-600">
-                      จะได้รับ +{Math.floor(getTotalAmount() / 10)} แต้ม
+                      {t('willReceive')} +{calculatePoints()} {t('points')}
                     </span>
                   </div>
                 </div>
               )}
 
-              {/* Total */}
-              <div className="border-t pt-3">
+              {/* Subtotal, Discount, Total */}
+              <div className="border-t pt-3 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold">ยอดรวมทั้งหมด:</span>
+                  <span className="text-sm">{t('subtotal')}:</span>
+                  <span className="text-sm">฿{getTotalAmount().toFixed(2)}</span>
+                </div>
+                
+                {appliedDiscount.type !== 'none' && (
+                  <div className="flex justify-between items-center text-red-600">
+                    <span className="text-sm">
+                      {t('discount')}
+                      {appliedDiscount.type === 'points' && ` (${appliedDiscount.pointsUsed} ${t('points')})`}:
+                    </span>
+                    <span className="text-sm">-฿{getDiscountAmount().toFixed(2)}</span>
+                  </div>
+                )}
+                
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <span className="text-lg font-bold">{t('grandTotal')}:</span>
                   <span className="text-xl font-bold text-green-600">
-                    ฿{getTotalAmount().toFixed(2)}
+                    ฿{getTotalAfterDiscount().toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -2031,38 +2575,53 @@ export default function POSPage() {
 
             {/* Action Buttons */}
             <div className="flex space-x-3">
-              <button
-                onClick={() => {
-                  setShowQRConfirmModal(false);
-                  setQrSentToDisplay(false);
-                }}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 rounded-lg font-medium"
-              >
-                ยกเลิก
-              </button>
-
               {!qrSentToDisplay ? (
-                <button
-                  onClick={confirmQRPayment}
-                  disabled={isProcessing}
-                  className={`flex-2 py-3 rounded-lg font-medium ${isProcessing
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700 text-white"
-                    }`}
-                  style={{ flex: 2 }}
-                >
-                  {isProcessing ? "กำลังส่ง QR Code..." : "ส่ง QR Code ไปหน้าจอลูกค้า"}
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      setShowQRConfirmModal(false);
+                      setQrSentToDisplay(false);
+                    }}
+                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 rounded-lg font-medium"
+                  >
+                    {t('cancel')}
+                  </button>
+                  <button
+                    onClick={confirmQRPayment}
+                    disabled={isProcessing}
+                    className={`flex-2 py-3 rounded-lg font-medium ${isProcessing
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700 text-white"
+                      }`}
+                    style={{ flex: 2 }}
+                  >
+                    {isProcessing ? t('sendingQRCode') : t('sendQRToCustomerDisplay')}
+                  </button>
+                </>
               ) : (
-                <button
-                  onClick={() => {
-                    verifyStatus();
-                  }}
-                  className="flex-2 bg-blue-600 hover:bg-blue-700  text-white py-3 rounded-lg font-medium"
-                  style={{ flex: 2 }}
-                >
-                  ตรวจสอบการชำระเงิน
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      // Cancel payment - close modal and reset QR sent status
+                      setShowQRConfirmModal(false);
+                      setQrSentToDisplay(false);
+                      setIsProcessing(false);
+                      // Optionally notify backend to cancel the order
+                      console.log('Payment cancelled by user');
+                    }}
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium"
+                  >
+                    {t('cancelPayment')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      verifyStatus();
+                    }}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium"
+                  >
+                    {t('checkPaymentStatus')}
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -2077,8 +2636,8 @@ export default function POSPage() {
               <span className="text-green-900 font-bold text-sm">✓</span>
             </div>
             <div>
-              <p className="font-medium">QR Code ส่งสำเร็จ!</p>
-              <p className="text-sm text-green-100">ส่งไปยังหน้าจอลูกค้าแล้ว</p>
+              <p className="font-medium">{t('qrCodeSentSuccess')}</p>
+              <p className="text-sm text-green-100">{t('sentToCustomerDisplay')}</p>
             </div>
             <button
               onClick={() => setShowSuccessPopup(false)}
@@ -2100,20 +2659,30 @@ export default function POSPage() {
                   <span className="text-green-900 font-bold text-xl">✓</span>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-green-600 mb-2">Payment Successful!</h3>
-              <p className="text-gray-600 mb-4">การชำระเงินเสร็จสมบูรณ์แล้ว</p>
+              <h3 className="text-2xl font-bold text-green-600 mb-2">{t('paymentSuccessful')}</h3>
+              <p className="text-gray-600 mb-4">{t('paymentCompleted')}</p>
 
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <div className="flex justify-between mb-2">
-                  <span className="text-gray-600">Order ID:</span>
+                  <span className="text-gray-600">{t('orderId')}:</span>
                   <span className="font-semibold">#{orderId}</span>
                 </div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-gray-600">Total Amount:</span>
-                  <span className="font-semibold text-green-600">฿{getTotalAmount().toFixed(2)}</span>
+                  <span className="text-gray-600">{t('subtotal')}:</span>
+                  <span className="font-semibold">฿{getTotalAmount().toFixed(2)}</span>
+                </div>
+                {appliedDiscount.type !== 'none' && (
+                  <div className="flex justify-between mb-2 text-red-600">
+                    <span>{t('discount')}:</span>
+                    <span className="font-semibold">-฿{getDiscountAmount().toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between mb-2 border-t pt-2">
+                  <span className="text-gray-600 font-bold">{t('totalAmount')}:</span>
+                  <span className="font-semibold text-green-600">฿{getTotalAfterDiscount().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Payment Method:</span>
+                  <span className="text-gray-600">{t('paymentMethod')}:</span>
                   <span className="font-semibold">PromptPay QR</span>
                 </div>
               </div>
@@ -2124,13 +2693,13 @@ export default function POSPage() {
                 onClick={() => window.print()}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium"
               >
-                Print Receipt
+                {t('printReceipt')}
               </button>
               <button
                 onClick={handleNewTransaction}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium"
               >
-                New Transaction
+                {t('newTransaction')}
               </button>
             </div>
           </div>
@@ -2147,27 +2716,37 @@ export default function POSPage() {
                   <span className="text-yellow-900 font-bold text-xl">!</span>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-yellow-600 mb-2">Action Required!</h3>
-              <p className="text-gray-600 mb-4">การชำระเงินต้องการการดำเนินการเพิ่มเติม</p>
+              <h3 className="text-2xl font-bold text-yellow-600 mb-2">{t('actionRequired')}</h3>
+              <p className="text-gray-600 mb-4">{t('paymentRequiresAction')}</p>
 
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <div className="flex justify-between mb-2">
-                  <span className="text-gray-600">Order ID:</span>
+                  <span className="text-gray-600">{t('orderId')}:</span>
                   <span className="font-semibold">#{orderId}</span>
                 </div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-gray-600">Total Amount:</span>
-                  <span className="font-semibold text-yellow-600">฿{getTotalAmount().toFixed(2)}</span>
+                  <span className="text-gray-600">{t('subtotal')}:</span>
+                  <span className="font-semibold">฿{getTotalAmount().toFixed(2)}</span>
+                </div>
+                {appliedDiscount.type !== 'none' && (
+                  <div className="flex justify-between mb-2 text-red-600">
+                    <span>{t('discount')}:</span>
+                    <span className="font-semibold">-฿{getDiscountAmount().toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between mb-2 border-t pt-2">
+                  <span className="text-gray-600 font-bold">{t('totalAmount')}:</span>
+                  <span className="font-semibold text-yellow-600">฿{getTotalAfterDiscount().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="font-semibold text-yellow-600">Requires Action</span>
+                  <span className="text-gray-600">{t('status')}:</span>
+                  <span className="font-semibold text-yellow-600">{t('requiresAction')}</span>
                 </div>
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-yellow-700">
-                  ลูกค้าจำเป็นต้องดำเนินการเพิ่มเติมในการชำระเงิน กรุณาติดต่อลูกค้าหรือลองตรวจสอบการชำระเงินอีกครั้ง
+                  {t('customerNeedsAction')}
                 </p>
               </div>
             </div>
@@ -2179,7 +2758,7 @@ export default function POSPage() {
                 }}
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-medium"
               >
-                Close
+                {t('close')}
               </button>
               <button
                 onClick={() => {
@@ -2188,7 +2767,119 @@ export default function POSPage() {
                 }}
                 className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-3 rounded-lg font-medium"
               >
-                Check Again
+                {t('checkAgain')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Payment Confirmation Modal */}
+      {showCashConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold flex items-center text-gray-900">
+                <Banknote className="mr-2" />
+                {t('confirmCashPayment')}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowCashConfirmModal(false);
+                  setIsProcessing(false);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-600 mb-6">
+                {t('confirmCashReceived')}
+              </p>
+
+              {/* Order Summary */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <h4 className="font-bold mb-3 text-gray-900">{t('orderItems')}:</h4>
+                <div className="space-y-2 mb-3">
+                  {cart.map((item, index) => (
+                    <div key={index} className="flex justify-between text-sm">
+                      <span className="text-gray-700">{item.product_name} x{item.quantity}</span>
+                      <span className="font-medium text-gray-900">฿{item.total.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Member Info */}
+                {currentMember && (
+                  <div className="border-t pt-3 mb-3">
+                    <div className="flex items-center text-sm text-blue-600">
+                      <User size={16} className="mr-2" />
+                      <span>{currentMember.name}</span>
+                    </div>
+                    <div className="text-xs text-gray-600 ml-6">
+                      {t('willReceive')} +{calculatePoints()} {t('points')}
+                    </div>
+                  </div>
+                )}
+
+                {/* Discount Display */}
+                {appliedDiscount.type !== 'none' && (
+                  <div className="border-t pt-3 mb-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">{t('subtotal')}:</span>
+                      <span className="text-gray-900">฿{getTotalAmount().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-red-600">
+                      <span>
+                        {t('discount')}
+                        {appliedDiscount.type === 'points' && ` (${appliedDiscount.pointsUsed} ${t('points')})`}:
+                      </span>
+                      <span>-฿{getDiscountAmount().toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Total and Cash Details */}
+                <div className="border-t pt-3 space-y-2">
+                  <div className="flex justify-between text-lg font-bold">
+                    <span className="text-gray-900">{t('grandTotal')}:</span>
+                    <span className="text-green-600">฿{getTotalAfterDiscount().toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-base font-semibold">
+                    <span className="text-gray-700">{t('cashAmount')}:</span>
+                    <span className="text-blue-600">฿{parseFloat(customerPaid).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-base font-semibold">
+                    <span className="text-gray-700">{t('changeAmount')}:</span>
+                    <span className="text-orange-600">฿{getChange().toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowCashConfirmModal(false);
+                  setIsProcessing(false);
+                }}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-lg font-medium"
+              >
+                {t('cancelTransaction')}
+              </button>
+              <button
+                onClick={confirmCashPayment}
+                disabled={isProcessing}
+                className={`flex-1 py-3 rounded-lg font-medium ${
+                  isProcessing
+                    ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+              >
+                {isProcessing ? t('processing') : t('confirmReceived')}
               </button>
             </div>
           </div>
@@ -2203,7 +2894,7 @@ export default function POSPage() {
               <span className="text-red-900 font-bold text-sm">!</span>
             </div>
             <div className="flex-1">
-              <p className="font-medium">เกิดข้อผิดพลาด</p>
+              <p className="font-medium">{t('errorOccurred')}</p>
               <p className="text-sm text-red-100">{errorMessage}</p>
             </div>
             <button

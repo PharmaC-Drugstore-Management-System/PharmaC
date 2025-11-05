@@ -153,6 +153,16 @@ const paymentService = {
       return update;
     } catch (error) {
       console.error("Error cancelling order:", error);
+  cancelPaymentIntent: async (payment_intent_id: string) => {
+    try {
+      console.log(`🚫 Cancelling payment intent: ${payment_intent_id}`);
+      
+      const cancelledIntent = await stripe.paymentIntents.cancel(payment_intent_id);
+      
+      console.log(`✅ Payment intent ${payment_intent_id} cancelled successfully`);
+      return cancelledIntent;
+    } catch (error) {
+      console.error("Error cancelling payment intent:", error);
       throw error;
     }
   }

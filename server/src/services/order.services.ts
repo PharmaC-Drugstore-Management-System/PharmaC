@@ -7,7 +7,10 @@ const orderService = {
     point: number,
     customer_id: number,
     total_amount: number,
-    total_price: number
+    total_price: number,
+    discount_amount?: number,
+    discount_type?: string,
+    points_used?: number
   ) => {
     try {
       // Step 1: Create cart items with full details
@@ -43,6 +46,9 @@ const orderService = {
         },
         total_amount: total_amount,
         total_price: total_price,
+        discount_amount: discount_amount || 0,
+        discount_type: discount_type || 'none',
+        points_used: points_used || 0,
         order_items: {
           create: items.map((item: any) => ({
             product: { connect: { product_id: item.product_id } },
@@ -222,6 +228,46 @@ const orderService = {
       return data;
     } catch (error) {
       console.error("Service error get latest orders:", error);
+      throw error;
+    }
+  },
+
+  cancelOrder: async (order_id: number | string) => {
+    try {
+      console.log('🚫 Cancelling order:', order_id);
+      
+      const orderId = typeof order_id === 'string' ? parseInt(order_id) : order_id;
+      
+      const updatedOrder = await prisma.order.update({
+        where: { order_id: orderId },
+        data: { 
+          status: 'CANCELLED' 
+        },
+        include: {
+          employee: {
+            select: {
+              firstname: true,
+              lastname: true,
+            },
+          },
+          customer: {
+            select: {
+              name: true,
+              phone_number: true,
+            },
+          },
+          carts: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
+
+      console.log('✅ Order cancelled successfully:', updatedOrder.order_id);
+      return updatedOrder;
+    } catch (error) {
+      console.error("Service error cancel order:", error);
       throw error;
     }
   },

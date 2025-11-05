@@ -1,6 +1,6 @@
 import orderService from "../services/order.services";
 import paymentService from "../services/payment.service";
-import { emitOrderToCustomerDisplay } from "../../ws";
+import { emitOrderToCustomerDisplay, emitNotificationToAdmins } from "../../ws";
 import e from "express";
 const controller = {
   createOrder: async (req: any, res: any) => {
@@ -13,9 +13,15 @@ const controller = {
         total_amount,
         total_price,
         payment_method_types,
+        payment_method,
+        discount_amount,
+        discount_type,
+        points_used
       } = req.body;
       console.log(req.body);
       console.log('Employee ID:', employee_id);
+      console.log('Payment Method:', payment_method);
+      console.log('Discount Info:', { discount_amount, discount_type, points_used });
       if (!items || !employee_id) {
         return res.status(400).json({ error: "items id is required" });
       }
@@ -25,8 +31,46 @@ const controller = {
         point,
         customer_id,
         total_amount,
-        total_price
+        total_price,
+        discount_amount,
+        discount_type,
+        points_used
       );
+
+      // Handle CASH payment - no Stripe needed
+      if (payment_method === 'CASH') {
+        console.log('💵 Cash payment - skipping Stripe integration');
+        
+        if (!response.order) {
+          throw new Error('Failed to create order');
+        }
+        
+        // Update order status to PAID immediately for cash
+        await paymentService.updateStatus(response.order.order_id);
+        
+        // Emit notification to admins for cash payment
+        console.log('🔔 Emitting cash payment notification to admins');
+        emitNotificationToAdmins({
+          type: 'CASH_PAYMENT',
+          order: {
+            ...response.order,
+            discount_amount: discount_amount || 0,
+            discount_type: discount_type || 'none',
+            points_used: points_used || 0,
+            payment_method: 'CASH'
+          },
+          timestamp: new Date().toISOString()
+        });
+        
+        return res.status(200).json({ 
+          status: true, 
+          order: response.order,
+          message: 'Cash order created successfully'
+        });
+      }
+
+      // Handle QR/PromptPay payment - use Stripe
+      console.log('📱 QR Payment - creating Stripe payment intent');
       const currency = "thb";
 
       // Convert THB to satang (smallest unit) for Stripe
@@ -81,11 +125,19 @@ const controller = {
         order_id: response.order?.order_id,
         total_amount: response.order?.total_amount,
         customer_id: response.order?.customer_id,
-        customer_name: response.order?.customer?.name || 'ลูกค้าทั่วไป'
+        customer_name: response.order?.customer?.name || 'ลูกค้าทั่วไป',
+        discount_amount: discount_amount || 0,
+        discount_type: discount_type || 'none',
+        points_used: points_used || 0
       });
       
       emitOrderToCustomerDisplay({
-        order: response.order,
+        order: {
+          ...response.order,
+          discount_amount: discount_amount || 0,
+          discount_type: discount_type || 'none',
+          points_used: points_used || 0
+        },
         qrCode: qrcode.next_action?.promptpay_display_qr_code?.image_url_png,
         payment_intent_id: paymentIntent.id,
         timestamp: new Date().toISOString(),
@@ -144,6 +196,47 @@ const controller = {
       });
     } catch (error: any) {
       console.log("Error getting latest orders:", error.message);
+      return res.status(500).json({ 
+        success: false, 
+        error: error.message 
+      });
+    }
+  },
+
+  // Cancel order
+  cancelOrder: async (req: any, res: any) => {
+    try {
+      const { order_id, payment_intent_id } = req.body;
+      console.log('🚫 Cancelling order:', { order_id, payment_intent_id });
+
+      if (!order_id) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "order_id is required" 
+        });
+      }
+
+      // Update order status to CANCELLED
+      const response = await orderService.cancelOrder(order_id);
+      
+      // If there's a payment intent, cancel it on Stripe too
+      if (payment_intent_id) {
+        try {
+          await paymentService.cancelPaymentIntent(payment_intent_id);
+          console.log('✅ Payment intent cancelled on Stripe');
+        } catch (stripeError) {
+          console.error('⚠️ Failed to cancel Stripe payment:', stripeError);
+          // Continue even if Stripe cancellation fails
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Order cancelled successfully",
+        order: response
+      });
+    } catch (error: any) {
+      console.log("Error cancelling order:", error.message);
       return res.status(500).json({ 
         success: false, 
         error: error.message 
