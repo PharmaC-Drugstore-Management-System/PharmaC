@@ -931,7 +931,7 @@ export default function PharmaDashboard() {
                           Loading forecast...
                         </span>
                         <span className="mt-2 text-xs text-yellow-600">
-                          ⏱️ ML training may take 2-5 minutes
+                           Waiting for forecasting
                         </span>
                       </div>
                     ) : chartData.length > 0 ? (
