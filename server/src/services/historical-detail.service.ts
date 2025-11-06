@@ -17,10 +17,11 @@ const service =  {
                 }
             }
             
-            // Fetch all orders that contain the specific product type
+            // Fetch all PAID orders that contain the specific product type
             // Same format as order.list() but filtered by product type and date range
             const data = await prisma.order.findMany({
                 where: {
+                    status: 'PAID', // Only include PAID orders
                     order_items: {
                         some: {
                             product: {

@@ -2,7 +2,7 @@ import { get } from "http";
 import prisma from "../utils/prisma.utils.ts"
 
 const dashboardService = {
-    // Get total sales by summing all total_amount in order table
+    // Get total sales by summing all total_amount in order table (PAID orders only)
     getTotalSales: async () => {
         try {
             const result = await prisma.order.aggregate({
@@ -10,9 +10,7 @@ const dashboardService = {
                     total_amount: true, // Sum all total_amount column values
                 },
                 where: {
-                    status: {
-                        not: 'CANCELLED' // Exclude cancelled orders
-                    }
+                    status: 'PAID' // Only count PAID orders for actual sales revenue
                 }
             });
 
@@ -27,9 +25,7 @@ const dashboardService = {
     getTotalSalesWithFilters: async (startDate?: Date, endDate?: Date) => {
         try {
             const whereClause: any = {
-                status: {
-                    not: 'CANCELLED'
-                }
+                status: 'PAID' // Only count PAID orders for actual sales revenue
             };
 
             // Add date filter if provided
@@ -64,7 +60,7 @@ const dashboardService = {
     // Get sales summary with breakdown
     getSalesSummary: async () => {
         try {
-            // Get overall totals
+            // Get overall totals (PAID orders only)
             const totalSales = await prisma.order.aggregate({
                 _sum: {
                     total_amount: true,
@@ -74,9 +70,7 @@ const dashboardService = {
                     order_id: true
                 },
                 where: {
-                    status: {
-                        not: 'CANCELLED'
-                    }
+                    status: 'PAID' // Only count PAID orders for actual sales
                 }
             });
 
@@ -94,9 +88,7 @@ const dashboardService = {
                     order_id: true
                 },
                 where: {
-                    status: {
-                        not: 'CANCELLED'
-                    },
+                    status: 'PAID', // Only count PAID orders
                     date: {
                         gte: today,
                         lt: tomorrow
@@ -118,7 +110,12 @@ const dashboardService = {
     },
     getTotalOrder : async () => {
         try {
-            const count = await prisma.order.count();
+            // Count only PAID orders to match total sales
+            const count = await prisma.order.count({
+                where: {
+                    status: 'PAID'
+                }
+            });
             return count;
         } catch (error) {
             console.error("Error getting order count:", error);

@@ -231,6 +231,7 @@ export default function PharmaDashboard() {
   const loadTotalSales = async () => {
     try {
       setLoadingSales(true);
+      // Fetch total sales from all PAID orders (lifetime revenue)
       const info = await fetch(`${API_URL}/dashboard/total-sales`, {
         method: 'GET'
       });
@@ -251,6 +252,7 @@ export default function PharmaDashboard() {
   const loadTotalOrders = async () => {
     try {
       setLoadingOrders(true);
+      // Fetch total completed orders (PAID status only)
       const info = await fetch(`${API_URL}/dashboard/total-order`, {
         method: 'GET'
       });
