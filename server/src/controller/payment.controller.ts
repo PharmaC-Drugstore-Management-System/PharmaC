@@ -1,4 +1,4 @@
-import paymentService from "../services/payment.service";
+import paymentService from "../services/payment.service.ts"
 import { emitPaymentStatusUpdate } from "../../ws";
 
 const controller = {

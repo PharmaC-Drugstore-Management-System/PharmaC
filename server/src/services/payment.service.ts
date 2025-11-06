@@ -153,6 +153,8 @@ const paymentService = {
       return update;
     } catch (error) {
       console.error("Error cancelling order:", error);
+    }
+  },
   cancelPaymentIntent: async (payment_intent_id: string) => {
     try {
       console.log(`🚫 Cancelling payment intent: ${payment_intent_id}`);
@@ -166,5 +168,5 @@ const paymentService = {
       throw error;
     }
   }
-};
-export default paymentService;
+}
+export default paymentService
