@@ -764,9 +764,21 @@ export default function PharmaDashboard() {
                 });
 
                 // Add some mock historical data points for better visualization
+                // Use deterministic seed based on product type to ensure consistency
                 if (chartData.length > 0) {
                   const historicalPoints = Math.min(3, Math.ceil(chartData.length * 0.2)); // 20% historical or max 3
                   const firstForecastValue = chartData[0].forecast || 0;
+                  
+                  // Create a simple hash function to generate consistent "random" values
+                  const simpleHash = (str: string, index: number) => {
+                    let hash = 0;
+                    const seedStr = str + index.toString();
+                    for (let i = 0; i < seedStr.length; i++) {
+                      hash = ((hash << 5) - hash) + seedStr.charCodeAt(i);
+                      hash = hash & hash; // Convert to 32-bit integer
+                    }
+                    return Math.abs(hash % 1000) / 1000; // Return value between 0 and 1
+                  };
                   
                   for (let i = 0; i < historicalPoints; i++) {
                     const histDate = new Date(chartData[0].fullDate);
@@ -786,6 +798,9 @@ export default function PharmaDashboard() {
                       label = dayNames[histDate.getDay()];
                     }
                     
+                    // Use deterministic "random" value based on product type and position
+                    const deterministicValue = simpleHash(type, i);
+                    
                     chartData.unshift({
                       day: label,
                       date: `${monthNames[histDate.getMonth()]} ${histDate.getDate()}`,
@@ -793,7 +808,7 @@ export default function PharmaDashboard() {
                       forecast: null,
                       upper: null,
                       lower: null,
-                      historical: Math.round(firstForecastValue * (0.8 + Math.random() * 0.4) * 100) / 100
+                      historical: Math.round(firstForecastValue * (0.8 + deterministicValue * 0.4) * 100) / 100
                     });
                   }
                   
