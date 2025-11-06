@@ -17,19 +17,22 @@ const groupSalesHistoryService = {
     // 1. Build WHERE for order_item joined to order + product
     const where: any = {
       product: { producttype },
+      // Only include PAID orders to match dashboard total sales
+      order: {
+        status: 'PAID'
+      }
     };
 
     if (startDate || endDate) {
-      where.order = {
-        date: {
-          ...(startDate ? { gte: startDate } : {}),
-          ...(endDate ? { lte: endOfDay(endDate) } : {}),
-        },
+      // If dates provided, add date filter to existing order filter
+      where.order.date = {
+        ...(startDate ? { gte: startDate } : {}),
+        ...(endDate ? { lte: endOfDay(endDate) } : {}),
       };
     }
 
-    // 2. Pull raw order_items
-    // We'll grab: order_id, product_id, quantity, product info, order status/date
+    // 2. Pull raw order_items with full order details
+    // We'll grab: order_id, product_id, quantity, product info, order status/date/total_amount
     const items = await prisma.order_item.findMany({
       where,
       select: {
@@ -41,6 +44,8 @@ const groupSalesHistoryService = {
             order_id: true,
             date: true,
             status: true,
+            total_amount: true,  // Get actual order total
+            total_price: true,   // Get actual price
           },
         },
         product: {
@@ -129,11 +134,20 @@ const groupSalesHistoryService = {
 
     let summary_total_qty = 0;
     let summary_total_revenue = 0;
+    
+    // Track unique order totals for accurate summary
+    const orderTotalsMap = new Map<number, number>();
 
     for (const it of items) {
       const pid = it.product_id;
       const qty = Number(it.quantity ?? 0);
       const orderId = it.order_id;
+      
+      // Collect actual order total_amount for summary calculation
+      if (!orderTotalsMap.has(orderId)) {
+        const actualOrderTotal = Number(it.order?.total_amount ?? 0);
+        orderTotalsMap.set(orderId, actualOrderTotal);
+      }
 
       // find unit price from latest lot for this product
       const unitPrice = priceByProduct.get(pid) ?? 0;
@@ -206,11 +220,14 @@ const groupSalesHistoryService = {
         sale_count: p.sale_count,
       }));
 
+    // Calculate actual total revenue from order totals (not recalculated from lot prices)
+    const actualTotalRevenue = Array.from(orderTotalsMap.values()).reduce((sum, orderTotal) => sum + orderTotal, 0);
+
     const summary = {
       order_count: orders.length,
       total_products: products.length,
       total_quantity: summary_total_qty,
-      total_revenue: summary_total_revenue,
+      total_revenue: actualTotalRevenue,  // Use actual order totals, not calculated from lot prices
     };
 
     return {
