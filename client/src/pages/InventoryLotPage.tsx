@@ -1,19 +1,23 @@
 import { useMemo, useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Plus, MoreVertical, Calendar, Pill, Box, X } from "lucide-react";
+import { Plus, MoreVertical, Calendar, Pill, Box, X, Edit2, Trash2 } from "lucide-react";
 import Swal from 'sweetalert2';
 import StockTransactionsTab from '../components/StockTransactionsTab';
+import { useTranslation } from 'react-i18next';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const SERVER_URL = API_URL.replace('/api', ''); // For static files (uploads)
 
 type LotRow = {
+    lot_id?: number; // Add lot_id for edit/delete operations
     lotNo: string;
     stockedDate: string;       // YYYY-MM-DD
     totalStock: number;
     reservedStock: number;
     availableStock: number;
     expirationDate: string;    // YYYY-MM-DD
+    cost?: number; // Add cost field
+    sellPrice?: number; // Add sell price field
 };
 
 type Medicine = {
@@ -48,14 +52,19 @@ function expStatus(date: string) {
 }
 
 export default function LotPage() {
+    const { t } = useTranslation();
     const { id = "1" } = useParams();
     const [medicine, setMedicine] = useState<Medicine | null>(null);
     const [loading, setLoading] = useState(true);
     const [lotsLoading, setLotsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showAddLotModal, setShowAddLotModal] = useState(false);
+    const [showEditLotModal, setShowEditLotModal] = useState(false);
     const [isAddingLot, setIsAddingLot] = useState(false);
+    const [isUpdatingLot, setIsUpdatingLot] = useState(false);
+    const [editingLot, setEditingLot] = useState<LotRow | null>(null);
     const [activeTab, setActiveTab] = useState<'lots' | 'transactions'>('lots');
+    const [showLotMenu, setShowLotMenu] = useState<string | null>(null);
     const [newLot, setNewLot] = useState({
         lotNo: '',
         stockedDate: new Date().toISOString().split('T')[0], // Always current date
@@ -86,12 +95,15 @@ export default function LotPage() {
                 if (data.status && data.data) {
                     // Transform API lot data to match our LotRow interface
                     const transformedLots: LotRow[] = data.data.map((lot: any) => ({
+                        lot_id: lot.lot_id, // Include lot_id for edit/delete
                         lotNo: lot.lot_no,
                         stockedDate: lot.added_date,
                         totalStock: lot.init_amount,
                         reservedStock: 0, // Reserved stock not in current lot model
                         availableStock: lot.init_amount, // For now, assuming all stock is available
                         expirationDate: lot.expired_date,
+                        cost: lot.cost,
+                        sellPrice: lot.sell_price,
                     }));
 
                     // Update the medicine state with real lot data
@@ -445,6 +457,206 @@ export default function LotPage() {
         }
     };
 
+    // Handler for opening edit lot modal
+    const handleOpenEditLotModal = (lot: LotRow) => {
+        setEditingLot(lot);
+        setNewLot({
+            lotNo: lot.lotNo,
+            stockedDate: lot.stockedDate,
+            totalStock: lot.totalStock.toString(),
+            reservedStock: lot.reservedStock.toString(),
+            availableStock: lot.availableStock.toString(),
+            expirationDate: lot.expirationDate,
+            cost: lot.cost?.toString() || '',
+            sellPrice: lot.sellPrice?.toString() || ''
+        });
+        setShowEditLotModal(true);
+        setShowLotMenu(null);
+    };
+
+    // Handler for closing edit lot modal
+    const handleCloseEditLotModal = () => {
+        setShowEditLotModal(false);
+        setEditingLot(null);
+        setNewLot({
+            lotNo: '',
+            stockedDate: new Date().toISOString().split('T')[0],
+            totalStock: '',
+            reservedStock: '',
+            availableStock: '',
+            expirationDate: '',
+            cost: '',
+            sellPrice: ''
+        });
+    };
+
+    // Handler for updating lot
+    const handleUpdateLot = async () => {
+        if (!editingLot || !editingLot.lot_id) return;
+
+        // Validation
+        if (!newLot.lotNo.trim()) {
+            Swal.fire({
+                icon: 'error',
+                title: t('validationError'),
+                text: t('pleaseEnterLotNumber'),
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+            return;
+        }
+
+        if (!newLot.totalStock || parseInt(newLot.totalStock) <= 0) {
+            Swal.fire({
+                icon: 'error',
+                title: t('validationError'),
+                text: t('pleaseEnterValidStock'),
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+            return;
+        }
+
+        if (!newLot.expirationDate) {
+            Swal.fire({
+                icon: 'error',
+                title: t('validationError'),
+                text: t('pleaseSelectExpirationDate'),
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+            return;
+        }
+
+        try {
+            setIsUpdatingLot(true);
+
+            const lotData = {
+                lot_no: newLot.lotNo,
+                init_amount: parseInt(newLot.totalStock),
+                added_date: newLot.stockedDate,
+                expired_date: newLot.expirationDate,
+                cost: parseFloat(newLot.cost) || 0,
+                sell_price: parseFloat(newLot.sellPrice) || 0,
+            };
+
+            const response = await fetch(`${API_URL}/lot/update-lot/${editingLot.lot_id}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(lotData)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                if (data.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: t('successTitle'),
+                        text: t('lotUpdatedSuccessfully'),
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+
+                    handleCloseEditLotModal();
+                    await fetchLotsByProductId();
+                } else {
+                    throw new Error(data.error || 'Failed to update lot');
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: t('errorTitle'),
+                    text: t('failedToUpdateLot'),
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            }
+        } catch (error) {
+            console.error('Error updating lot:', error);
+            Swal.fire({
+                icon: 'error',
+                title: t('errorTitle'),
+                text: t('networkError'),
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+        } finally {
+            setIsUpdatingLot(false);
+        }
+    };
+
+    // Handler for deleting lot
+    const handleDeleteLot = async (lot: LotRow) => {
+        if (!lot.lot_id) return;
+
+        const result = await Swal.fire({
+            title: t('confirmDeleteLot'),
+            text: t('confirmDeleteLotText'),
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: t('yesDeleteLot'),
+            cancelButtonText: t('noKeepLot')
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`${API_URL}/lot/delete-lot/${lot.lot_id}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: t('successTitle'),
+                        text: t('lotDeletedSuccessfully'),
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+
+                    await fetchLotsByProductId();
+                } else {
+                    // Show specific error message from backend
+                    const errorMessage = data.error || t('failedToDeleteLot');
+                    Swal.fire({
+                        icon: 'error',
+                        title: t('errorTitle'),
+                        text: errorMessage,
+                        confirmButtonText: t('ok') || 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error deleting lot:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: t('errorTitle'),
+                    text: t('errorDeletingLot'),
+                    confirmButtonText: t('ok') || 'OK'
+                });
+            }
+        }
+        
+        setShowLotMenu(null);
+    };
+
     // Optimize lots calculation with useMemo
     const lots = useMemo(() => medicine?.lots || [], [medicine?.lots]);
     const total = useMemo(() => lots.reduce((a, r) => a + r.totalStock, 0), [lots]);
@@ -749,7 +961,7 @@ export default function LotPage() {
 
                             {/* Lots table */}
                             <div className="lg:col-span-9">
-                                <div className="border rounded-lg overflow-hidden"
+                                <div className="border rounded-lg overflow-visible"
                                     style={{
                                         backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
                                         borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
@@ -815,7 +1027,7 @@ export default function LotPage() {
                                             lots.map((r) => {
                                                 const exp = expStatus(r.expirationDate);
                                                 return (
-                                                    <div key={r.lotNo} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-300"
+                                                    <div key={r.lotNo} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-300 relative"
                                                         style={{ 
                                                           color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#1f2937',
                                                           borderBottomColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db'
@@ -830,10 +1042,47 @@ export default function LotPage() {
                                                                 <span className={`inline-block w-2 h-2 rounded-full mr-2 ${exp.dot}`} />
                                                                 {exp.label}
                                                             </span>
-                                                            <button className="hover:text-gray-600"
-                                                                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
-                                                                <MoreVertical className="w-5 h-5" />
-                                                            </button>
+                                                            <div className="relative">
+                                                                <button 
+                                                                    onClick={() => setShowLotMenu(showLotMenu === r.lotNo ? null : r.lotNo)}
+                                                                    className="hover:text-gray-600 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                                                                    <MoreVertical className="w-5 h-5" />
+                                                                </button>
+                                                                
+                                                                {/* Dropdown Menu */}
+                                                                {showLotMenu === r.lotNo && (
+                                                                    <>
+                                                                        {/* Backdrop to close menu */}
+                                                                        <div 
+                                                                            className="fixed inset-0 z-40"
+                                                                            onClick={() => setShowLotMenu(null)}
+                                                                        />
+                                                                        {/* Menu */}
+                                                                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg z-50 border"
+                                                                            style={{
+                                                                                backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                                                                borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                                                                            }}>
+                                                                            <div className="py-1">
+                                                                                <button
+                                                                                    onClick={() => handleOpenEditLotModal(r)}
+                                                                                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"
+                                                                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                                                                    <Edit2 className="w-4 h-4 mr-2" />
+                                                                                    {t('editLot')}
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => handleDeleteLot(r)}
+                                                                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center">
+                                                                                    <Trash2 className="w-4 h-4 mr-2" />
+                                                                                    {t('deleteLot')}
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 );
@@ -1052,6 +1301,196 @@ export default function LotPage() {
                                     </span>
                                 ) : (
                                     'Add Lot'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Lot Modal */}
+            {showEditLotModal && editingLot && (
+                <div className="fixed inset-0 backdrop-blur-sm bg-opacity-80 flex items-center justify-center p-4 z-50">
+                    <div className="w-full max-w-md rounded-lg shadow-xl border border-gray-300"
+                        style={{
+                            backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : 'white',
+                            maxHeight: '90vh',
+                            overflowY: 'auto'
+                        }}>
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b"
+                            style={{ borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }}>
+                            <h3 className="text-lg font-semibold"
+                                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : '#111827' }}>
+                                {t('editLot')}
+                            </h3>
+                            <button
+                                onClick={handleCloseEditLotModal}
+                                className="p-2 rounded-md transition-colors"
+                                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
+                                <X className="w-5 h-5" color="red" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 space-y-4">
+                            {/* Lot Number */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    {t('lotNumberLabel')} *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={newLot.lotNo}
+                                    onChange={(e) => handleLotInputChange('lotNo', e.target.value)}
+                                    placeholder={t('enterLotNumber')}
+                                    min="0"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Stocked Date */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    {t('stockedDate')} *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={newLot.stockedDate}
+                                    onChange={(e) => handleLotInputChange('stockedDate', e.target.value)}
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Total Stock */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    {t('totalStockUnit')} *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={newLot.totalStock}
+                                    onChange={(e) => handleLotInputChange('totalStock', e.target.value)}
+                                    placeholder={t('pleaseEnterValidStock')}
+                                    min="1"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Cost per Unit */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    {t('costPerUnit')} *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={newLot.cost}
+                                    onChange={(e) => handleLotInputChange('cost', e.target.value)}
+                                    placeholder={t('enterCostPerUnit')}
+                                    min="0"
+                                    step="0.01"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Selling Price */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    {t('sellingPricePerUnit')} *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={newLot.sellPrice}
+                                    onChange={(e) => handleLotInputChange('sellPrice', e.target.value)}
+                                    placeholder={t('enterSellingPrice')}
+                                    min="0"
+                                    step="0.01"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Expiration Date */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2"
+                                    style={{ color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151' }}>
+                                    {t('expirationDate')} *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={newLot.expirationDate}
+                                    onChange={(e) => handleLotInputChange('expirationDate', e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    style={{
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                        color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex justify-end space-x-3 p-6 border-t"
+                            style={{ borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }}>
+                            <button
+                                onClick={handleCloseEditLotModal}
+                                disabled={isUpdatingLot}
+                                className={`px-4 py-2 border rounded-md transition-colors ${isUpdatingLot
+                                        ? 'opacity-50 cursor-not-allowed'
+                                        : 'hover:bg-gray-50'
+                                    }`}
+                                style={{
+                                    borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                                    color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151',
+                                    backgroundColor: 'transparent'
+                                }}>
+                                {t('cancel')}
+                            </button>
+                            <button
+                                onClick={handleUpdateLot}
+                                disabled={isUpdatingLot}
+                                className={`px-4 py-2 rounded-md transition-colors ${isUpdatingLot
+                                        ? 'bg-emerald-400 cursor-not-allowed'
+                                        : 'bg-emerald-600 hover:bg-emerald-700'
+                                    } text-white`}>
+                                {isUpdatingLot ? (
+                                    <span className="flex items-center">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                        {t('updatingLot')}
+                                    </span>
+                                ) : (
+                                    t('updateLot')
                                 )}
                             </button>
                         </div>

@@ -2239,7 +2239,7 @@ export default function POSPage() {
             style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white' }}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold"
-                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>ใบเสร็จรับเงิน</h3>
+                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{t('receipt')}</h3>
               <button
                 onClick={() => setShowReceipt(false)}
                 className="hover:text-gray-700"
@@ -2251,9 +2251,9 @@ export default function POSPage() {
 
             <div className="text-center mb-4">
               <h4 className="font-bold"
-                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>ร้านขายยา PharmaC</h4>
+                style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{t('pharmacyShop')}</h4>
               <p className="text-sm"
-                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>เลขที่: {receiptData.id}</p>
+                style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>{t('receiptNo')}: {receiptData.id}</p>
               <p className="text-sm"
                 style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>{receiptData.date}</p>
             </div>
@@ -2265,7 +2265,7 @@ export default function POSPage() {
                 <div className="flex items-center justify-center space-x-2">
                   <User size={16} style={{ color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb' }} />
                   <span className="font-medium"
-                    style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>สมาชิก: {receiptData.member.name}</span>
+                    style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{t('memberInfo')}: {receiptData.member.name}</span>
                 </div>
                 <p className="text-center text-sm"
                   style={{ color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }}>
@@ -2294,16 +2294,16 @@ export default function POSPage() {
 
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
-                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>รวม:</span>
+                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{t('subtotalAmount')}:</span>
                 <span className="font-bold"
                   style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>฿{receiptData.total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>รับเงิน:</span>
+                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{t('receivedAmount')}:</span>
                 <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>฿{receiptData.amountPaid.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>เงินทอน:</span>
+                <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>{t('changeReturn')}:</span>
                 <span style={{ color: document.documentElement.classList.contains('dark') ? 'white' : 'black' }}>฿{receiptData.change.toFixed(2)}</span>
               </div>
 
@@ -2313,9 +2313,9 @@ export default function POSPage() {
                   style={{ color: document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb' }}>
                   <span className="flex items-center">
                     <Star size={16} className="mr-1" />
-                    แต้มที่ได้รับ:
+                    {t('pointsEarned')}:
                   </span>
-                  <span>+{receiptData.pointsEarned} แต้ม</span>
+                  <span>+{receiptData.pointsEarned} {t('points')}</span>
                 </div>
               )}
             </div>
@@ -2325,7 +2325,7 @@ export default function POSPage() {
                 onClick={() => window.print()}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
               >
-                พิมพ์
+                {t('print')}
               </button>
               <button
                 onClick={() => {
@@ -2342,7 +2342,7 @@ export default function POSPage() {
                   color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
                 }}
               >
-                ปิด
+                {t('closeReceipt')}
               </button>
             </div>
           </div>
@@ -2356,7 +2356,7 @@ export default function POSPage() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold flex items-center">
                 <QrCode className="mr-2" />
-                ชำระเงินด้วย QR Code
+                แสดง QR Payment
               </h3>
               <button
                 onClick={() => {
@@ -2763,7 +2763,7 @@ export default function POSPage() {
               <button
                 onClick={() => {
                   setShowRequiresActionModal(false);
-                  verifyStatus(); // Check again
+                  verifyStatus();
                 }}
                 className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-3 rounded-lg font-medium"
               >

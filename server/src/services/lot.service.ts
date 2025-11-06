@@ -30,18 +30,26 @@ const lot_service = {
     }
   },
   getAllLots: async () => {
-      return await prisma.lot.findMany();
+      return await prisma.lot.findMany({
+        where: { deleted_at: null }
+      });
   },
   getLotById: async (id : any) => {
      const getLot = await prisma.lot.findUnique({
-          where: { lot_id: parseInt(id) }
+          where: { 
+            lot_id: parseInt(id),
+            deleted_at: null
+          }
       });
 
       return getLot
   },
   getLotsByProductId: async (productId : any) => {
      const getLots = await prisma.lot.findMany({
-          where: { product_id: parseInt(productId) },
+          where: { 
+            product_id: parseInt(productId),
+            deleted_at: null
+          },
           orderBy: { added_date: 'desc' }
       });
 
@@ -50,6 +58,7 @@ const lot_service = {
   getLotWithProduct : async() => {
     try {
       const get = await prisma.lot.findMany({
+        where: { deleted_at: null },
         include: {
           product: true
         }
@@ -66,10 +75,29 @@ const lot_service = {
           data
       });
   },
-  // deleteLot: async (id) => {
-  //     return await prisma.lot.delete({
-  //         where: { lot_id: id }
-  //     });
-  // }
+  deleteLot: async (id: number) => {
+    // Soft delete - just set deleted_at timestamp
+    const lot = await prisma.lot.findUnique({
+      where: { lot_id: id }
+    });
+    
+    if (!lot) {
+      throw new Error('Lot not found');
+    }
+
+    if (lot.deleted_at) {
+      throw new Error('Lot has already been deleted');
+    }
+
+    // Update the lot with deleted_at timestamp
+    const deletedLot = await prisma.lot.update({
+      where: { lot_id: id },
+      data: {
+        deleted_at: new Date()
+      }
+    });
+    
+    return deletedLot;
+  }
 };
 export default lot_service;

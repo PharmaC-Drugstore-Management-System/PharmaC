@@ -9,5 +9,6 @@ router.get('/get-lot/:id', controller.getById);
 router.get('/getLotProduct',controller.getLotWithProuduct)
 router.get('/get-lots-by-product/:productId', controller.getByProductId);
 router.put('/update-lot/:id', controller.update);
+router.delete('/delete-lot/:id', controller.deleteLot);
 
 export default router;

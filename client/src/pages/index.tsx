@@ -349,33 +349,59 @@ export default function PharmaDashboard() {
 
         // If no cache, fetch from API
         console.log('🔄 Fetching fresh forecast data from API...');
-        const info = await fetch(`${API_URL}/predictor/generate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(requestParams)
-        });
-
-        const data = await info.json();
-        console.log("Forecast response:", data);
+        console.log('⏱️ This may take 2-5 minutes for ML model training...');
         
-        if (data.status && data.data.results.success) {
-          const forecastResults = data.data.results;
-          setForecastData(forecastResults);
-          setIsCachedData(false);
-          
-          // Save to localStorage for next time
-          saveForecastToLocalStorage(forecastResults, requestParams);
-          
-          // Also log if it came from backend cache
-          if (data.data.cached) {
-            console.log('📦 Data was from backend cache');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minutes timeout
+        
+        try {
+          const info = await fetch(`${API_URL}/predictor/generate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestParams),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!info.ok) {
+            throw new Error(`HTTP error! status: ${info.status}`);
           }
+
+          const data = await info.json();
+          console.log("Forecast response:", data);
+          
+          if (data.status && data.data.results.success) {
+            const forecastResults = data.data.results;
+            setForecastData(forecastResults);
+            setIsCachedData(false);
+            
+            // Save to localStorage for next time
+            saveForecastToLocalStorage(forecastResults, requestParams);
+            
+            // Also log if it came from backend cache
+            if (data.data.cached) {
+              console.log('📦 Data was from backend cache');
+            }
+          } else {
+            console.error('❌ Prediction failed:', data);
+            throw new Error(data.message || 'Prediction failed');
+          }
+        } catch (fetchError: any) {
+          clearTimeout(timeoutId);
+          if (fetchError.name === 'AbortError') {
+            console.error('❌ Request timeout after 10 minutes');
+            throw new Error('Prediction timeout - please try again or use a shorter forecast period');
+          }
+          throw fetchError;
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error loading forecast:", error);
+      // Show user-friendly error message
+      alert(`Failed to load forecast: ${error.message || 'Unknown error'}. Please try again or check if the ML service is running.`);
     } finally {
       setLoadingForecast(false);
     }
@@ -817,11 +843,14 @@ export default function PharmaDashboard() {
                   {/* ARIMA Forecast Chart */}
                   <div className="h-48 mb-4">
                     {loadingForecast ? (
-                      <div className="flex items-center justify-center h-full">
+                      <div className="flex flex-col items-center justify-center h-full">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2"
                           style={{ borderColor: color }}></div>
                         <span className="ml-2 text-sm" style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
                           Loading forecast...
+                        </span>
+                        <span className="mt-2 text-xs text-yellow-600">
+                          ⏱️ ML training may take 2-5 minutes
                         </span>
                       </div>
                     ) : chartData.length > 0 ? (

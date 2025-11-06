@@ -22,7 +22,7 @@ export const checkExpiredOrdersJob = async () => {
 };
 
 /**
- * Start the scheduler to check for expired orders every minute
+ * Start the scheduler to check for expired orders every 5 minutes
  */
 export const startScheduler = () => {
   console.log("🚀 Starting expired orders scheduler...");
@@ -30,8 +30,8 @@ export const startScheduler = () => {
   // Run immediately on startup
   checkExpiredOrdersJob();
   
-  // Then run every 1 minute (60000 ms)
-  setInterval(checkExpiredOrdersJob, 60000);
+  // Then run every 5 minutes (300000 ms)
+  setInterval(checkExpiredOrdersJob, 300000);
   
-  console.log("✅ Scheduler started - checking expired orders every 1 minute");
+  console.log("✅ Scheduler started - checking expired orders every 5 minutes");
 };

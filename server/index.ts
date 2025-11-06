@@ -10,6 +10,12 @@ const PORT = process.env.PORT || 5000;
 
 const server = createServer(app);
 
+// Set timeout for long-running requests (e.g., ML predictions)
+// 10 minutes = 600,000 ms
+server.timeout = 600000;
+server.keepAliveTimeout = 610000;
+server.headersTimeout = 620000;
+
 // Initialize WebSocket
 const io = initWebSocket(server);
 

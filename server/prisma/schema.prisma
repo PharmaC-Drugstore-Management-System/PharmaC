@@ -133,6 +133,7 @@ model lot {
   lot_no            String?             @db.VarChar(20)
   product_id        Int?
   sell_price        Float?              @db.Real
+  deleted_at        DateTime?           @db.Timestamp(6)
   cart              cart[]
   product           product?            @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_product_fk")
   stock_transaction stock_transaction[]

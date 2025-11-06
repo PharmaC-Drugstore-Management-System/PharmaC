@@ -92,6 +92,22 @@ const controller = {
       });
     }
   },
+  deleteLot: async (req: any, res: any) => {
+    try {
+      const { id } = req.params;
+      const deletedLot = await lot_service.deleteLot(parseInt(id));
+      if (!deletedLot) {
+        return res.status(404).json({ status: false, error: "Lot not found" });
+      }
+      res.status(200).json({ status: true, data: deletedLot, message: "Lot deleted successfully" });
+    } catch (error) {
+      console.error("Delete lot error:", error);
+      res.status(500).json({
+        status: false,
+        error: (error as Error).message || "Error deleting lot",
+      });
+    }
+  },
 };
 
 export default controller;
