@@ -111,8 +111,17 @@ export default function PharmaDashboard() {
   const [restockRecommendations, setRestockRecommendations] = useState<any[]>([]);
   const [loadingRestock, setLoadingRestock] = useState(true);
   
+  // Evaluation modal state
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+  const [selectedEvaluation, setSelectedEvaluation] = useState<{
+    productType: string;
+    model: string;
+    metrics: any;
+  } | null>(null);
+  
   // Forecast configuration states
   const [forecastDays, setForecastDays] = useState(7);
+  const [selectedModel, setSelectedModel] = useState('prophet'); // Default to Prophet
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
     date.setDate(date.getDate() - 30); // Default to 30 days ago
@@ -333,7 +342,7 @@ export default function PharmaDashboard() {
         const requestParams = {
           forecastDays: forecastDays,
           drugFilter: types,
-          model: "arima",
+          model: selectedModel, // Use selected model
           startDate: startDate,
           endDate: endDate
         };
@@ -422,7 +431,7 @@ export default function PharmaDashboard() {
         const requestParams = {
           forecastDays: forecastDays,
           drugFilter: types,
-          model: "arima"
+          model: selectedModel // Use selected model
         };
 
         // Try localStorage first for instant loading
@@ -471,7 +480,7 @@ export default function PharmaDashboard() {
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forecastDays]);
+  }, [forecastDays, selectedModel]); // Reload when model changes
 
 
   return (
@@ -572,6 +581,27 @@ export default function PharmaDashboard() {
               Product Types Performance
             </h2>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              {/* Model Selector */}
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium transition-colors"
+                  style={{ color: isDark ? '#d1d5db' : '#374151' }}>
+                  Model:
+                </label>
+                <select 
+                  value={selectedModel} 
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    backgroundColor: isDark ? '#374151' : 'white',
+                    borderColor: isDark ? '#4b5563' : '#d1d5db',
+                    color: isDark ? 'white' : '#111827'
+                  }}>
+                  <option value="prophet">Prophet</option>
+                  <option value="arima">ARIMA</option>
+                  <option value="sarima">SARIMA</option>
+                  <option value="catboost">CatBoost</option>
+                </select>
+              </div>
               {/* Forecast Days Selector */}
               <div className="flex items-center space-x-2">
                 <label className="text-sm font-medium transition-colors"
@@ -658,11 +688,28 @@ export default function PharmaDashboard() {
             </div>
           </div>
 
-          {/* Product Type Trend Charts with ARIMA Predictions */}
+          {/* Product Type Trend Charts with Predictions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
             {productType.map((type: string, index: number) => {
-              // Get forecast data for this product type
-              const typeForecast = forecastData?.forecasts?.[type]?.ARIMA;
+              // Get forecast data for this product type - support multiple models with flexible casing
+              const modelKeyUpper = selectedModel.toUpperCase(); // CATBOOST, ARIMA, SARIMA, PROPHET
+              const modelKeyTitle = selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1).toLowerCase(); // Catboost, Prophet
+              const modelKeyMixed = selectedModel === 'catboost' ? 'CatBoost' : 
+                                     selectedModel === 'prophet' ? 'Prophet' :
+                                     selectedModel === 'sarima' ? 'SARIMA' : 'ARIMA'; // Exact backend keys
+              
+              // Try multiple case variations to match backend response
+              const typeForecast = forecastData?.forecasts?.[type]?.[modelKeyMixed] ||
+                                   forecastData?.forecasts?.[type]?.[modelKeyUpper] ||
+                                   forecastData?.forecasts?.[type]?.[modelKeyTitle] ||
+                                   forecastData?.forecasts?.[type]?.ARIMA; // Final fallback
+              
+              // Debug logging (can be removed in production)
+              if (index === 0 && forecastData?.forecasts?.[type]) {
+                console.log(`🔍 Model keys for ${type}:`, Object.keys(forecastData.forecasts[type]));
+                console.log(`🎯 Selected model: ${selectedModel}, Trying: ${modelKeyMixed}, ${modelKeyUpper}, ${modelKeyTitle}`);
+                console.log(`✅ Found forecast:`, typeForecast ? 'Yes' : 'No');
+              }
               
               // Helper function to aggregate data by time period
               const aggregateData = (dates: string[], predictions: number[], interval: number) => {
@@ -738,13 +785,15 @@ export default function PharmaDashboard() {
                     forecast: Math.round(item.prediction * 100) / 100,
                     upper: null, // Confidence intervals would need aggregation too
                     lower: null,
-                    historical: idx === 0 ? Math.round(item.prediction * 0.9 * 100) / 100 : null
+                    historical: null // Start with no historical data
                   };
                 });
 
                 // Add some mock historical data points for better visualization
                 if (chartData.length > 0) {
                   const historicalPoints = Math.min(3, Math.ceil(chartData.length * 0.2)); // 20% historical or max 3
+                  const firstForecastValue = chartData[0].forecast || 0;
+                  
                   for (let i = 0; i < historicalPoints; i++) {
                     const histDate = new Date(chartData[0].fullDate);
                     histDate.setDate(histDate.getDate() - (aggregationInterval * (historicalPoints - i)));
@@ -770,8 +819,13 @@ export default function PharmaDashboard() {
                       forecast: null,
                       upper: null,
                       lower: null,
-                      historical: Math.round((chartData[0].forecast || 0) * (0.8 + Math.random() * 0.4) * 100) / 100
+                      historical: Math.round(firstForecastValue * (0.8 + Math.random() * 0.4) * 100) / 100
                     });
+                  }
+                  
+                  // Make the first forecast point also show as historical to connect the lines
+                  if (chartData.length > historicalPoints) {
+                    chartData[historicalPoints].historical = chartData[historicalPoints].forecast;
                   }
                 }
               }
@@ -796,16 +850,17 @@ export default function PharmaDashboard() {
               return (
                 <div 
                   key={type} 
-                  className="rounded-2xl shadow-lg border p-6 cursor-pointer transition-all hover:shadow-xl hover:scale-[1.02]"
+                  className="rounded-2xl shadow-lg border p-6 transition-all hover:shadow-xl"
                   style={{
                     backgroundColor: isDark ? '#374151' : 'white',
                     borderColor: isDark ? '#4b5563' : '#e5e7eb'
                   }}
-                  onClick={() => navigate(`/sales-history?type=${encodeURIComponent(type)}`)}
-                  title={`Click to view detailed sales history for ${type}`}
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => navigate(`/sales-history?type=${encodeURIComponent(type)}`)}
+                      title={`Click to view detailed sales history for ${type}`}
+                    >
                       <h3 className="font-semibold text-lg transition-colors"
                         style={{ color: isDark ? 'white' : '#111827' }}>
                         {type}
@@ -827,10 +882,36 @@ export default function PharmaDashboard() {
                       })()}
                       <p className="text-sm mt-2 transition-colors"
                         style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {typeForecast ? `${formatForecastPeriod(forecastDays)} ARIMA forecast` : 'Loading prediction...'}
+                        {typeForecast ? `${formatForecastPeriod(forecastDays)} ${selectedModel.toUpperCase()} forecast` : 'Loading prediction...'}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
+                      {/* Evaluation Info Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const metrics = forecastData?.model_performance?.[type]?.[modelKeyMixed];
+                          if (metrics) {
+                            setSelectedEvaluation({
+                              productType: type,
+                              model: selectedModel,
+                              metrics: metrics
+                            });
+                            setShowEvaluationModal(true);
+                          }
+                        }}
+                        className="p-2 rounded-lg transition-all hover:shadow-md"
+                        style={{
+                          backgroundColor: isDark ? '#4b5563' : '#f3f4f6',
+                          color: isDark ? '#9ca3af' : '#6b7280'
+                        }}
+                        title="View model evaluation metrics"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </button>
+                      
                       <Package className="w-6 h-6" style={{ color: color }} />
                       {avgPrediction > 0 && (
                         <span className="text-sm font-semibold" style={{ color: color }}>
@@ -840,7 +921,7 @@ export default function PharmaDashboard() {
                     </div>
                   </div>
 
-                  {/* ARIMA Forecast Chart */}
+                  {/* Forecast Chart */}
                   <div className="h-48 mb-4">
                     {loadingForecast ? (
                       <div className="flex flex-col items-center justify-center h-full">
@@ -1128,6 +1209,199 @@ export default function PharmaDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Evaluation Modal */}
+      {showEvaluationModal && selectedEvaluation && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
+          onClick={() => setShowEvaluationModal(false)}
+        >
+          <div 
+            className="relative max-w-2xl w-full rounded-2xl shadow-2xl border overflow-hidden"
+            style={{
+              backgroundColor: isDark ? '#1f2937' : 'white',
+              borderColor: isDark ? '#374151' : '#e5e7eb'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-6 border-b" style={{
+              backgroundColor: isDark ? '#374151' : '#f9fafb',
+              borderColor: isDark ? '#4b5563' : '#e5e7eb'
+            }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold transition-colors"
+                    style={{ color: isDark ? 'white' : '#111827' }}>
+                    Model Evaluation Metrics
+                  </h3>
+                  <p className="text-sm mt-1 transition-colors"
+                    style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                    {selectedEvaluation.productType} - {selectedEvaluation.model.toUpperCase()} Model
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowEvaluationModal(false)}
+                  className="p-2 rounded-lg transition-colors hover:bg-opacity-10 hover:bg-gray-500"
+                  style={{ color: isDark ? '#9ca3af' : '#6b7280' }}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4">
+                {/* MAE */}
+                <div className="p-4 rounded-lg border" style={{
+                  backgroundColor: isDark ? '#374151' : '#f9fafb',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium transition-colors"
+                      style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                      MAE
+                    </span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      style={{ color: isDark ? '#60a5fa' : '#3b82f6' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <p className="text-2xl font-bold transition-colors"
+                    style={{ color: isDark ? 'white' : '#111827' }}>
+                    {selectedEvaluation.metrics.MAE?.toFixed(2) || 'N/A'}
+                  </p>
+                  <p className="text-xs mt-1 transition-colors"
+                    style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                    Mean Absolute Error
+                  </p>
+                </div>
+
+                {/* RMSE */}
+                <div className="p-4 rounded-lg border" style={{
+                  backgroundColor: isDark ? '#374151' : '#f9fafb',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium transition-colors"
+                      style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                      RMSE
+                    </span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      style={{ color: isDark ? '#34d399' : '#10b981' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                  </div>
+                  <p className="text-2xl font-bold transition-colors"
+                    style={{ color: isDark ? 'white' : '#111827' }}>
+                    {selectedEvaluation.metrics.RMSE?.toFixed(2) || 'N/A'}
+                  </p>
+                  <p className="text-xs mt-1 transition-colors"
+                    style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                    Root Mean Squared Error
+                  </p>
+                </div>
+
+                {/* MAPE */}
+                <div className="p-4 rounded-lg border" style={{
+                  backgroundColor: isDark ? '#374151' : '#f9fafb',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium transition-colors"
+                      style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                      MAPE
+                    </span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      style={{ color: isDark ? '#fbbf24' : '#f59e0b' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-2xl font-bold transition-colors"
+                    style={{ color: isDark ? 'white' : '#111827' }}>
+                    {selectedEvaluation.metrics.MAPE?.toFixed(2) || 'N/A'}%
+                  </p>
+                  <p className="text-xs mt-1 transition-colors"
+                    style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                    Mean Absolute Percentage Error
+                  </p>
+                </div>
+
+                {/* R² */}
+                <div className="p-4 rounded-lg border" style={{
+                  backgroundColor: isDark ? '#374151' : '#f9fafb',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium transition-colors"
+                      style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                      R²
+                    </span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      style={{ color: isDark ? '#a78bfa' : '#8b5cf6' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-2xl font-bold transition-colors"
+                    style={{ color: isDark ? 'white' : '#111827' }}>
+                    {selectedEvaluation.metrics.R2?.toFixed(4) || 'N/A'}
+                  </p>
+                  <p className="text-xs mt-1 transition-colors"
+                    style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                    R-Squared Score
+                  </p>
+                </div>
+              </div>
+
+              {/* Interpretation Guide */}
+              <div className="mt-6 p-4 rounded-lg border" style={{
+                backgroundColor: isDark ? '#374151' : '#f9fafb',
+                borderColor: isDark ? '#4b5563' : '#e5e7eb'
+              }}>
+                <h4 className="text-sm font-semibold mb-3 transition-colors"
+                  style={{ color: isDark ? '#e5e7eb' : '#374151' }}>
+                  Understanding the Metrics
+                </h4>
+                <div className="space-y-2 text-sm transition-colors"
+                  style={{ color: isDark ? '#d1d5db' : '#6b7280' }}>
+                  <div className="flex items-start">
+                    <span className="font-medium mr-2" style={{ minWidth: '80px' }}>MAE & RMSE:</span>
+                    <span>Lower values indicate better prediction accuracy</span>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="font-medium mr-2" style={{ minWidth: '80px' }}>MAPE:</span>
+                    <span>Lower percentage means more accurate forecasts</span>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="font-medium mr-2" style={{ minWidth: '80px' }}>R²:</span>
+                    <span>Closer to 1.0 indicates better model fit</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t flex justify-end" style={{
+              backgroundColor: isDark ? '#374151' : '#f9fafb',
+              borderColor: isDark ? '#4b5563' : '#e5e7eb'
+            }}>
+              <button
+                onClick={() => setShowEvaluationModal(false)}
+                className="px-4 py-2 rounded-lg font-medium transition-colors"
+                style={{
+                  backgroundColor: isDark ? '#3b82f6' : '#2563eb',
+                  color: 'white'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

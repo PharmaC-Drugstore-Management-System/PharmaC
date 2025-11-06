@@ -126,12 +126,89 @@ const orderService = {
               citizen_id: true,
             },
           },
+          order_items: {
+            include: {
+              product: {
+                select: {
+                  product_id: true,
+                  product_name: true,
+                  producttype: true,
+                  unit: true,
+                },
+              },
+            },
+          },
+          carts: {
+            include: {
+              product: {
+                select: {
+                  product_id: true,
+                  product_name: true,
+                  producttype: true,
+                },
+              },
+              lot: {
+                select: {
+                  sell_price: true,
+                },
+              },
+            },
+          },
         },
         orderBy: {
           order_id: "desc",
         },
       });
-      return data;
+      
+      // Collect all unique product IDs from order_items
+      const allProductIds = new Set<number>();
+      data.forEach(order => {
+        if (order.order_items) {
+          order.order_items.forEach(item => {
+            allProductIds.add(item.product_id);
+          });
+        }
+      });
+
+      // Fetch all latest lots in one query
+      const latestLots = await prisma.lot.findMany({
+        where: {
+          product_id: { in: Array.from(allProductIds) }
+        },
+        orderBy: {
+          added_date: 'desc'
+        },
+        distinct: ['product_id'],
+        select: {
+          product_id: true,
+          sell_price: true
+        }
+      });
+
+      // Create a price map for quick lookup
+      const priceMap = new Map<number, number>();
+      latestLots.forEach(lot => {
+        if (lot.product_id && !priceMap.has(lot.product_id)) {
+          priceMap.set(lot.product_id, lot.sell_price || 0);
+        }
+      });
+      
+      // Enhance order_items with pricing information
+      const enhancedData = data.map(order => {
+        if (order.order_items && order.order_items.length > 0) {
+          const itemsWithPrice = order.order_items.map(item => ({
+            ...item,
+            unit_price: priceMap.get(item.product_id) || 0
+          }));
+          return {
+            ...order,
+            order_items: itemsWithPrice
+          };
+        }
+        return order;
+      });
+      
+      return enhancedData;
     } catch (error) {
       console.error("Service error get list order:", error);
       throw error;
