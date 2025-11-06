@@ -160,7 +160,7 @@ export default function PharmaDashboard() {
 
       // Check if cache is expired
       if (age > CACHE_EXPIRY_MS) {
-        console.log('⏰ Cache expired, clearing...');
+        console.log('Cache expired, clearing...');
         localStorage.removeItem(CACHE_KEY);
         return null;
       }
@@ -664,7 +664,7 @@ export default function PharmaDashboard() {
                     backgroundColor: isDark ? '#065f46' : '#d1fae5',
                     color: isDark ? '#6ee7b7' : '#047857'
                   }}>
-                  <span>💾 Cached</span>
+                  <span>Cached</span>
                 </div>
               )}
               
