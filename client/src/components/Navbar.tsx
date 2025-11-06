@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
+  LayoutGrid,
   Inbox,
   Clock,
   FileText,
@@ -7,10 +8,9 @@ import {
   ClipboardCheck,
   ShoppingCart,
   Menu,
-  X,
-  BarChart3
+  X
 } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 // Tooltip Component
@@ -47,37 +47,18 @@ export default function NavbarComponent() {
   const [activeTab, setActiveTab] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useTranslation();
 
   const navigationItems = [
-    { name: t('pointOfSale'), icon: ShoppingCart, path: '/' },  // POS เป็นหน้าแรก
-    { name: t('dashboard'), icon: BarChart3, path: '/dashboard' },  // Dashboard ดูภาพรวม
+    { name: t('home'), icon: LayoutGrid, path: '/' },
     { name: t('inventory'), icon: Inbox, path: '/inventory' },
+    { name: t('pointOfSale'), icon: ShoppingCart, path: '/pos' },
     { name: t('expiryMonitor'), icon: Clock, path: '/expiry-monitor' },
     { name: t('documentRecords'), icon: FileText, path: '/doc-record' },
     { name: t('orderRecords'), icon: ClipboardCheck, path: '/order-record' },
     { name: t('memberManagement'), icon: null, path: '/membership' },
     { name: t('settings'), icon: Settings, path: '/settings' }
   ];
-
-  // Sync activeTab with current URL on mount and location change
-  useEffect(() => {
-    const currentPath = location.pathname;
-    const currentIndex = navigationItems.findIndex(item => {
-      // Exact match for most routes
-      if (item.path === currentPath) return true;
-      // Special case: /inventory/:id should highlight inventory tab
-      if (item.path === '/inventory' && currentPath.startsWith('/inventory')) return true;
-      // Special case: /pos should highlight POS (/) tab
-      if (item.path === '/' && currentPath === '/pos') return true;
-      return false;
-    });
-    
-    if (currentIndex !== -1) {
-      setActiveTab(currentIndex);
-    }
-  }, [location.pathname, navigationItems]);
 
   const handleTabClick = (index: number): void => {
     setActiveTab(index);

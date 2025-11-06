@@ -759,13 +759,15 @@ export default function PharmaDashboard() {
                     forecast: Math.round(item.prediction * 100) / 100,
                     upper: null, // Confidence intervals would need aggregation too
                     lower: null,
-                    historical: idx === 0 ? Math.round(item.prediction * 0.9 * 100) / 100 : null
+                    historical: null // Start with no historical data
                   };
                 });
 
                 // Add some mock historical data points for better visualization
                 if (chartData.length > 0) {
                   const historicalPoints = Math.min(3, Math.ceil(chartData.length * 0.2)); // 20% historical or max 3
+                  const firstForecastValue = chartData[0].forecast || 0;
+                  
                   for (let i = 0; i < historicalPoints; i++) {
                     const histDate = new Date(chartData[0].fullDate);
                     histDate.setDate(histDate.getDate() - (aggregationInterval * (historicalPoints - i)));
@@ -791,8 +793,13 @@ export default function PharmaDashboard() {
                       forecast: null,
                       upper: null,
                       lower: null,
-                      historical: Math.round((chartData[0].forecast || 0) * (0.8 + Math.random() * 0.4) * 100) / 100
+                      historical: Math.round(firstForecastValue * (0.8 + Math.random() * 0.4) * 100) / 100
                     });
+                  }
+                  
+                  // Make the first forecast point also show as historical to connect the lines
+                  if (chartData.length > historicalPoints) {
+                    chartData[historicalPoints].historical = chartData[historicalPoints].forecast;
                   }
                 }
               }

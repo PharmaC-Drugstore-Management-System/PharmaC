@@ -46,6 +46,18 @@ export default function AddMedicinePage() {
     unit: "",
   });
 
+  // Barcode configuration
+  const BARCODE_LENGTH = 13; // Standard EAN-13 barcode length
+
+  // Handle barcode input - only allow numbers and enforce length
+  const handleBarcodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow numbers and limit to BARCODE_LENGTH
+    if (/^\d*$/.test(value) && value.length <= BARCODE_LENGTH) {
+      setFormData({ ...formData, barcode: value });
+    }
+  };
+
   // Validation function to check if form is valid
   const isFormValid = () => {
     const productTypeValue = formData.productType === "other" ? customProductType : formData.productType;
@@ -71,7 +83,15 @@ export default function AddMedicinePage() {
 
   useEffect(() => {
     if (scannedData !== "Not Found" && hasScanned) {
-      setFormData((s) => ({ ...s, barcode: scannedData }));
+      // Only set barcode if it's numeric and within length limit
+      if (/^\d+$/.test(scannedData) && scannedData.length <= BARCODE_LENGTH) {
+        setFormData((s) => ({ ...s, barcode: scannedData }));
+      } else {
+        // Show error if scanned barcode is invalid
+        alert(`Invalid barcode format. Must be ${BARCODE_LENGTH} digits or less and contain only numbers.`);
+        setScannedData("Not Found");
+        setHasScanned(false);
+      }
     }
   }, [scannedData, hasScanned]);
 
@@ -435,28 +455,35 @@ export default function AddMedicinePage() {
                   e.target.style.boxShadow = 'none';
                 }}
               />
-              <input
-                type="text"
-                placeholder={t('barcodePlaceholder')}
-                value={formData.barcode}
-                onChange={(e) =>
-                  setFormData({ ...formData, barcode: e.target.value })
-                }
-                className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
-                style={{
-                  backgroundColor: isDark ? '#4b5563' : 'white',
-                  borderColor: isDark ? '#6b7280' : '#d1d5db',
-                  color: isDark ? 'white' : '#1f2937'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
-                  e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={t('barcodePlaceholder')}
+                  value={formData.barcode}
+                  onChange={handleBarcodeChange}
+                  maxLength={BARCODE_LENGTH}
+                  inputMode="numeric"
+                  pattern="\d*"
+                  className="w-full p-2.5 sm:p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
+                  style={{
+                    backgroundColor: isDark ? '#4b5563' : 'white',
+                    borderColor: isDark ? '#6b7280' : '#d1d5db',
+                    color: isDark ? 'white' : '#1f2937'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = isDark ? '#60a5fa' : '#10b981';
+                    e.target.style.boxShadow = isDark ? '0 0 0 2px rgba(96, 165, 250, 0.2)' : '0 0 0 2px rgba(16, 185, 129, 0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = isDark ? '#6b7280' : '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
+                  style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                  {formData.barcode.length}/{BARCODE_LENGTH}
+                </div>
+              </div>
 
               <button
                 className="w-full p-2.5 sm:p-3 text-sm sm:text-base font-medium text-white rounded-lg transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
