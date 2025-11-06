@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  LayoutGrid,
   Inbox,
   Clock,
   FileText,
@@ -8,9 +7,10 @@ import {
   ClipboardCheck,
   ShoppingCart,
   Menu,
-  X
+  X,
+  BarChart3
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 // Tooltip Component
@@ -47,18 +47,38 @@ export default function NavbarComponent() {
   const [activeTab, setActiveTab] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
 
   const navigationItems = [
-    { name: t('home'), icon: LayoutGrid, path: '/' },
+    { name: t('pointOfSale'), icon: ShoppingCart, path: '/' },  // POS as home
+    { name: t('dashboard'), icon: BarChart3, path: '/dashboard' },  // Dashboard for analytics
     { name: t('inventory'), icon: Inbox, path: '/inventory' },
-    { name: t('pointOfSale'), icon: ShoppingCart, path: '/pos' },
     { name: t('expiryMonitor'), icon: Clock, path: '/expiry-monitor' },
     { name: t('documentRecords'), icon: FileText, path: '/doc-record' },
     { name: t('orderRecords'), icon: ClipboardCheck, path: '/order-record' },
     { name: t('memberManagement'), icon: null, path: '/membership' },
     { name: t('settings'), icon: Settings, path: '/settings' }
   ];
+
+  // Sync activeTab with current URL on mount and location change
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const currentIndex = navigationItems.findIndex(item => {
+      // Exact match for most routes
+      if (item.path === currentPath) return true;
+      // Special case: /inventory/:id should highlight inventory tab
+      if (item.path === '/inventory' && currentPath.startsWith('/inventory')) return true;
+      // Special case: /pos should highlight POS (/) tab
+      if (item.path === '/' && currentPath === '/pos') return true;
+      return false;
+    });
+    
+    if (currentIndex !== -1) {
+      setActiveTab(currentIndex);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   const handleTabClick = (index: number): void => {
     setActiveTab(index);
