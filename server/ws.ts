@@ -112,6 +112,17 @@ export function emitPaymentStatusUpdate(statusData: any) {
   io.emit("payment-status-update", statusData);
 }
 
+// Function to emit order status updates (for all payment types)
+export function emitOrderStatusUpdate(orderData: any) {
+  if (!io) {
+    console.error("❌ Socket.IO not initialized");
+    return;
+  }
+
+  console.log("📦 Emitting order status update:", orderData);
+  io.emit("order-status-update", orderData);
+}
+
 // Legacy broadcast function (kept for compatibility)
 export function broadcast(data: any) {
   if (!io) return;

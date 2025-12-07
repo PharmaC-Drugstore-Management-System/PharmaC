@@ -71,6 +71,47 @@ const inventory_service = {
     }
   },
 
+  update_service: async (
+    id: number,
+    product_name: string,
+    product_generic_name: string,
+    brand: string,
+    friendlyid: string,
+    barcode: string,
+    iscontrolled: boolean,
+    product_type: string,
+    unit: string,
+    image?: string | null
+  ) => {
+    try {
+      const updateData: any = {
+        product_name,
+        generic_name: product_generic_name,
+        brand,
+        friendlyid,
+        barcode,
+        iscontrolled,
+        producttype: product_type,
+        unit,
+      };
+
+      // Only update image if a new one is provided
+      if (image !== undefined) {
+        updateData.image = image;
+      }
+
+      const updated = await prisma.product.update({
+        where: { product_id: Number(id) },
+        data: updateData,
+      });
+
+      return updated;
+    } catch (error: any) {
+      console.error("Error in inventory_service.update_service():", error.message);
+      throw error;
+    }
+  },
+
   delete_service: async (id: number) => {
     try {
       // Check if product has been used in orders or has transactions

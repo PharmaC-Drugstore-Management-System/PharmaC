@@ -76,6 +76,59 @@ const controller = {
     }
   },
 
+  update: async (req: any, res: any) => {
+    try {
+      const id = req.params.id;
+      const {
+        product_name,
+        product_generic_name,
+        brand,
+        friendlyid,
+        barcode,
+        iscontrolled,
+        producttype,
+        unit,
+      } = req.body;
+      
+      console.log("Updating product ID:", id);
+      console.log("Update data:", req.body);
+
+      const iscontrolledBool = iscontrolled === "true" || iscontrolled === true;
+
+      // Only update image if a new file is uploaded
+      const file = req.file;
+      const image = file ? `/uploads/${file.filename}` : undefined;
+
+      const response = await inventory_service.update_service(
+        id,
+        product_name,
+        product_generic_name,
+        brand,
+        friendlyid,
+        barcode,
+        iscontrolledBool,
+        producttype,
+        unit,
+        image
+      );
+
+      return res.status(200).json({
+        status: true,
+        message: "Medicine updated successfully",
+        data: response
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("Error updating medicine:", errorMessage);
+      return res.status(500).json({
+        status: false,
+        message: "Failed to update medicine",
+        error: errorMessage
+      });
+    }
+  },
+
   delete: async (req: any, res: any) => {
     try {
       const id = req.params.id;

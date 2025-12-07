@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Barcode, Upload, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Barcode, Upload, X, ArrowLeft } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import BarcodeScanner from "react-qr-barcode-scanner";
 import type { Result } from "@zxing/library";
 import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const SERVER_URL = API_URL.replace('/api', ''); // For static files (uploads)
 
 
 export default function AddMedicinePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+  
+  // Check if we're in edit mode from state
+  const editData = location.state?.editData;
+  const isEditMode = !!editData;
 
   // Check if dark mode is enabled
   const isDark = document.documentElement.classList.contains('dark');
@@ -34,6 +40,7 @@ export default function AddMedicinePage() {
 
   const [image, setImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     productName: "",
@@ -48,6 +55,43 @@ export default function AddMedicinePage() {
 
   // Barcode configuration
   const BARCODE_LENGTH = 13; // Standard EAN-13 barcode length
+
+  // Load medicine data if in edit mode from passed state
+  useEffect(() => {
+    if (isEditMode && editData) {
+      setFormData({
+        productName: editData.product_name || "",
+        productGenericName: editData.generic_name || "",
+        brand: editData.brand || "",
+        friendlyId: editData.friendlyid || "",
+        barcode: editData.barcode || "",
+        isControlled: editData.iscontrolled === true || editData.iscontrolled === "true",
+        productType: editData.producttype || "",
+        unit: editData.unit || "",
+      });
+
+      // Check if productType is custom
+      if (editData.producttype && !productTypes.includes(editData.producttype)) {
+        setFormData(prev => ({ ...prev, productType: "other" }));
+        setCustomProductType(editData.producttype);
+      }
+
+      // Check if unit is custom
+      if (editData.unit && !units.includes(editData.unit)) {
+        setFormData(prev => ({ ...prev, unit: "other" }));
+        setCustomUnit(editData.unit);
+      }
+
+      // Set existing image
+      if (editData.image) {
+        let imgUrl = editData.image;
+        if (!imgUrl.startsWith('http')) {
+          imgUrl = imgUrl.startsWith('/') ? `${SERVER_URL}${imgUrl}` : `${SERVER_URL}/${imgUrl}`;
+        }
+        setExistingImageUrl(imgUrl);
+      }
+    }
+  }, [isEditMode]);
 
   // Handle barcode input - only allow numbers and enforce length
   const handleBarcodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,12 +152,16 @@ export default function AddMedicinePage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setImage(file);
+    if (file) {
+      setExistingImageUrl(null); // Clear existing image when new one is selected
+    }
   };
 
   const handleRemoveImage = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setImage(null);
     setPreviewUrl(null);
+    setExistingImageUrl(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,19 +186,26 @@ export default function AddMedicinePage() {
 
       if (image) payload.append("image", image, image.name);
 
-      const res = await fetch(`${API_URL}/inventory/add-medicine`, {
-        method: "POST",
+      const medicineId = editData?.product_id || editData?.id;
+      const url = isEditMode 
+        ? `${API_URL}/inventory/update-medicine/${medicineId}`
+        : `${API_URL}/inventory/add-medicine`;
+      
+      const method = isEditMode ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method: method,
         credentials: "include",
         body: payload,
       });
 
       if (!res.ok) {
         const text = await res.text();
-        console.error("Failed to add medicine:", res.status, text);
+        console.error(`Failed to ${isEditMode ? 'update' : 'add'} medicine:`, res.status, text);
         Swal.fire({
           icon: 'error',
           title: 'Error!',
-          text: 'Failed to add medicine',
+          text: `Failed to ${isEditMode ? 'update' : 'add'} medicine`,
           showConfirmButton: false,
           timer: 2000,
           timerProgressBar: true
@@ -159,7 +214,17 @@ export default function AddMedicinePage() {
       }
 
       const body = await res.json();
-      console.log("Added:", body);
+      console.log(isEditMode ? "Updated:" : "Added:", body);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: `Medicine ${isEditMode ? 'updated' : 'added'} successfully`,
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
+      
       navigate("/inventory");
     } catch (err) {
       console.error(err);
@@ -170,8 +235,21 @@ export default function AddMedicinePage() {
   return (
     <div className="min-h-screen flex flex-col p-3 sm:p-4 md:p-6 transition-colors duration-300 pb-20 md:pb-4"
       style={{ backgroundColor: isDark ? '#111827' : '#ffffff' }}>
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 transition-colors duration-300"
-        style={{ color: isDark ? 'white' : '#1f2937' }}>{t('addMedication')}</h1>
+      <div className="flex items-center gap-4 mb-4 sm:mb-6 md:mb-8">
+        {isEditMode && (
+          <button
+            onClick={() => navigate("/inventory")}
+            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            style={{ color: isDark ? 'white' : '#1f2937' }}
+          >
+            <ArrowLeft size={24} />
+          </button>
+        )}
+        <h1 className="text-2xl sm:text-3xl font-bold transition-colors duration-300"
+          style={{ color: isDark ? 'white' : '#1f2937' }}>
+          {isEditMode ? t('editMedicine') : t('addMedication')}
+        </h1>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
         <label className="rounded-lg p-4 sm:p-6 flex flex-col items-center justify-center min-h-48 sm:min-h-64 w-full md:w-1/3 border cursor-pointer transition-colors duration-300"
@@ -189,6 +267,29 @@ export default function AddMedicinePage() {
               <div className="flex items-center gap-2 transition-colors duration-300"
                 style={{ color: isDark ? '#60a5fa' : '#0f766e' }}>
                 <span className="text-xs sm:text-sm truncate max-w-[150px] sm:max-w-none">{image?.name}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveImage();
+                  }}
+                  className="text-red-600 hover:text-red-800 transition-colors duration-200 flex-shrink-0"
+                  aria-label="Remove image"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+          ) : existingImageUrl ? (
+            <div className="flex flex-col items-center gap-3">
+              <img
+                src={existingImageUrl}
+                alt="existing medicine"
+                className="max-h-32 sm:max-h-40 object-contain rounded-md"
+              />
+              <div className="flex items-center gap-2 transition-colors duration-300"
+                style={{ color: isDark ? '#60a5fa' : '#0f766e' }}>
+                <span className="text-xs sm:text-sm">Current Image</span>
                 <button
                   type="button"
                   onClick={(e) => {

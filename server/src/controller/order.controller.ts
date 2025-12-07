@@ -1,6 +1,6 @@
 import orderService from "../services/order.services";
 import paymentService from "../services/payment.service";
-import { emitOrderToCustomerDisplay, emitNotificationToAdmins } from "../../ws";
+import { emitOrderToCustomerDisplay, emitNotificationToAdmins, emitOrderStatusUpdate } from "../../ws";
 import e from "express";
 const controller = {
   createOrder: async (req: any, res: any) => {
@@ -45,15 +45,17 @@ const controller = {
           throw new Error('Failed to create order');
         }
         
-        // Update order status to PAID immediately for cash
-        await paymentService.updateStatus(response.order.order_id);
+        // Update order status to PAID immediately for cash (this also reduces stock)
+        console.log('⏳ Updating order status to PAID and reducing stock...');
+        const updatedOrder = await paymentService.updateStatus(response.order.order_id);
+        console.log('✅ Order status updated to PAID, stock reduced');
         
-        // Emit notification to admins for cash payment
+        // NOW emit notifications AFTER status is PAID
         console.log('🔔 Emitting cash payment notification to admins');
         emitNotificationToAdmins({
           type: 'CASH_PAYMENT',
           order: {
-            ...response.order,
+            ...updatedOrder, // Use updated order with PAID status
             discount_amount: discount_amount || 0,
             discount_type: discount_type || 'none',
             points_used: points_used || 0,
@@ -62,9 +64,18 @@ const controller = {
           timestamp: new Date().toISOString()
         });
         
+        // Emit order status update for real-time UI refresh
+        console.log('📦 Emitting order status update');
+        emitOrderStatusUpdate({
+          order_id: updatedOrder.order_id,
+          status: 'paid',
+          payment_method: 'CASH',
+          timestamp: new Date().toISOString()
+        });
+        
         return res.status(200).json({ 
           status: true, 
-          order: response.order,
+          order: updatedOrder, // Return updated order
           message: 'Cash order created successfully'
         });
       }

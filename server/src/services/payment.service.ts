@@ -71,11 +71,81 @@ const paymentService = {
       }
       
       console.log(`💳 Updating order ${orderIdNum} status to PAID`);
+      
+      // Get order with cart items to deduct stock
+      const order = await prisma.order.findUnique({
+        where: { order_id: orderIdNum },
+        include: {
+          carts: {
+            include: {
+              product: true
+            }
+          }
+        }
+      });
+
+      if (!order) {
+        throw new Error(`Order ${orderIdNum} not found`);
+      }
+
+      // Deduct stock for each item in the order
+      console.log(`📦 Deducting stock for ${order.carts.length} items`);
+      for (const cartItem of order.carts) {
+        const quantityToDeduct = cartItem.amount; // amount field stores quantity
+        
+        // Get lots for this product (FIFO - oldest first, excluding deleted)
+        const lots = await prisma.lot.findMany({
+          where: {
+            product_id: cartItem.product_id,
+            init_amount: { gt: 0 }, // Only lots with available stock
+            deleted_at: null // Exclude soft-deleted lots
+          },
+          orderBy: {
+            expired_date: 'asc' // FIFO - use expiring lots first
+          }
+        });
+
+        let remainingQty = quantityToDeduct;
+        
+        for (const lot of lots) {
+          if (remainingQty <= 0) break;
+          
+          const deductFromThisLot = Math.min(remainingQty, lot.init_amount);
+          
+          // Update lot quantity
+          await prisma.lot.update({
+            where: { lot_id: lot.lot_id },
+            data: { init_amount: lot.init_amount - deductFromThisLot }
+          });
+          
+          // Create stock transaction record
+          await prisma.stock_transaction.create({
+            data: {
+              lot_id_fk: lot.lot_id,
+              trans_type: 'SALE',
+              qty: -deductFromThisLot, // Negative for sale
+              trans_date: new Date(),
+              ref_no: orderIdNum.toString(),
+              note: `Sale from order #${orderIdNum}`
+            }
+          });
+          
+          remainingQty -= deductFromThisLot;
+          console.log(`  ✓ Deducted ${deductFromThisLot} from lot ${lot.lot_id} (${lot.lot_no || 'N/A'})`);
+        }
+        
+        if (remainingQty > 0) {
+          console.warn(`⚠️ Not enough stock for product ${cartItem.product_id}. Short by ${remainingQty} units`);
+        }
+      }
+      
+      // Update order status to PAID
       const update = await prisma.order.update({
         where: { order_id: orderIdNum },
         data: { status: "PAID" },
       });
-      console.log(`✅ Successfully updated order ${orderIdNum} status to PAID`);
+      
+      console.log(`✅ Successfully updated order ${orderIdNum} status to PAID and deducted stock`);
       return update;
     } catch (error) {
       console.error("Error updating order status:", error);

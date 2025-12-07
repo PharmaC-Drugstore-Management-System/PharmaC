@@ -168,6 +168,7 @@ const resources = {
       showingMembers: "Showing {{start}} to {{end}} of {{total}} members",
       nameOrPhone: "Name or Phone",
       gender: "Gender",
+      memberGender: "Gender",
       joinDate: "Join Date",
       actions: "Actions",
       view: "View",
@@ -450,6 +451,8 @@ const resources = {
 
       // Add Medicine Page
       addMedication: "Add Medication",
+      editMedicine: "Edit Medicine",
+      editSelected: "Edit Selected",
       clickToUploadImage: "Click to upload image",
       productNamePlaceholder: "Product Name...",
       brandPlaceholder: "Brand...",
@@ -867,6 +870,7 @@ const resources = {
       showingMembers: "แสดง {{start}} ถึง {{end}} จาก {{total}} สมาชิก",
       nameOrPhone: "ชื่อหรือเบอร์โทร",
       gender: "เพศ",
+      memberGender: "เพศ",
       joinDate: "วันที่สมัคร",
       actions: "การดำเนินการ",
       view: "ดู",
@@ -1149,6 +1153,8 @@ const resources = {
 
       // Add Medicine Page
       addMedication: "เพิ่มยา",
+      editMedicine: "แก้ไขยา",
+      editSelected: "แก้ไขรายการที่เลือก",
       clickToUploadImage: "คลิกเพื่ออัปโหลดรูปภาพ",
       productNamePlaceholder: "ชื่อสินค้า...",
       brandPlaceholder: "แบรนด์...",

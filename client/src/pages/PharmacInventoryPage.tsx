@@ -103,18 +103,6 @@ export default function PharmacInventoryPage() {
     }
   };
 
-  const handleInputChange = (
-    id: number,
-    field: keyof MedicineItem,
-    value: string | number
-  ) => {
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
-    );
-  };
-
   const handleRowSelect = (id: number) => {
     setSelectedItemIds((prev) => {
       if (prev.includes(id)) {
@@ -643,6 +631,37 @@ export default function PharmacInventoryPage() {
                       style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'}}>
                   {selectedItemIds.length} {t('selected')}
                 </span>
+                {selectedItemIds.length === 1 && (
+                  <button
+                    onClick={async () => {
+                      const selectedId = selectedItemIds[0];
+                      try {
+                        // Fetch full medicine data from backend
+                        const res = await fetch(`${API_URL}/inventory/get-prouduct/${selectedId}`, {
+                          method: 'POST',
+                          credentials: 'include',
+                        });
+                        
+                        if (!res.ok) {
+                          throw new Error('Failed to fetch medicine data');
+                        }
+
+                        const result = await res.json();
+                        const medicineData = result.data;
+                        
+                        // Navigate with full data
+                        navigate('/add-medicine', { state: { editData: medicineData } });
+                      } catch (error) {
+                        console.error('Error fetching medicine data:', error);
+                        alert('Failed to load medicine data');
+                      }
+                    }}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center space-x-2 transition-all duration-300 shadow-md"
+                  >
+                    <Edit2 className="h-5 w-5" />
+                    <span>{t('editSelected')}</span>
+                  </button>
+                )}
                 <button
                   onClick={handleDeleteItem}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold flex items-center space-x-2 transition-all duration-300 shadow-md"
@@ -812,122 +831,52 @@ export default function PharmacInventoryPage() {
                       </div>
                     </div>
 
-                    {/* Name cell with edit capability */}
+                    {/* Name cell */}
                     <div className="flex items-center">
-                      {isSelected && editMode ? (
-                        <input
-                          type="text"
-                          value={item.name}
-                          onChange={(e) => handleInputChange(item.id, "name", e.target.value)}
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                          style={{
-                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                            borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
-                            color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
-                          }}
-                        />
-                      ) : (
-                        <div>
-                          <h4 className="font-semibold text-lg"
-                              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1e293b'}}>
-                            {item.name}
-                          </h4>
-                          <p className="text-sm"
-                             style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
-                            ID: {item.id}
-                          </p>
-                        </div>
-                      )}
+                      <div>
+                        <h4 className="font-semibold text-lg"
+                            style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#1e293b'}}>
+                          {item.name}
+                        </h4>
+                        <p className="text-sm"
+                           style={{color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#64748b'}}>
+                          ID: {item.id}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Brand cell */}
                     <div className="flex items-center justify-center">
-                      {isSelected && editMode ? (
-                        <input
-                          type="text"
-                          value={item.brand}
-                          onChange={(e) => handleInputChange(item.id, "brand", e.target.value)}
-                          className="w-full px-3 py-2 border rounded-lg text-center focus:ring-2 focus:ring-green-500"
-                          style={{
-                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                            borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
-                            color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
-                          }}
-                        />
-                      ) : (
-                        <span className="font-medium text-center"
-                              style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>
-                          {item.brand}
-                        </span>
-                      )}
+                      <span className="font-medium text-center"
+                            style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>
+                        {item.brand}
+                      </span>
                     </div>
 
                     {/* Generic Name cell */}
                     <div className="flex items-center justify-center">
-                      {isSelected && editMode ? (
-                        <input
-                          type="text"
-                          value={item.generic_name ?? ""}
-                          onChange={(e) => handleInputChange(item.id, "generic_name", e.target.value)}
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center"
-                          style={{
-                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                            borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
-                            color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
-                          }}
-                        />
-                      ) : (
-                        <p className="text-sm text-center"
-                           style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
-                          {item.generic_name || "-"}
-                        </p>
-                      )}
+                      <p className="text-sm text-center"
+                         style={{color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#475569'}}>
+                        {item.generic_name || "-"}
+                      </p>
                     </div>
 
                     {/* Type cell */}
                     <div className="flex items-center justify-center">
-                      {isSelected && editMode ? (
-                        <input
-                          type="text"
-                          value={item.productType ?? ""}
-                          onChange={(e) => handleInputChange(item.id, "productType", e.target.value)}
-                          className="w-full px-3 py-2 border rounded-lg text-center focus:ring-2 focus:ring-green-500"
-                          style={{
-                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                            borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
-                            color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
-                          }}
-                        />
-                      ) : (
-                        <span className="text-sm px-2 py-1 rounded-full"
-                              style={{
-                                backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f1f5f9',
-                                color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#64748b'
-                              }}>
-                          {item.productType ?? "-"}
-                        </span>
-                      )}
+                      <span className="text-sm px-2 py-1 rounded-full"
+                            style={{
+                              backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#f1f5f9',
+                              color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#64748b'
+                            }}>
+                        {item.productType ?? "-"}
+                      </span>
                     </div>
 
                     {/* Unit cell */}
                     <div className="flex items-center justify-center">
-                      {isSelected && editMode ? (
-                        <input
-                          type="text"
-                          value={item.unit ?? ""}
-                          onChange={(e) => handleInputChange(item.id, "unit", e.target.value)}
-                          className="w-full px-3 py-2 border rounded-lg text-center focus:ring-2 focus:ring-green-500"
-                          style={{
-                            backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : 'white',
-                            borderColor: document.documentElement.classList.contains('dark') ? '#6b7280' : '#d1d5db',
-                            color: document.documentElement.classList.contains('dark') ? 'white' : '#111827'
-                          }}
-                        />
-                      ) : (
-                        <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>
-                          {item.unit ?? "-"}
-                        </span>
-                      )}
+                      <span style={{color: document.documentElement.classList.contains('dark') ? 'white' : '#374151'}}>
+                        {item.unit ?? "-"}
+                      </span>
                     </div>
 
                     {/* Controlled cell */}

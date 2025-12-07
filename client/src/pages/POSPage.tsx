@@ -130,7 +130,7 @@ export default function POSPage() {
 
       // Check if this payment update is for current order
       if (paymentIntentId && data.paymentIntentId === paymentIntentId) {
-        console.log('📦 Payment update matches current order');
+        console.log('Payment update matches current order');
 
         // Stop auto verification when status update received
         if (autoVerifyInterval) {
@@ -164,6 +164,17 @@ export default function POSPage() {
           setShowErrorPopup(true);
           setTimeout(() => setShowErrorPopup(false), 5000);
         }
+      }
+    });
+
+    // Listen for order status updates (for Cash and other payments)
+    socket.on('order-status-update', (data: any) => {
+      console.log('📦 Order status update received:', data);
+      
+      if (data.status === 'paid' || data.status === 'completed') {
+        console.log('✅ Order marked as paid - refreshing product list');
+        // Refresh product list to reflect stock changes
+        fetchProducts();
       }
     });
 
@@ -933,6 +944,7 @@ export default function POSPage() {
       const orderData = {
         items: cart.map(item => ({
           product_id: item.original_product_id || item.product_id,
+          lot_id: item.lot_id, // Include lot_id for stock tracking
           price: item.price,
           quantity: item.quantity
         })),
@@ -967,6 +979,9 @@ export default function POSPage() {
         if (appliedDiscount.type === 'points' && appliedDiscount.pointsUsed && currentMember) {
           await deductPoints(appliedDiscount.pointsUsed);
         }
+
+        // Refresh product list to update stock
+        await fetchProducts();
 
         // Create receipt
         const receipt = {
@@ -1491,7 +1506,7 @@ export default function POSPage() {
                               backgroundColor: document.documentElement.classList.contains('dark') ? '#1e40af' : '#dbeafe',
                               color: document.documentElement.classList.contains('dark') ? '#bfdbfe' : '#1e40af'
                             }}>
-                            📦 Lot #{item.lot_no}
+                            Lot #{item.lot_no}
                           </span>
                         )}
                       </div>
@@ -1586,7 +1601,10 @@ export default function POSPage() {
                         <Star size={16} className="mr-1" />
                         {t('pointsToEarn')}:
                       </span>
-                      <span className="font-medium">+{calculatePoints()} {t('points')}</span>
+                      <span className="font-medium">
+                        +{calculatePoints()} {t('points')} 
+                        <span className="ml-1 text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">x3</span>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -2223,7 +2241,7 @@ export default function POSPage() {
                   style={{ backgroundColor: document.documentElement.classList.contains('dark') ? '#1e3a8a' : '#dbeafe' }}>
                   <p className="text-sm"
                     style={{ color: document.documentElement.classList.contains('dark') ? '#93c5fd' : '#1d4ed8' }}>
-                    💡 <strong>{t('note')}:</strong> {t('newMemberNote')}
+                    <strong>{t('note')}:</strong> {t('newMemberNote')}
                   </p>
                 </div>
               </>
@@ -2819,7 +2837,7 @@ export default function POSPage() {
                       <span>{currentMember.name}</span>
                     </div>
                     <div className="text-xs text-gray-600 ml-6">
-                      {t('willReceive')} +{calculatePoints()} {t('points')}
+                      {t('willReceive')} +{calculatePoints()} {t('points')} 
                     </div>
                   </div>
                 )}
